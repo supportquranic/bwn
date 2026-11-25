@@ -124,39 +124,6 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
     return () => clearInterval(t);
   }, []);
 
-  /* Elastic bounce-back at scroll boundaries */
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-
-    let bouncing = false;
-
-    const handleScroll = () => {
-      if (bouncing) return;
-
-      const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 2;
-      const atTop = el.scrollTop <= 0;
-
-      if (atBottom || atTop) {
-        bouncing = true;
-        const dir = atBottom ? -1 : 1;
-        el.style.transition = 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)';
-        el.style.transform = `translate3d(0, ${dir * 6}px, 0)`;
-
-        setTimeout(() => {
-          el.style.transform = 'translate3d(0, 0, 0)';
-          setTimeout(() => {
-            el.style.transition = '';
-            bouncing = false;
-          }, 350);
-        }, 120);
-      }
-    };
-
-    el.addEventListener('scrollend', handleScroll, { passive: true });
-    return () => el.removeEventListener('scrollend', handleScroll);
-  }, []);
-
   /* 1. Box Pack Phones (Top 6 sealed phones) */
   const boxPackPhones = activeCategory
     ? INITIAL_PRODUCTS.filter(p => p.category === activeCategory && p.condition === 'new').slice(0, 6)
@@ -191,10 +158,10 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
     : [];
 
   return (
-    <div ref={scrollRef} className="h-full overflow-y-auto overflow-x-hidden hide-scrollbar gradient-bg-top-light relative smooth-scroll">
+    <div ref={scrollRef} className="h-full overflow-y-auto overflow-x-hidden hide-scrollbar gradient-bg-top-light relative smooth-scroll" style={{ WebkitOverflowScrolling: 'touch' }}>
 
       {/* ── Sticky Top Bar — always stays visible at the very top ── */}
-      <div className="sticky top-0 z-30 pt-3.5 pb-2.5 px-4 text-white gpu-layer"
+      <div className="sticky top-0 z-30 pt-3.5 pb-2.5 px-4 text-white"
            style={{ background: '#8586f2' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -225,7 +192,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
       </div>
 
       {/* ── Hero Banner Carousel — Clean, plain purple background, NO inner image container box, NO badge tags ── */}
-      <div className="sticky top-[58px] z-0 pt-1 pb-4 px-4 text-white gpu-layer bg-transparent">
+      <div className="sticky top-[58px] z-0 pt-1 pb-4 px-4 text-white bg-transparent">
         <div className="relative py-1 flex items-center justify-between min-h-[116px]">
           <div className="flex-1 pr-2 z-10">
             <h2 className="text-white text-xl font-black leading-tight tracking-tight">
@@ -263,11 +230,11 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
       </div>
 
       {/* ── Lower White Sheet — slides up over hero, docks right below top bar ── */}
-      <div className="relative z-10 bg-white rounded-t-[34px] min-h-screen pb-28 gpu-layer"
+      <div className="relative z-10 bg-white rounded-t-[34px] min-h-screen pb-28"
            style={{ boxShadow: '0 -8px 30px rgba(0,0,0,0.08)' }}>
 
         {/* ── Sticky search bar with subtle, minimal box-shadow ── */}
-        <div className="sticky top-[58px] z-20 gpu-layer">
+        <div className="sticky top-[58px] z-20">
           <div className="bg-white rounded-t-[34px] px-4 pt-3.5 pb-3">
             <button
               className="w-full bg-white hover:bg-gray-50/80 border border-gray-200/80 rounded-full px-4 py-3 flex items-center gap-2.5 active:scale-[0.99] transition-all text-left shadow-[0_2px_12px_rgba(0,0,0,0.06)]"

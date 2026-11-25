@@ -281,7 +281,7 @@ function AppShell() {
 
   if (isAdminMode) {
     return (
-      <div className="fixed inset-0 flex flex-col bg-[#4440cf] overflow-hidden max-w-md mx-auto overscroll-none">
+      <div className="fixed inset-0 flex flex-col bg-[#4440cf] overflow-hidden max-w-md mx-auto">
         <div className="flex-1 overflow-hidden relative">
           <AdminVisualEditor 
             onExit={() => {
@@ -301,7 +301,7 @@ function AppShell() {
   const showNav = !activeProductId; // hide bottom nav when viewing product? keep visible.
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-[#4440cf] overflow-hidden max-w-md mx-auto overscroll-none">
+    <div className="fixed inset-0 flex flex-col bg-[#4440cf] overflow-hidden max-w-md mx-auto">
       {/* Page */}
       <div className="flex-1 overflow-hidden relative">
         {renderPage()}
