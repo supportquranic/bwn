@@ -34,9 +34,16 @@ function BrandLogo({ id }) {
 }
 
 /* ── Compact Product card — 2x3 grid (6 on screen), border only, NO shadow, NO cutting price ── */
-function ProductCard({ product, onProduct, customImage }) {
-  const badge = product.condition === 'used' ? 'Used' : 'Box Pack';
-  const displayImg = customImage || product.image;
+function ProductCard({ product, onProduct, customData }) {
+  const finalProduct = {
+    ...product,
+    ...customData,
+    image: customData?.image || product.image,
+    name: customData?.name || product.name,
+    price: customData?.price !== undefined ? customData.price : product.price,
+    badge: customData?.badge || (product.condition === 'used' ? 'Used' : 'Box Pack'),
+  };
+
   return (
     <div
       className="bg-white rounded-2xl border border-gray-200 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform flex flex-col"
@@ -44,21 +51,21 @@ function ProductCard({ product, onProduct, customImage }) {
     >
       <div className="px-2.5 pt-2.5">
         <span className="inline-block bg-gray-100 text-gray-500 text-[10px] font-medium px-2 py-0.5 rounded-full mb-1.5">
-          {badge}
+          {finalProduct.badge}
         </span>
         <div className="h-28 flex items-center justify-center">
           <img
-            src={displayImg}
-            alt={product.name}
+            src={finalProduct.image}
+            alt={finalProduct.name}
             className="max-h-full max-w-full object-contain"
           />
         </div>
       </div>
 
       <div className="p-2.5 pt-2 flex flex-col gap-1.5 flex-1">
-        <p className="text-xs font-bold text-black leading-tight line-clamp-2">{product.name}</p>
+        <p className="text-xs font-bold text-black leading-tight line-clamp-2">{finalProduct.name}</p>
         <div className="flex items-center justify-between gap-1 mt-auto">
-          <span className="text-xs font-bold text-[#4b47d9]">{fmt(product.price)}</span>
+          <span className="text-xs font-bold text-[#4b47d9]">{fmt(finalProduct.price)}</span>
           <button
             className="flex-shrink-0 bg-black text-white text-[10px] font-bold px-2.5 py-1 rounded-full active:scale-95 transition-transform"
             onClick={e => { e.stopPropagation(); onProduct(product.id); }}
@@ -72,21 +79,28 @@ function ProductCard({ product, onProduct, customImage }) {
 }
 
 /* ── Budget list item — border only, NO shadow, NO cutting price ── */
-function BudgetItem({ product, shop, onProduct, onToggleFav, isFav, customImage }) {
-  const displayImg = customImage || product.image;
+function BudgetItem({ product, shop, onProduct, onToggleFav, isFav, customData }) {
+  const finalProduct = {
+    ...product,
+    ...customData,
+    image: customData?.image || product.image,
+    name: customData?.name || product.name,
+    price: customData?.price !== undefined ? customData.price : product.price,
+  };
+
   return (
     <div
       className="flex items-center gap-3 p-3 bg-white rounded-2xl border border-gray-200 cursor-pointer active:scale-[0.98] transition-transform"
       onClick={() => onProduct(product.id)}
     >
       <div className="w-16 h-16 rounded-xl bg-gray-100 flex-shrink-0 flex items-center justify-center overflow-hidden">
-        <img src={displayImg} alt={product.name} className="w-full h-full object-contain" />
+        <img src={finalProduct.image} alt={finalProduct.name} className="w-full h-full object-contain" />
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-bold text-black leading-tight line-clamp-2">{product.name}</p>
+        <p className="text-sm font-bold text-black leading-tight line-clamp-2">{finalProduct.name}</p>
         <p className="text-[11px] text-black/40 mt-0.5 truncate">{shop?.name}</p>
-        <p className="text-sm font-bold text-[#4b47d9] mt-1">{fmt(product.price)}</p>
+        <p className="text-sm font-bold text-[#4b47d9] mt-1">{fmt(finalProduct.price)}</p>
       </div>
 
       <button
@@ -100,7 +114,7 @@ function BudgetItem({ product, shop, onProduct, onToggleFav, isFav, customImage 
 }
 
 export default function HomePage({ onShop, onProduct, favorites, onToggleFav, onSearchFocus }) {
-  const { getImg } = useCustomImages();
+  const { getImg, getItem } = useCustomImages();
   const [bannerIdx, setBannerIdx] = useState(0);
   const [activeCategory, setActiveCategory] = useState(null);
   const [selectedBrand, setSelectedBrand] = useState(null);
@@ -130,7 +144,8 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
     ? INITIAL_PRODUCTS.filter(p => p.category === activeCategory)
     : latestPhones;
 
-  const banner = BANNERS[bannerIdx];
+  const rawBanner = BANNERS[bannerIdx];
+  const banner = getItem(`banner_${rawBanner.id}`, rawBanner);
 
   /* Matching products for selected brand modal */
   const brandProducts = selectedBrand
@@ -313,7 +328,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
                 key={p.id}
                 product={p}
                 onProduct={onProduct}
-                customImage={getImg(`product_${p.id}`, p.image)}
+                customData={getItem(`product_${p.id}`)}
               />
             ))}
           </div>
@@ -370,7 +385,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
                       onProduct={onProduct}
                       onToggleFav={onToggleFav}
                       isFav={favorites.includes(p.id)}
-                      customImage={getImg(`product_${p.id}`, p.image)}
+                      customData={getItem(`product_${p.id}`)}
                     />
                   );
                 })}

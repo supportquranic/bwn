@@ -1,16 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  ArrowLeft, RotateCcw, Upload, Link as LinkIcon, Check, 
-  X, Info, Image as ImageIcon, Sparkles, ChevronRight, MapPin, 
-  Heart, Bot, Star, Lock, LogOut
+  ArrowLeft, RotateCcw, Upload, Check, X, 
+  Image as ImageIcon, ChevronRight, MapPin, 
+  Heart, Bot, Star, Lock, LogOut, Edit3, DollarSign, Tag, Type
 } from 'lucide-react';
 import { 
   BANNERS, CATEGORIES, USAGE_SECTIONS, BUDGET_SECTIONS, 
   BRANDS, LATEST_POSTERS, INITIAL_SHOPS, INITIAL_PRODUCTS 
 } from '../data/mockData';
-import { useCustomImages } from '../utils/imageStore';
+import { useCustomContent } from '../utils/imageStore';
 
-const fmt = n => 'Rs. ' + n.toLocaleString('en-PK');
+const fmt = n => {
+  const num = Number(n) || 0;
+  return 'Rs. ' + num.toLocaleString('en-PK');
+};
 
 /* 3D category fallback icons */
 const CAT_3D_ICONS = {
@@ -22,7 +25,7 @@ const CAT_3D_ICONS = {
   cables:     '/icons/categories/cables.png',
 };
 
-/* Brand logos */
+/* Clean brand logo marks */
 function BrandLogo({ id }) {
   const logos = {
     apple: (
@@ -40,40 +43,33 @@ function BrandLogo({ id }) {
 }
 
 /**
- * AdminImageWrapper
- * Measures its exact rendered width & height in pixels and shows them below the image.
- * Supports: Single Click, Long Press (500ms), and Right Click to change image.
+ * Stable Card Inspector Wrapper
+ * Fixes layout shaking by measuring once without feedback loop.
  */
-function AdminImageWrapper({ 
-  imageKey, 
-  label, 
-  currentSrc, 
-  aspectHint, 
-  onSelectForEdit, 
+function CardInspectorWrapper({
+  itemKey,
+  itemType = 'product', // 'product' | 'banner' | 'poster' | 'category' | 'shop'
+  cardData,
+  onEdit,
   children,
-  className = "" 
+  className = ""
 }) {
-  const containerRef = useRef(null);
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-  const timerRef = useRef(null);
+  const boxRef = useRef(null);
+  const [size, setSize] = useState({ w: 0, h: 0 });
+  const pressTimer = useRef(null);
 
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-
-    const measure = () => {
-      const rect = el.getBoundingClientRect();
-      setDimensions({
-        width: Math.round(rect.width),
-        height: Math.round(rect.height),
-      });
-    };
-
-    measure();
-
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
+    // Measure safely once after rendering without creating layout loops
+    const timer = setTimeout(() => {
+      if (boxRef.current) {
+        const w = Math.round(boxRef.current.offsetWidth);
+        const h = Math.round(boxRef.current.offsetHeight);
+        if (w > 0 && h > 0) {
+          setSize({ w, h });
+        }
+      }
+    }, 120);
+    return () => clearTimeout(timer);
   }, []);
 
   const triggerEdit = (e) => {
@@ -81,63 +77,61 @@ function AdminImageWrapper({
       e.preventDefault();
       e.stopPropagation();
     }
-    onSelectForEdit({
-      imageKey,
-      label,
-      currentSrc,
-      aspectHint,
-      width: dimensions.width,
-      height: dimensions.height,
+    onEdit({
+      itemKey,
+      itemType,
+      cardData,
+      width: size.w || boxRef.current?.offsetWidth || 0,
+      height: size.h || boxRef.current?.offsetHeight || 0,
     });
   };
 
   const handleTouchStart = () => {
-    timerRef.current = setTimeout(() => {
-      triggerEdit();
-    }, 450);
+    pressTimer.current = setTimeout(triggerEdit, 400);
   };
 
   const handleTouchEnd = () => {
-    if (timerRef.current) clearTimeout(timerRef.current);
+    if (pressTimer.current) clearTimeout(pressTimer.current);
   };
 
   const handleMouseDown = () => {
-    timerRef.current = setTimeout(() => {
-      triggerEdit();
-    }, 450);
+    pressTimer.current = setTimeout(triggerEdit, 400);
   };
 
   const handleMouseUp = () => {
-    if (timerRef.current) clearTimeout(timerRef.current);
+    if (pressTimer.current) clearTimeout(pressTimer.current);
   };
 
   return (
     <div className={`relative flex flex-col group ${className}`}>
-      {/* Target Container */}
+      {/* Clickable Card Body */}
       <div
-        ref={containerRef}
+        ref={boxRef}
         onClick={triggerEdit}
         onContextMenu={triggerEdit}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
-        className="relative cursor-pointer transition-all duration-150 hover:ring-2 hover:ring-[#4b47d9] hover:ring-offset-1 rounded-2xl select-none"
-        title="Click, Right-Click, or Long-Press to change image"
+        className="relative cursor-pointer hover:ring-2 hover:ring-[#4b47d9] rounded-2xl select-none"
+        title="Click, Right-Click, or Long-press to edit image, name, or price"
       >
         {children}
 
-        {/* Small Edit Badge */}
-        <div className="absolute top-1.5 left-1.5 z-20 bg-black/75 backdrop-blur-md text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-1 opacity-90 group-hover:opacity-100 shadow">
-          <span>✏️ Edit</span>
+        {/* Small Edit Pencil Pin */}
+        <div className="absolute top-1.5 left-1.5 z-20 bg-black/80 backdrop-blur-md text-white text-[9.5px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1 shadow pointer-events-none">
+          <Edit3 size={10} className="text-amber-300" />
+          <span>Edit</span>
         </div>
       </div>
 
-      {/* Dimension Label (Horizontal width & Vertical height in pixels) */}
-      <div className="mt-1 flex items-center justify-between text-[9.5px] font-semibold text-gray-600 bg-gray-100/90 border border-gray-200/80 rounded-md px-1.5 py-0.5 leading-tight">
-        <span className="text-black font-bold truncate max-w-[130px]">{label}</span>
+      {/* Stable Dimensions & Info Strip (No loop, fixed height) */}
+      <div className="mt-1 h-5 px-1.5 flex items-center justify-between text-[9.5px] font-semibold text-gray-600 bg-gray-100 rounded-md border border-gray-200 pointer-events-none select-none">
+        <span className="truncate text-black font-bold max-w-[130px]">
+          {cardData?.name || cardData?.title || cardData?.label || itemKey}
+        </span>
         <span className="font-mono text-[#4b47d9] font-bold whitespace-nowrap ml-1">
-          ↔ {dimensions.width}px × ↕ {dimensions.height}px
+          {size.w > 0 ? `↔ ${size.w}px × ↕ ${size.h}px` : '📏 Ready'}
         </span>
       </div>
     </div>
@@ -145,11 +139,17 @@ function AdminImageWrapper({
 }
 
 /**
- * Image Edit Modal
+ * Full Card Editor Modal (Image + Title + Price + Badge/Condition)
  */
-function ImageEditModal({ target, onClose, onSave, onReset }) {
-  const [urlInput, setUrlInput] = useState(target?.currentSrc || '');
-  const [previewSrc, setPreviewSrc] = useState(target?.currentSrc || '');
+function CardEditorModal({ target, onClose, onSave, onReset }) {
+  const { cardData, itemKey, itemType, width, height } = target || {};
+
+  const [imageUrl, setImageUrl] = useState(cardData?.image || '');
+  const [imagePreview, setImagePreview] = useState(cardData?.image || '');
+  const [name, setName] = useState(cardData?.name || cardData?.title || cardData?.label || '');
+  const [price, setPrice] = useState(cardData?.price !== undefined ? String(cardData.price) : '');
+  const [badge, setBadge] = useState(cardData?.badge || cardData?.tag || '');
+  const [subtitle, setSubtitle] = useState(cardData?.subtitle || '');
   const [isDataUrl, setIsDataUrl] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -160,44 +160,66 @@ function ImageEditModal({ target, onClose, onSave, onReset }) {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      alert('Please select a valid image file');
+      alert('Please select an image file');
       return;
     }
 
     const reader = new FileReader();
     reader.onload = (event) => {
-      const result = event.target?.result;
-      if (typeof result === 'string') {
-        setPreviewSrc(result);
-        setUrlInput('');
+      const res = event.target?.result;
+      if (typeof res === 'string') {
+        setImagePreview(res);
+        setImageUrl('');
         setIsDataUrl(true);
       }
     };
     reader.readAsDataURL(file);
   };
 
-  const handleUrlChange = (val) => {
-    setUrlInput(val);
-    setPreviewSrc(val);
-    setIsDataUrl(false);
-  };
+  const handleSave = () => {
+    const updated = {};
 
-  const handleApply = () => {
-    const finalVal = isDataUrl ? previewSrc : (urlInput.trim() || previewSrc);
-    if (!finalVal) {
-      alert('Please provide an image URL or choose a file.');
-      return;
+    // 1. Image
+    const finalImg = isDataUrl ? imagePreview : (imageUrl.trim() || imagePreview);
+    if (finalImg) {
+      updated.image = finalImg;
     }
-    onSave(target.imageKey, finalVal);
+
+    // 2. Name / Title / Label
+    if (itemType === 'product' || itemType === 'shop') {
+      updated.name = name.trim();
+    } else if (itemType === 'banner') {
+      updated.title = name.trim();
+      updated.subtitle = subtitle.trim();
+      updated.tag = badge.trim();
+    } else if (itemType === 'category') {
+      updated.label = name.trim();
+    }
+
+    // 3. Price
+    if (itemType === 'product') {
+      const cleanPrice = Number(price.replace(/[^0-9]/g, ''));
+      if (!isNaN(cleanPrice) && cleanPrice > 0) {
+        updated.price = cleanPrice;
+      }
+      if (badge) {
+        updated.badge = badge.trim();
+      }
+    }
+
+    onSave(itemKey, updated);
     onClose();
   };
 
   const handleReset = () => {
-    if (confirm('Reset this image to default original?')) {
-      onReset(target.imageKey);
+    if (confirm('Reset this card to its original default values?')) {
+      onReset(itemKey);
       onClose();
     }
   };
+
+  const isProduct = itemType === 'product';
+  const isBanner = itemType === 'banner';
 
   return (
     <div 
@@ -205,105 +227,160 @@ function ImageEditModal({ target, onClose, onSave, onReset }) {
       onClick={onClose}
     >
       <div 
-        className="w-full max-w-md bg-white rounded-t-3xl sm:rounded-3xl max-h-[90vh] overflow-y-auto p-5 shadow-2xl flex flex-col gap-4 animate-in fade-in slide-in-from-bottom duration-200"
+        className="w-full max-w-md bg-white rounded-t-3xl sm:rounded-3xl max-h-[92vh] overflow-y-auto p-5 shadow-2xl flex flex-col gap-4 animate-in fade-in slide-in-from-bottom duration-200 text-black font-sans"
         onClick={e => e.stopPropagation()}
       >
-        {/* Modal Header */}
+        {/* Header */}
         <div className="flex items-start justify-between border-b border-gray-100 pb-3">
           <div>
-            <h3 className="text-base font-black text-black">Change Image</h3>
-            <p className="text-xs text-black/50 mt-0.5">{target.label}</p>
+            <h3 className="text-base font-black text-black">Edit Card Content</h3>
+            <p className="text-xs text-black/50 mt-0.5">Update image, text, and pricing</p>
           </div>
           <button 
             onClick={onClose} 
-            className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:text-black"
+            className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:text-black active:scale-90"
           >
             <X size={16} />
           </button>
         </div>
 
         {/* Pixel Dimensions Banner */}
-        <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-3 flex items-center justify-between text-xs">
-          <div>
-            <span className="font-bold text-[#4b47d9] block">Card / Image Dimensions</span>
-            <span className="text-black/60 text-[11px]">Rendered on current screen</span>
-          </div>
-          <div className="text-right font-mono font-bold text-[#4b47d9]">
-            <div>Horizontal (Width): {target.width} px</div>
-            <div>Vertical (Height): {target.height} px</div>
-          </div>
+        <div className="bg-indigo-50 border border-indigo-100 rounded-xl px-3 py-2 flex items-center justify-between text-xs">
+          <span className="font-bold text-[#4b47d9]">Card Dimensions</span>
+          <span className="font-mono font-bold text-[#4b47d9]">
+            ↔ {width}px × ↕ {height}px
+          </span>
         </div>
 
-        {/* Image Preview */}
+        {/* Image Preview & Upload */}
         <div>
-          <label className="block text-xs font-bold text-gray-700 mb-1.5">Live Preview</label>
-          <div className="w-full h-44 rounded-2xl border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center relative">
-            {previewSrc ? (
+          <label className="block text-xs font-bold text-gray-700 mb-1">Image Preview</label>
+          <div className="w-full h-36 rounded-2xl border border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center relative">
+            {imagePreview ? (
               <img 
-                src={previewSrc} 
+                src={imagePreview} 
                 alt="Preview" 
-                className="w-full h-full object-contain"
-                onError={() => alert('Could not load image. Check the URL.')}
+                className="w-full h-full object-contain p-2"
+                onError={() => alert('Could not load image URL')}
               />
             ) : (
               <div className="text-gray-400 text-xs flex flex-col items-center gap-1">
-                <ImageIcon size={28} />
-                <span>No image selected</span>
+                <ImageIcon size={24} />
+                <span>No Image Selected</span>
               </div>
             )}
           </div>
-        </div>
 
-        {/* Option 1: Upload from Device */}
-        <div>
-          <label className="block text-xs font-bold text-gray-700 mb-1.5">Option 1: Upload from Phone / PC</label>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            accept="image/*"
-            className="hidden"
-          />
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="w-full py-2.5 px-4 bg-gray-100 hover:bg-gray-200 text-black text-xs font-bold rounded-xl border border-gray-300 border-dashed flex items-center justify-center gap-2 active:scale-95 transition-transform"
-          >
-            <Upload size={15} />
-            <span>Select Image File from Device</span>
-          </button>
-          {isDataUrl && (
-            <p className="text-[10px] text-green-600 font-bold mt-1 text-center">✓ Device image loaded into preview</p>
-          )}
-        </div>
-
-        {/* Option 2: Image Web URL */}
-        <div>
-          <label className="block text-xs font-bold text-gray-700 mb-1.5">Option 2: Or Paste Image Web URL</label>
-          <div className="flex items-center gap-2">
-            <div className="flex-1 relative">
-              <input
-                type="url"
-                placeholder="https://..."
-                value={urlInput}
-                onChange={e => handleUrlChange(e.target.value)}
-                className="w-full text-xs font-medium bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-black placeholder:text-gray-400 focus:outline-none focus:border-[#4b47d9]"
-              />
-            </div>
-            {urlInput && (
-              <button 
-                type="button" 
-                onClick={() => handleUrlChange('')}
-                className="text-gray-400 hover:text-black p-1"
-              >
-                <X size={14} />
-              </button>
-            )}
+          <div className="mt-2 flex gap-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept="image/*"
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex-1 py-2 px-3 bg-gray-100 hover:bg-gray-200 text-black text-xs font-bold rounded-xl border border-gray-300 border-dashed flex items-center justify-center gap-1.5 active:scale-95"
+            >
+              <Upload size={14} />
+              <span>Upload Photo</span>
+            </button>
+          </div>
+          
+          <div className="mt-2">
+            <input
+              type="url"
+              placeholder="Or paste image web link..."
+              value={imageUrl}
+              onChange={e => {
+                setImageUrl(e.target.value);
+                setImagePreview(e.target.value);
+                setIsDataUrl(false);
+              }}
+              className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-black focus:outline-none focus:border-[#4b47d9]"
+            />
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
+        {/* Name / Title Field */}
+        <div>
+          <label className="block text-xs font-bold text-gray-700 mb-1 flex items-center gap-1">
+            <Type size={12} className="text-[#4b47d9]" />
+            <span>Card Title / Name</span>
+          </label>
+          <input
+            type="text"
+            placeholder="e.g. Apple iPhone 15 Pro 128GB"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            className="w-full text-xs font-bold bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-black focus:outline-none focus:border-[#4b47d9]"
+          />
+        </div>
+
+        {/* Product Specific: Price & Badge */}
+        {isProduct && (
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1 flex items-center gap-1">
+                <DollarSign size={12} className="text-emerald-600" />
+                <span>Price (PKR)</span>
+              </label>
+              <input
+                type="number"
+                placeholder="365000"
+                value={price}
+                onChange={e => setPrice(e.target.value)}
+                className="w-full text-xs font-bold bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-black focus:outline-none focus:border-[#4b47d9]"
+              />
+              <span className="text-[10px] text-black/50 mt-0.5 block">{fmt(price)}</span>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1 flex items-center gap-1">
+                <Tag size={12} className="text-indigo-600" />
+                <span>Condition / Badge</span>
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Box Pack / Used"
+                value={badge}
+                onChange={e => setBadge(e.target.value)}
+                className="w-full text-xs font-semibold bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-black focus:outline-none focus:border-[#4b47d9]"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Banner Specific: Subtitle & Tag */}
+        {isBanner && (
+          <div className="flex flex-col gap-2.5">
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1">Subtitle</label>
+              <input
+                type="text"
+                placeholder="e.g. Now available at Suleman Hub"
+                value={subtitle}
+                onChange={e => setSubtitle(e.target.value)}
+                className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-black focus:outline-none focus:border-[#4b47d9]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1">Tag</label>
+              <input
+                type="text"
+                placeholder="e.g. New Arrival"
+                value={badge}
+                onChange={e => setBadge(e.target.value)}
+                className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-black focus:outline-none focus:border-[#4b47d9]"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
           <button
             type="button"
             onClick={handleReset}
@@ -313,11 +390,11 @@ function ImageEditModal({ target, onClose, onSave, onReset }) {
           </button>
           <button
             type="button"
-            onClick={handleApply}
+            onClick={handleSave}
             className="flex-2 py-2.5 px-4 bg-[#4b47d9] text-white text-xs font-bold rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-1.5 shadow"
           >
             <Check size={14} />
-            <span>Apply Changes</span>
+            <span>Save & Apply</span>
           </button>
         </div>
       </div>
@@ -327,12 +404,13 @@ function ImageEditModal({ target, onClose, onSave, onReset }) {
 
 /**
  * Main AdminVisualEditor
- * Clones the HomePage layout with pixel inspectors and image editor modal.
  */
 export default function AdminVisualEditor({ onExit }) {
-  const { overrides, getImg, setImage, resetImage, resetAllImages } = useCustomImages();
-  const [activeModalTarget, setActiveModalTarget] = useState(null);
+  const { getItem, setItemData, resetItem, resetAllContent } = useCustomContent();
+  const [modalTarget, setModalTarget] = useState(null);
   const [bannerIdx, setBannerIdx] = useState(0);
+
+  // Authentication Gate (Password 3344)
   const [isAuthed, setIsAuthed] = useState(() => sessionStorage.getItem('bm_admin_authed') === 'true');
   const [passInput, setPassInput] = useState('');
   const [passError, setPassError] = useState('');
@@ -363,7 +441,7 @@ export default function AdminVisualEditor({ onExit }) {
           </div>
           <h2 className="text-xl font-black tracking-tight text-white">Admin Studio</h2>
           <p className="text-xs text-indigo-200/70 mt-1 mb-5">
-            Enter the admin password to manage and change images.
+            Enter the admin password to edit images, names, and prices.
           </p>
 
           <form onSubmit={handleUnlock} className="w-full flex flex-col gap-3">
@@ -401,23 +479,20 @@ export default function AdminVisualEditor({ onExit }) {
     );
   }
 
-  const banner = BANNERS[bannerIdx];
+  const rawBanner = BANNERS[bannerIdx];
+  const activeBanner = getItem(`banner_${rawBanner.id}`, rawBanner);
   const latestPhones = INITIAL_PRODUCTS.filter(p => p.category === 'iphone' || p.category === 'android');
 
-  const handleSave = (key, val) => {
-    setImage(key, val);
-  };
-
   const handleResetAll = () => {
-    if (confirm('Reset ALL custom images across the entire website back to original defaults?')) {
-      resetAllImages();
+    if (confirm('Reset ALL custom images, names, and prices back to original defaults?')) {
+      resetAllContent();
     }
   };
 
   return (
     <div className="h-full flex flex-col bg-white overflow-hidden text-black font-sans relative">
       {/* ── Admin Top Bar Banner ── */}
-      <div className="bg-[#1f1d4f] text-white px-4 py-2.5 flex items-center justify-between z-40 border-b border-indigo-900 shadow-md">
+      <div className="bg-[#1f1d4f] text-white px-4 py-2.5 flex items-center justify-between z-40 border-b border-indigo-900 shadow-md flex-shrink-0">
         <div className="flex items-center gap-2">
           <button
             onClick={onExit}
@@ -428,18 +503,18 @@ export default function AdminVisualEditor({ onExit }) {
           </button>
           <div>
             <h1 className="text-xs font-black flex items-center gap-1.5">
-              <span>Admin Studio: Live Image Editor</span>
+              <span>Admin Studio: Live Content Editor</span>
               <span className="bg-amber-400 text-black text-[9px] font-black px-1.5 py-0.2 rounded-full">ADMIN</span>
             </h1>
-            <p className="text-[10px] text-white/70">Tap, Right-Click, or Long-press any card to change its image</p>
+            <p className="text-[10px] text-white/70">Click or long-press any card to edit its image, name, or price</p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={handleResetAll}
-            className="text-[10px] font-bold bg-white/10 hover:bg-red-500/80 px-2.5 py-1 rounded-lg flex items-center gap-1 transition-colors"
-            title="Reset all image overrides"
+            className="text-[10px] font-bold bg-white/10 hover:bg-red-500/80 px-2 py-1 rounded-lg flex items-center gap-1 transition-colors"
+            title="Reset all overrides"
           >
             <RotateCcw size={11} />
             <span>Reset All</span>
@@ -455,7 +530,7 @@ export default function AdminVisualEditor({ onExit }) {
         </div>
       </div>
 
-      {/* ── Scrollable Exact Clone of HomePage with Inspectors ── */}
+      {/* ── Scrollable UI Clone ── */}
       <div className="flex-1 overflow-y-auto hide-scrollbar gradient-bg-top-light pb-24">
         
         {/* Sticky Top Bar Mock */}
@@ -486,35 +561,33 @@ export default function AdminVisualEditor({ onExit }) {
           <div className="relative py-1 flex items-center justify-between min-h-[116px]">
             <div className="flex-1 pr-2 z-10">
               <span className="inline-block bg-white/20 text-white backdrop-blur-md border border-white/25 px-2.5 py-0.5 rounded-full text-[10.5px] font-bold mb-1.5">
-                {banner.tag}
+                {activeBanner.tag}
               </span>
               <h2 className="text-white text-xl font-black leading-tight tracking-tight">
-                {banner.title}
+                {activeBanner.title}
               </h2>
               <p className="text-white/85 text-xs font-medium mt-1 leading-snug line-clamp-1">
-                {banner.subtitle}
+                {activeBanner.subtitle}
               </p>
             </div>
             
-            {/* Banner Image with Inspector */}
-            <AdminImageWrapper
-              imageKey={`banner_${banner.id}`}
-              label={`Hero Banner ${bannerIdx + 1}`}
-              currentSrc={getImg(`banner_${banner.id}`, banner.image)}
-              onSelectForEdit={setActiveModalTarget}
+            <CardInspectorWrapper
+              itemKey={`banner_${rawBanner.id}`}
+              itemType="banner"
+              cardData={activeBanner}
+              onEdit={setModalTarget}
               className="flex-shrink-0"
             >
               <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-white/40 bg-white/10">
                 <img
-                  src={getImg(`banner_${banner.id}`, banner.image)}
+                  src={activeBanner.image}
                   alt="Banner"
                   className="w-full h-full object-cover"
                 />
               </div>
-            </AdminImageWrapper>
+            </CardInspectorWrapper>
           </div>
 
-          {/* Dots Indicator */}
           <div className="flex justify-center items-center gap-1.5 pt-2 pb-0.5">
             {BANNERS.map((_, i) => (
               <button
@@ -539,121 +612,115 @@ export default function AdminVisualEditor({ onExit }) {
             </div>
           </div>
 
-          {/* ── 3D Categories with Dimensions ── */}
+          {/* ── 3D Categories ── */}
           <div className="mt-4 px-4">
-            <div className="flex items-center justify-between mb-2.5">
-              <h2 className="text-sm font-black text-black tracking-tight">Browse Categories (3D Icons)</h2>
-            </div>
+            <h2 className="text-sm font-black text-black tracking-tight mb-2.5">Browse Categories (3D Icons)</h2>
             <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-2">
               {CATEGORIES.filter(cat => CAT_3D_ICONS[cat.id]).map(cat => {
                 const defaultIcon = CAT_3D_ICONS[cat.id];
-                const activeSrc = getImg(`cat_${cat.id}`, defaultIcon);
+                const activeCat = getItem(`cat_${cat.id}`, { ...cat, image: defaultIcon });
                 return (
                   <div key={cat.id} className="flex-shrink-0 flex flex-col items-center">
-                    <AdminImageWrapper
-                      imageKey={`cat_${cat.id}`}
-                      label={cat.label}
-                      currentSrc={activeSrc}
-                      onSelectForEdit={setActiveModalTarget}
+                    <CardInspectorWrapper
+                      itemKey={`cat_${cat.id}`}
+                      itemType="category"
+                      cardData={activeCat}
+                      onEdit={setModalTarget}
                     >
                       <div className="w-14 h-14 flex items-center justify-center p-1 bg-gray-50/60 rounded-xl">
                         <img
-                          src={activeSrc}
-                          alt={cat.label}
+                          src={activeCat.image}
+                          alt={activeCat.label}
                           className="w-12 h-12 object-contain"
                         />
                       </div>
-                    </AdminImageWrapper>
-                    <span className="text-[11px] font-semibold text-black/70 mt-1">{cat.label}</span>
+                    </CardInspectorWrapper>
+                    <span className="text-[11px] font-semibold text-black/70 mt-1">{activeCat.label}</span>
                   </div>
                 );
               })}
             </div>
           </div>
 
-          {/* ── Latest Models Posters with Dimensions ── */}
+          {/* ── Latest Models Posters ── */}
           <div className="mt-6">
-            <div className="px-4 flex items-center justify-between mb-3">
-              <div>
-                <h2 className="text-base font-black text-black tracking-tight">Latest Models Posters</h2>
-                <p className="text-xs text-black/40">Horizontal poster cards with rendered pixel size</p>
-              </div>
+            <div className="px-4 mb-3">
+              <h2 className="text-base font-black text-black tracking-tight">Latest Models Posters</h2>
+              <p className="text-xs text-black/40">Landscape marketing poster cards</p>
             </div>
 
             <div className="flex gap-3 overflow-x-auto hide-scrollbar pl-4 pr-4 pb-2 snap-x snap-mandatory scroll-pl-4">
               {LATEST_POSTERS.map((poster, index) => {
-                const currentImg = getImg(`poster_${poster.id}`, poster.image);
+                const activePoster = getItem(`poster_${poster.id}`, { ...poster, name: `Poster #${index + 1}` });
                 return (
                   <div key={poster.id} className="flex-shrink-0 snap-start" style={{ width: '82%', maxWidth: '340px' }}>
-                    <AdminImageWrapper
-                      imageKey={`poster_${poster.id}`}
-                      label={`Poster #${index + 1}`}
-                      currentSrc={currentImg}
-                      aspectHint="16:7"
-                      onSelectForEdit={setActiveModalTarget}
+                    <CardInspectorWrapper
+                      itemKey={`poster_${poster.id}`}
+                      itemType="poster"
+                      cardData={activePoster}
+                      onEdit={setModalTarget}
                     >
                       <div className="rounded-2xl overflow-hidden border border-gray-200">
                         <img
-                          src={currentImg}
+                          src={activePoster.image}
                           alt={`Poster ${index + 1}`}
                           className="w-full h-full object-cover block"
                           style={{ aspectRatio: '16/7' }}
                         />
                       </div>
-                    </AdminImageWrapper>
+                    </CardInspectorWrapper>
                   </div>
                 );
               })}
             </div>
           </div>
 
-          {/* ── Featured & Unique 2x3 Phones Grid with Dimensions ── */}
+          {/* ── Featured & Unique 2x3 Phones Grid (Editable Image, Name, Price, Badge) ── */}
           <div className="mt-6">
-            <div className="px-4 flex items-center justify-between mb-3">
-              <div>
-                <h2 className="text-base font-bold text-black">Featured & Unique (2×3 Grid)</h2>
-                <p className="text-xs text-black/40">Compact mobile phone cards</p>
-              </div>
+            <div className="px-4 mb-3">
+              <h2 className="text-base font-bold text-black">Featured & Unique (2×3 Grid)</h2>
+              <p className="text-xs text-black/40">Click any card to edit its photo, name, or price</p>
             </div>
 
             <div className="grid grid-cols-2 gap-2.5 px-4">
               {latestPhones.slice(0, 6).map(product => {
-                const currentImg = getImg(`product_${product.id}`, product.image);
-                const badge = product.condition === 'used' ? 'Used' : 'Box Pack';
+                const activeProduct = getItem(`product_${product.id}`, product);
+                const badgeText = activeProduct.badge || (activeProduct.condition === 'used' ? 'Used' : 'Box Pack');
+
                 return (
-                  <div key={product.id} className="bg-white rounded-2xl border border-gray-200 p-2.5 flex flex-col">
-                    <span className="inline-block bg-gray-100 text-gray-500 text-[10px] font-medium px-2 py-0.5 rounded-full mb-1 self-start">
-                      {badge}
-                    </span>
-                    
-                    <AdminImageWrapper
-                      imageKey={`product_${product.id}`}
-                      label={product.name}
-                      currentSrc={currentImg}
-                      onSelectForEdit={setActiveModalTarget}
-                      className="my-1"
-                    >
-                      <div className="h-28 w-full flex items-center justify-center p-1 bg-gray-50/50 rounded-xl">
+                  <CardInspectorWrapper
+                    key={product.id}
+                    itemKey={`product_${product.id}`}
+                    itemType="product"
+                    cardData={activeProduct}
+                    onEdit={setModalTarget}
+                  >
+                    <div className="bg-white rounded-2xl border border-gray-200 p-2.5 flex flex-col h-full">
+                      <span className="inline-block bg-gray-100 text-gray-500 text-[10px] font-medium px-2 py-0.5 rounded-full mb-1 self-start">
+                        {badgeText}
+                      </span>
+                      
+                      <div className="h-28 w-full flex items-center justify-center p-1 bg-gray-50/50 rounded-xl my-1">
                         <img
-                          src={currentImg}
-                          alt={product.name}
+                          src={activeProduct.image}
+                          alt={activeProduct.name}
                           className="max-h-full max-w-full object-contain"
                         />
                       </div>
-                    </AdminImageWrapper>
 
-                    <p className="text-xs font-bold text-black leading-tight line-clamp-1 mt-1">{product.name}</p>
-                    <div className="flex items-center justify-between gap-1 mt-2">
-                      <span className="text-xs font-bold text-[#4b47d9]">{fmt(product.price)}</span>
-                      <span className="bg-black text-white text-[9px] font-bold px-2 py-0.5 rounded-full">Buy now</span>
+                      <p className="text-xs font-bold text-black leading-tight line-clamp-2 mt-1">{activeProduct.name}</p>
+                      <div className="flex items-center justify-between gap-1 mt-auto pt-2">
+                        <span className="text-xs font-bold text-[#4b47d9]">{fmt(activeProduct.price)}</span>
+                        <span className="bg-black text-white text-[9px] font-bold px-2 py-0.5 rounded-full">Buy now</span>
+                      </div>
                     </div>
-                  </div>
+                  </CardInspectorWrapper>
                 );
               })}
             </div>
           </div>
 
-          {/* ── Budget Sections with Dimensions ── */}
+          {/* ── Budget Sections ── */}
           {BUDGET_SECTIONS.map(sec => {
             let items = sec.used
               ? INITIAL_PRODUCTS.filter(p => p.condition === 'used')
@@ -669,27 +736,27 @@ export default function AdminVisualEditor({ onExit }) {
                 <div className="px-4 flex flex-col gap-2.5">
                   {items.map(p => {
                     const shop = INITIAL_SHOPS.find(s => s.id === p.shopId);
-                    const currentImg = getImg(`product_${p.id}`, p.image);
+                    const activeP = getItem(`product_${p.id}`, p);
                     return (
-                      <div key={p.id} className="flex items-center gap-3 p-3 bg-white rounded-2xl border border-gray-200">
-                        <AdminImageWrapper
-                          imageKey={`product_${p.id}`}
-                          label={p.name}
-                          currentSrc={currentImg}
-                          onSelectForEdit={setActiveModalTarget}
-                          className="flex-shrink-0"
-                        >
-                          <div className="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden">
-                            <img src={currentImg} alt={p.name} className="w-full h-full object-contain" />
+                      <CardInspectorWrapper
+                        key={p.id}
+                        itemKey={`product_${p.id}`}
+                        itemType="product"
+                        cardData={activeP}
+                        onEdit={setModalTarget}
+                      >
+                        <div className="flex items-center gap-3 p-3 bg-white rounded-2xl border border-gray-200">
+                          <div className="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+                            <img src={activeP.image} alt={activeP.name} className="w-full h-full object-contain" />
                           </div>
-                        </AdminImageWrapper>
 
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-black leading-tight line-clamp-1">{p.name}</p>
-                          <p className="text-[11px] text-black/40 mt-0.5 truncate">{shop?.name}</p>
-                          <p className="text-sm font-bold text-[#4b47d9] mt-0.5">{fmt(p.price)}</p>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-black leading-tight line-clamp-1">{activeP.name}</p>
+                            <p className="text-[11px] text-black/40 mt-0.5 truncate">{shop?.name}</p>
+                            <p className="text-sm font-bold text-[#4b47d9] mt-0.5">{fmt(activeP.price)}</p>
+                          </div>
                         </div>
-                      </div>
+                      </CardInspectorWrapper>
                     );
                   })}
                 </div>
@@ -697,7 +764,7 @@ export default function AdminVisualEditor({ onExit }) {
             );
           })}
 
-          {/* ── Based on Usage Shops with Dimensions ── */}
+          {/* ── Based on Usage Shop Covers ── */}
           <div className="mt-6">
             <div className="px-4 mb-2">
               <h2 className="text-base font-bold text-black">Based on Usage (Shop Covers)</h2>
@@ -705,28 +772,30 @@ export default function AdminVisualEditor({ onExit }) {
             <div className="flex gap-3 overflow-x-auto hide-scrollbar pl-4 pr-4 pb-2 snap-x snap-mandatory scroll-pl-4">
               {USAGE_SECTIONS.slice(0, 2).map((sec, idx) => {
                 const shop = INITIAL_SHOPS[idx % INITIAL_SHOPS.length];
-                const coverImg = getImg(`shop_${shop.id}_cover`, shop.coverImage);
+                const activeShop = getItem(`shop_${shop.id}_cover`, { ...shop, image: shop.coverImage });
                 return (
-                  <div key={sec.id} className="flex-shrink-0 snap-start bg-white rounded-3xl border border-gray-200 overflow-hidden" style={{ width: 'calc(100vw - 60px)', maxWidth: '340px' }}>
-                    <AdminImageWrapper
-                      imageKey={`shop_${shop.id}_cover`}
-                      label={`${shop.name} Cover`}
-                      currentSrc={coverImg}
-                      onSelectForEdit={setActiveModalTarget}
+                  <div key={sec.id} className="flex-shrink-0 snap-start" style={{ width: 'calc(100vw - 60px)', maxWidth: '340px' }}>
+                    <CardInspectorWrapper
+                      itemKey={`shop_${shop.id}_cover`}
+                      itemType="shop"
+                      cardData={activeShop}
+                      onEdit={setModalTarget}
                     >
-                      <div className="relative h-32 w-full overflow-hidden bg-gray-100">
-                        <img src={coverImg} alt={shop.name} className="w-full h-full object-cover" />
-                        <div className="absolute top-2.5 left-2.5">
-                          <span className="bg-white/20 text-white backdrop-blur-md border border-white/30 text-[11px] font-bold px-2.5 py-1 rounded-full">
-                            {sec.label}
-                          </span>
+                      <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden">
+                        <div className="relative h-32 w-full overflow-hidden bg-gray-100">
+                          <img src={activeShop.image} alt={activeShop.name} className="w-full h-full object-cover" />
+                          <div className="absolute top-2.5 left-2.5">
+                            <span className="bg-white/20 text-white backdrop-blur-md border border-white/30 text-[11px] font-bold px-2.5 py-1 rounded-full">
+                              {sec.label}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="p-3">
+                          <h3 className="text-sm font-black text-black truncate">{activeShop.name}</h3>
+                          <p className="text-xs text-black/40">{activeShop.address}</p>
                         </div>
                       </div>
-                    </AdminImageWrapper>
-                    <div className="p-3">
-                      <h3 className="text-sm font-black text-black truncate">{shop.name}</h3>
-                      <p className="text-xs text-black/40">{shop.address}</p>
-                    </div>
+                    </CardInspectorWrapper>
                   </div>
                 );
               })}
@@ -740,25 +809,25 @@ export default function AdminVisualEditor({ onExit }) {
             </div>
             <div className="px-4 flex flex-col gap-3">
               {INITIAL_SHOPS.slice(0, 2).map(shop => {
-                const logoImg = getImg(`shop_${shop.id}_logo`, shop.logo);
+                const activeShop = getItem(`shop_${shop.id}_logo`, { ...shop, image: shop.logo });
                 return (
-                  <div key={shop.id} className="flex gap-3 items-center bg-white rounded-2xl border border-gray-200 p-3">
-                    <AdminImageWrapper
-                      imageKey={`shop_${shop.id}_logo`}
-                      label={`${shop.name} Logo`}
-                      currentSrc={logoImg}
-                      onSelectForEdit={setActiveModalTarget}
-                      className="flex-shrink-0"
-                    >
-                      <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-100">
-                        <img src={logoImg} alt={shop.name} className="w-full h-full object-cover" />
+                  <CardInspectorWrapper
+                    key={shop.id}
+                    itemKey={`shop_${shop.id}_logo`}
+                    itemType="shop"
+                    cardData={activeShop}
+                    onEdit={setModalTarget}
+                  >
+                    <div className="flex gap-3 items-center bg-white rounded-2xl border border-gray-200 p-3">
+                      <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+                        <img src={activeShop.image} alt={activeShop.name} className="w-full h-full object-cover" />
                       </div>
-                    </AdminImageWrapper>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-black truncate">{shop.name}</p>
-                      <p className="text-[11px] text-black/40 truncate">{shop.address}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-black truncate">{activeShop.name}</p>
+                        <p className="text-[11px] text-black/40 truncate">{activeShop.address}</p>
+                      </div>
                     </div>
-                  </div>
+                  </CardInspectorWrapper>
                 );
               })}
             </div>
@@ -767,13 +836,13 @@ export default function AdminVisualEditor({ onExit }) {
         </div>
       </div>
 
-      {/* ── Image Replacement Modal ── */}
-      {activeModalTarget && (
-        <ImageEditModal
-          target={activeModalTarget}
-          onClose={() => setActiveModalTarget(null)}
-          onSave={handleSave}
-          onReset={resetImage}
+      {/* ── Card Content Editor Modal ── */}
+      {modalTarget && (
+        <CardEditorModal
+          target={modalTarget}
+          onClose={() => setModalTarget(null)}
+          onSave={setItemData}
+          onReset={resetItem}
         />
       )}
     </div>
