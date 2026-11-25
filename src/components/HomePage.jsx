@@ -278,7 +278,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
             {LATEST_POSTERS.map(poster => (
               <div
                 key={poster.id}
-                className="flex-shrink-0 snap-start rounded-2xl overflow-hidden cursor-pointer active:scale-[0.99] transition-all"
+                className="flex-shrink-0 snap-start rounded-2xl overflow-hidden cursor-pointer active:scale-[0.99] transition-all border border-gray-200"
                 style={{ width: '82%', maxWidth: '340px' }}
               >
                 <img
