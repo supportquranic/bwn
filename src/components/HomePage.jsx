@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { MapPin, Bot, Search, Heart, Star, ChevronRight, X } from 'lucide-react';
+import { MapPin, Bot, Search, Heart, Star, ChevronRight, ChevronDown, ChevronUp, SlidersHorizontal, X } from 'lucide-react';
 import { BANNERS, CATEGORIES, USAGE_SECTIONS, BRANDS, LATEST_POSTERS, INITIAL_SHOPS, INITIAL_PRODUCTS } from '../data/mockData';
 import { useCustomImages } from '../utils/imageStore';
 
@@ -65,7 +65,7 @@ function ProductCard({ product, onProduct, customData }) {
         <div className="flex items-center justify-between gap-1 mt-auto">
           <span className="text-xs font-bold text-[#4b47d9]">{fmt(finalProduct.price)}</span>
           <button
-            className="flex-shrink-0 bg-black text-white text-[10px] font-bold px-2.5 py-1 rounded-full active:scale-95 transition-transform"
+            className="flex-shrink-0 bg-[#4b47d9] hover:bg-[#3d39c6] text-white text-[10px] font-bold px-2.5 py-1 rounded-full active:scale-95 transition-transform shadow-xs"
             onClick={e => { e.stopPropagation(); onProduct(product.id); }}
           >
             Buy now
@@ -117,6 +117,8 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
   const [activeCategory, setActiveCategory] = useState(null);
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [isDocked, setIsDocked] = useState(false);
+  const [showAllUnder1Lakh, setShowAllUnder1Lakh] = useState(false);
+  const [showAllUnder60k, setShowAllUnder60k] = useState(false);
   const scrollRef = useRef(null);
   const sheetRef = useRef(null);
 
@@ -156,37 +158,61 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
   const handleTouchMove = (e) => {
     const currentY = e.touches[0].clientY;
     const diff = currentY - touchStartY.current;
+    const el = scrollRef.current;
 
     // Swiping up when banner is expanded -> dock
     if (!isDocked && diff < -20) {
       setIsDocked(true);
-      triggerSheetBounce(-6);
+      triggerSheetBounce(-7);
     }
-    // Pulling down when at top of sheet -> expand
-    else if (isDocked && (scrollRef.current?.scrollTop || 0) <= 0 && diff > 40) {
+    // Pulling down when at top of sheet -> expand banner
+    else if (isDocked && (el?.scrollTop || 0) <= 0 && diff > 40) {
       setIsDocked(false);
-      triggerSheetBounce(6);
+      triggerSheetBounce(7);
+    }
+    // Pulling down when at top of content -> elastic downward bounce on white sheet
+    else if ((el?.scrollTop || 0) <= 0 && diff > 15) {
+      triggerSheetBounce(Math.min(10, diff * 0.3));
+    }
+    // Pulling up when at bottom of content -> elastic upward bounce on white sheet
+    else if (el && el.scrollTop + el.clientHeight >= el.scrollHeight - 3 && diff < -15) {
+      triggerSheetBounce(Math.max(-10, diff * 0.3));
     }
   };
 
   const handleWheel = (e) => {
+    const el = scrollRef.current;
     if (!isDocked && e.deltaY > 15) {
       setIsDocked(true);
-      triggerSheetBounce(-6);
-    } else if (isDocked && (scrollRef.current?.scrollTop || 0) <= 0 && e.deltaY < -20) {
+      triggerSheetBounce(-7);
+    } else if (isDocked && (el?.scrollTop || 0) <= 0 && e.deltaY < -20) {
       setIsDocked(false);
-      triggerSheetBounce(6);
+      triggerSheetBounce(7);
+    } else if ((el?.scrollTop || 0) <= 0 && e.deltaY < -5) {
+      triggerSheetBounce(7);
+    } else if (el && el.scrollTop + el.clientHeight >= el.scrollHeight - 3 && e.deltaY > 5) {
+      triggerSheetBounce(-7);
     }
   };
 
   const handleSheetScroll = (e) => {
-    const st = e.currentTarget.scrollTop;
+    const el = e.currentTarget;
+    const st = el.scrollTop;
+    const lastSt = lastScrollTop.current;
+
     if (!isDocked && st > 5) {
       setIsDocked(true);
-      triggerSheetBounce(-6);
-    } else if (st + e.currentTarget.clientHeight >= e.currentTarget.scrollHeight - 5) {
-      triggerSheetBounce(-4);
+      triggerSheetBounce(-7);
     }
+    // Reaching top of scroll -> elastic bounce
+    else if (st <= 0 && lastSt > 0) {
+      triggerSheetBounce(7);
+    }
+    // Reaching bottom of scroll -> elastic bounce
+    else if (st + el.clientHeight >= el.scrollHeight - 3 && lastSt + el.clientHeight < el.scrollHeight - 3) {
+      triggerSheetBounce(-7);
+    }
+
     lastScrollTop.current = st;
   };
 
@@ -313,19 +339,15 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
 
       {/* ── Divider Location on Purple BG (Exact Image 1 breathing room: ~14px of pure solid #8586f2) ── */}
       <div
-        className="h-3.5 flex-shrink-0 cursor-pointer flex items-center justify-center"
+        className="h-3 flex-shrink-0 cursor-pointer"
         style={{ background: '#8586f2' }}
         onClick={() => {
           if (isDocked) {
             setIsDocked(false);
-            triggerSheetBounce(6);
+            triggerSheetBounce(7);
           }
         }}
-      >
-        {isDocked && (
-          <div className="w-8 h-1 rounded-full bg-white/30 hover:bg-white/50 transition-colors" />
-        )}
-      </div>
+      />
 
       {/* ── White Sheet Container — DOCKED at divider location, permanently preserves rounded-t-[34px] ── */}
       <div
@@ -336,15 +358,17 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
           isolation: 'isolate',
         }}
       >
-        {/* Fixed Search Bar at top of White Sheet — always keeps white background inside rounded sheet */}
-        <div className="bg-white px-4 pt-3.5 pb-2.5 flex-shrink-0 z-20">
-          <button
-            className="w-full bg-white hover:bg-gray-50/80 border border-gray-200/80 rounded-full px-4 py-3 flex items-center gap-2.5 active:scale-[0.99] transition-all text-left shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
-            onClick={onSearchFocus}
-          >
-            <Search size={18} className="text-[#4b47d9] flex-shrink-0" />
-            <span className="text-black/40 text-sm font-medium">Search for mobile shops and devices</span>
-          </button>
+        {/* Scroll indicator pill in center inside top of white sheet */}
+        <div
+          className="pt-2.5 pb-1 flex justify-center items-center flex-shrink-0 cursor-pointer"
+          onClick={() => {
+            if (isDocked) {
+              setIsDocked(false);
+              triggerSheetBounce(7);
+            }
+          }}
+        >
+          <div className="w-10 h-1 rounded-full bg-black/15 hover:bg-black/25 transition-colors" />
         </div>
 
         {/* ── Scrollable Sheet Body (Fluid momentum scrolling, content completely contained inside sheet) ── */}
@@ -354,6 +378,28 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
           className="flex-1 overflow-y-auto overflow-x-hidden hide-scrollbar smooth-scroll pb-28 relative"
           style={{ WebkitOverflowScrolling: 'touch' }}
         >
+          {/* Search Bar inside scrollable sheet — scrolls up with content */}
+          <div className="px-4 pt-1 pb-2">
+            <div
+              className="w-full bg-white hover:bg-gray-50/80 border border-gray-200/80 rounded-full pl-4 pr-1.5 py-1.5 flex items-center gap-2 shadow-[0_2px_12px_rgba(0,0,0,0.06)] cursor-pointer"
+              onClick={onSearchFocus}
+            >
+              <Search size={18} className="text-[#4b47d9] flex-shrink-0" />
+              <span className="text-black/40 text-sm font-medium flex-1 truncate">
+                Search for mobile shops and devices
+              </span>
+              <button
+                className="w-8 h-8 rounded-full bg-[#4b47d9] hover:bg-[#3d39c6] text-white flex items-center justify-center flex-shrink-0 active:scale-95 transition-transform"
+                onClick={e => {
+                  e.stopPropagation();
+                  onSearchFocus();
+                }}
+                title="Filter"
+              >
+                <SlidersHorizontal size={14} />
+              </button>
+            </div>
+          </div>
 
         {/* ── 3D Category Icons (no borders, no background shapes) ── */}
         <div className="mt-2 px-4">
@@ -517,19 +563,23 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
           </div>
         </div>
 
-        {/* ── Best Under 1 Lakh (8 phones — mix of Box Pack and Used Phones, exact same card) ── */}
+        {/* ── Best Under 1 Lakh (4 cards initially, expandable to all) ── */}
         <div className="mt-6">
           <div className="px-4 flex items-center justify-between mb-3">
             <div>
               <h2 className="text-base font-bold text-black">Best Under 1 Lakh</h2>
               <p className="text-xs text-black/40">Top value phones under Rs. 100,000</p>
             </div>
-            <button onClick={onSearchFocus} className="text-[#4b47d9] text-xs font-semibold flex items-center gap-0.5">
-              See all <ChevronRight size={13} />
+            <button
+              onClick={() => setShowAllUnder1Lakh(prev => !prev)}
+              className="text-[#4b47d9] text-xs font-semibold flex items-center gap-0.5 active:scale-95 transition-transform"
+            >
+              {showAllUnder1Lakh ? 'Show less' : 'See all'}
+              {showAllUnder1Lakh ? <ChevronUp size={13} /> : <ChevronRight size={13} />}
             </button>
           </div>
           <div className="grid grid-cols-2 gap-2.5 px-4">
-            {under1LakhPhones.map(p => (
+            {(showAllUnder1Lakh ? under1LakhPhones : under1LakhPhones.slice(0, 4)).map(p => (
               <ProductCard
                 key={p.id}
                 product={p}
@@ -540,19 +590,23 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
           </div>
         </div>
 
-        {/* ── Best Under 60k (6 phones — exact same mobile card size & styling) ── */}
+        {/* ── Best Under 60k (4 cards initially, expandable to all) ── */}
         <div className="mt-6">
           <div className="px-4 flex items-center justify-between mb-3">
             <div>
               <h2 className="text-base font-bold text-black">Best Under 60k</h2>
               <p className="text-xs text-black/40">Budget-friendly picks under Rs. 60,000</p>
             </div>
-            <button onClick={onSearchFocus} className="text-[#4b47d9] text-xs font-semibold flex items-center gap-0.5">
-              See all <ChevronRight size={13} />
+            <button
+              onClick={() => setShowAllUnder60k(prev => !prev)}
+              className="text-[#4b47d9] text-xs font-semibold flex items-center gap-0.5 active:scale-95 transition-transform"
+            >
+              {showAllUnder60k ? 'Show less' : 'See all'}
+              {showAllUnder60k ? <ChevronUp size={13} /> : <ChevronRight size={13} />}
             </button>
           </div>
           <div className="grid grid-cols-2 gap-2.5 px-4">
-            {under60kPhones.map(p => (
+            {(showAllUnder60k ? under60kPhones : under60kPhones.slice(0, 4)).map(p => (
               <ProductCard
                 key={p.id}
                 product={p}
