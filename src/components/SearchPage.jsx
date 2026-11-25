@@ -58,7 +58,7 @@ export default function SearchPage({ onShop, onProduct, favorites, onToggleFav, 
       </div>
 
       {/* ── Scrollable Body ── */}
-      <div className="flex-1 overflow-y-auto hide-scrollbar pb-28 bg-gray-50">
+      <div className="flex-1 overflow-y-auto hide-scrollbar pb-28 bg-gray-50 smooth-scroll">
 
         {/* ── Category Filter ── */}
         <div className="mt-4">

@@ -91,4 +91,39 @@ body {
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .card-shadow { box-shadow: 0 2px 16px rgba(0,0,0,0.07); }
 .card-shadow-blue { box-shadow: 0 4px 20px rgba(75,71,217,0.22); }
-html { scroll-behavior: smooth; }
+
+/* Fluid Smooth Inertial Scrolling */
+html {
+  scroll-behavior: smooth;
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+body {
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
+}
+
+.smooth-scroll {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+}
+
+.smooth-x-scroll {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;
+}
+
+/* GPU acceleration for butter-smooth layer compositing */
+.gpu-layer {
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  will-change: transform;
+}

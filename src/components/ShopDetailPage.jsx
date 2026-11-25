@@ -117,7 +117,7 @@ export default function ShopDetailPage({ shopId, onBack, onProduct, favorites, o
       </div>
 
       {/* ── Tabs + Products ── */}
-      <div className="flex-1 overflow-y-auto hide-scrollbar bg-gray-50 pb-28">
+      <div className="flex-1 overflow-y-auto hide-scrollbar bg-gray-50 pb-28 smooth-scroll">
         {/* Tab pills */}
         <div className="sticky top-0 bg-white z-10 shadow-sm">
           <div className="flex gap-2 overflow-x-auto hide-scrollbar px-4 py-3">

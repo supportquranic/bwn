@@ -47,7 +47,7 @@ export default function AccountPage({ role, onLogout, onOpenAdmin }) {
   };
 
   return (
-    <div className="h-full overflow-y-auto hide-scrollbar pb-28 bg-gray-50">
+    <div className="h-full overflow-y-auto hide-scrollbar pb-28 bg-gray-50 smooth-scroll">
       {/* ── Header gradient ── */}
       <div className="gradient-hero px-4 pt-6 pb-10">
         <h2 className="text-white text-xl font-black">My Account</h2>

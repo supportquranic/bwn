@@ -67,7 +67,7 @@ export default function ProductDetailPage({ productId, onBack, onShop, favorites
       </div>
 
       {/* ── Scrollable Details ── */}
-      <div className="flex-1 overflow-y-auto hide-scrollbar pb-28">
+      <div className="flex-1 overflow-y-auto hide-scrollbar pb-28 smooth-scroll">
         {/* Product Info */}
         <div className="bg-white px-4 py-4 mt-2 shadow-sm">
           <div className="flex items-start gap-2">

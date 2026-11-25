@@ -121,22 +121,12 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
   const [bannerIdx, setBannerIdx] = useState(0);
   const [activeCategory, setActiveCategory] = useState(null);
   const [selectedBrand, setSelectedBrand] = useState(null);
-  const [docked, setDocked] = useState(false);
   const scrollRef = useRef(null);
 
   /* Auto-advance banner */
   useEffect(() => {
     const t = setInterval(() => setBannerIdx(i => (i + 1) % BANNERS.length), 4000);
     return () => clearInterval(t);
-  }, []);
-
-  /* Track when white sheet docks below the sticky top bar */
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const onScroll = () => setDocked(el.scrollTop > 125);
-    el.addEventListener('scroll', onScroll, { passive: true });
-    return () => el.removeEventListener('scroll', onScroll);
   }, []);
 
   /* Latest phones for top poster carousel */
@@ -158,10 +148,10 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
     : [];
 
   return (
-    <div ref={scrollRef} className="h-full overflow-y-auto overflow-x-hidden hide-scrollbar gradient-bg-top-light relative">
+    <div ref={scrollRef} className="h-full overflow-y-auto overflow-x-hidden hide-scrollbar gradient-bg-top-light relative smooth-scroll">
 
       {/* ── Sticky Top Bar — always stays visible at the very top ── */}
-      <div className="sticky top-0 z-30 pt-3.5 pb-2.5 px-4 text-white bg-gradient-to-b from-[#8586f2] to-[#7c7deb]">
+      <div className="sticky top-0 z-30 pt-3.5 pb-2.5 px-4 text-white bg-gradient-to-b from-[#8586f2] to-[#7c7deb] gpu-layer">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md border border-white/25 flex items-center justify-center">
@@ -191,7 +181,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
       </div>
 
       {/* ── Hero Banner Carousel — stays behind white sheet as it slides up ── */}
-      <div className="sticky top-[58px] z-0 pt-1 pb-4 px-4 text-white">
+      <div className="sticky top-[58px] z-0 pt-1 pb-4 px-4 text-white gpu-layer">
         <div className="relative py-1 flex items-center justify-between min-h-[116px]">
           <div className="flex-1 pr-2 z-10">
             <span className="inline-block bg-white/20 text-white backdrop-blur-md border border-white/25 px-2.5 py-0.5 rounded-full text-[10.5px] font-bold mb-1.5">
@@ -233,10 +223,10 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
       </div>
 
       {/* ── Lower White Sheet — slides up over hero, stops right below top bar ── */}
-      <div className="relative z-10 bg-white rounded-t-[34px] min-h-screen pb-28">
+      <div className="relative z-10 bg-white rounded-t-[34px] min-h-screen pb-28 gpu-layer">
 
         {/* ── Sticky search bar — docks at top-[58px] right below the top bar */}
-        <div className={`sticky top-[58px] z-20`}>
+        <div className="sticky top-[58px] z-20 gpu-layer">
           <div className="bg-white rounded-t-[34px] px-4 pt-3.5 pb-3">
             <button
               className="w-full bg-gray-100 hover:bg-gray-200/70 rounded-full px-4 py-3 flex items-center gap-2.5 active:scale-[0.99] transition-all text-left"
@@ -258,7 +248,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
               </button>
             )}
           </div>
-          <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-1">
+          <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-1 smooth-x-scroll">
             {CATEGORIES.filter(cat => CAT_3D_ICONS[cat.id]).map(cat => (
               <button
                 key={cat.id}
@@ -296,7 +286,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
             </button>
           </div>
 
-          <div className="flex gap-3 overflow-x-auto hide-scrollbar pl-4 pr-4 pb-2 snap-x snap-mandatory scroll-pl-4">
+          <div className="flex gap-3 overflow-x-auto hide-scrollbar pl-4 pr-4 pb-2 snap-x snap-mandatory scroll-pl-4 smooth-x-scroll">
             {LATEST_POSTERS.map(poster => (
               <div
                 key={poster.id}
@@ -409,7 +399,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
             </button>
           </div>
 
-          <div className="flex gap-3 overflow-x-auto hide-scrollbar pl-4 pr-4 pb-2 snap-x snap-mandatory scroll-pl-4">
+          <div className="flex gap-3 overflow-x-auto hide-scrollbar pl-4 pr-4 pb-2 snap-x snap-mandatory scroll-pl-4 smooth-x-scroll">
             {USAGE_SECTIONS.map((sec, idx) => {
               const shopIdMap = { gaming: 'shop-4', camera: 'shop-1', daily: 'shop-2', gift: 'shop-3' };
               const targetId = shopIdMap[sec.id] || INITIAL_SHOPS[idx % INITIAL_SHOPS.length].id;
@@ -530,7 +520,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
               </button>
             </div>
 
-            <div className="overflow-y-auto p-4 space-y-4">
+            <div className="overflow-y-auto p-4 space-y-4 smooth-scroll hide-scrollbar">
               {/* New in Market models list */}
               <div>
                 <p className="text-xs font-bold text-[#4b47d9] uppercase tracking-wider mb-2">New in Market</p>

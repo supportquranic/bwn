@@ -31,7 +31,7 @@ function FavoritesPage({ favorites, onProduct, onShop, onToggleFav }) {
         <h2 className="text-white text-xl font-black">Saved</h2>
         <p className="text-blue-200 text-xs mt-0.5">{favorites.length} saved items</p>
       </div>
-      <div className="flex-1 overflow-y-auto hide-scrollbar pb-28 bg-gray-50">
+      <div className="flex-1 overflow-y-auto hide-scrollbar pb-28 bg-gray-50 smooth-scroll">
         {favShops.length > 0 && (
           <div className="mt-4">
             <h3 className="text-sm font-bold text-gray-700 px-4 mb-2.5">🏪 Saved Shops</h3>
@@ -108,7 +108,7 @@ function ShopsPage({ onShop, favorites, onToggleFav }) {
         <h2 className="text-white text-xl font-black">All Shops</h2>
         <p className="text-blue-200 text-xs mt-0.5">Bahawalnagar, Pakistan · {INITIAL_SHOPS.length} shops</p>
       </div>
-      <div className="flex-1 overflow-y-auto hide-scrollbar pb-28 bg-gray-50">
+      <div className="flex-1 overflow-y-auto hide-scrollbar pb-28 bg-gray-50 smooth-scroll">
         <div className="px-4 mt-4 flex flex-col gap-3">
           {INITIAL_SHOPS.map(shop => (
             <div
@@ -281,7 +281,7 @@ function AppShell() {
 
   if (isAdminMode) {
     return (
-      <div className="fixed inset-0 flex flex-col bg-[#4440cf] overflow-hidden max-w-md mx-auto">
+      <div className="fixed inset-0 flex flex-col bg-[#4440cf] overflow-hidden max-w-md mx-auto overscroll-none">
         <div className="flex-1 overflow-hidden relative">
           <AdminVisualEditor 
             onExit={() => {
@@ -301,7 +301,7 @@ function AppShell() {
   const showNav = !activeProductId; // hide bottom nav when viewing product? keep visible.
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-[#4440cf] overflow-hidden max-w-md mx-auto">
+    <div className="fixed inset-0 flex flex-col bg-[#4440cf] overflow-hidden max-w-md mx-auto overscroll-none">
       {/* Page */}
       <div className="flex-1 overflow-hidden relative">
         {renderPage()}
