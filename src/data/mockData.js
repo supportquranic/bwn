@@ -34,14 +34,14 @@ export const BANNERS = [
 ];
 
 export const CATEGORIES = [
-  { id: 'android', label: 'Android', icon: 'android', color: '#4b47d9' },
   { id: 'iphone', label: 'iPhones', icon: 'iphone', color: '#4b47d9' },
-  { id: 'ipad', label: 'iPads', icon: 'ipad', color: '#4b47d9' },
+  { id: 'android', label: 'Android', icon: 'android', color: '#4b47d9' },
+  { id: 'airpods', label: 'Earbuds', icon: 'airpods', color: '#4b47d9' },
+  { id: 'smartwatch', label: 'Smart Watch', icon: 'smartwatch', color: '#4b47d9' },
   { id: 'headphones', label: 'Headphones', icon: 'headphones', color: '#4b47d9' },
   { id: 'handsfree', label: 'Handsfree', icon: 'handsfree', color: '#4b47d9' },
   { id: 'chargers', label: 'Chargers', icon: 'chargers', color: '#4b47d9' },
-  { id: 'cables', label: 'Cables', icon: 'cables', color: '#4b47d9' },
-  { id: 'covers', label: 'Covers', icon: 'covers', color: '#4b47d9' },
+  { id: 'cases', label: 'Cases', icon: 'cases', color: '#4b47d9' },
 ];
 
 export const USAGE_SECTIONS = [

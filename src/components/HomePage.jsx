@@ -8,12 +8,14 @@ const fmt = n => 'Rs. ' + n.toLocaleString('en-PK');
 
 /* 3D category icon images — no borders, no container shapes */
 const CAT_3D_ICONS = {
-  android:    '/icons/categories/android.png',
   iphone:     '/icons/categories/iphone.png',
-  ipad:       '/icons/categories/ipad.png',
+  android:    '/icons/categories/android.png',
+  airpods:    '/icons/categories/airpods.png',
+  smartwatch: '/icons/categories/smartwatch.png',
   headphones: '/icons/categories/headphones.png',
   handsfree:  '/icons/categories/handsfree.png',
-  cables:     '/icons/categories/cables.png',
+  chargers:   '/icons/categories/chargers.png',
+  cases:      '/icons/categories/cases.png',
 };
 
 /* Clean monochrome brand logo marks */
