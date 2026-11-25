@@ -116,11 +116,12 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
   const [bannerIdx, setBannerIdx] = useState(0);
   const [activeCategory, setActiveCategory] = useState(null);
   const [selectedBrand, setSelectedBrand] = useState(null);
-  const [isDocked, setIsDocked] = useState(false);
   const scrollRef = useRef(null);
   const sheetRef = useRef(null);
+  const heroRef = useRef(null);
 
   const lastScrollTop = useRef(0);
+  const hasDockBounced = useRef(false);
   const isBouncing = useRef(false);
 
   /* Auto-advance banner */
@@ -154,19 +155,25 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
     const st = el.scrollTop;
     const lastSt = lastScrollTop.current;
 
+    // Smoothly dissolve hero banner content so corners only ever see pure purple
+    if (heroRef.current) {
+      const opacity = Math.max(0, Math.min(1, 1 - st / 85));
+      heroRef.current.style.opacity = opacity;
+    }
+
     // 1. When white sheet scrolls UP to dock point below top bar (~140px)
-    if (st >= 140 && !isDocked) {
-      setIsDocked(true);
-      triggerSheetBounce(-7);
+    if (st >= 140 && lastSt < 140 && !hasDockBounced.current) {
+      hasDockBounced.current = true;
+      triggerSheetBounce(-6);
     }
     // 2. When white sheet scrolls DOWN back from dock point (~140px)
-    else if (st < 140 && isDocked) {
-      setIsDocked(false);
-      triggerSheetBounce(7);
+    else if (st < 140 && lastSt >= 140 && hasDockBounced.current) {
+      hasDockBounced.current = false;
+      triggerSheetBounce(6);
     }
     // 3. When white sheet reaches bottom end of scroll
     else if (st + el.clientHeight >= el.scrollHeight - 3) {
-      triggerSheetBounce(-7);
+      triggerSheetBounce(-6);
     }
 
     lastScrollTop.current = st;
@@ -244,9 +251,10 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
         </div>
       </div>
 
-      {/* ── Hero Banner Carousel — Clean, plain purple background, NO inner image container box, NO badge tags ── */}
-      <div className="sticky top-[58px] z-0 pt-1 pb-4 px-4 text-white bg-transparent">
-        <div className="relative py-1 flex items-center justify-between min-h-[116px]">
+      {/* ── Hero Banner Carousel — Solid #8586f2 background, content dissolves as sheet slides up ── */}
+      <div className="sticky top-[58px] z-0 pt-1 pb-4 px-4 text-white"
+           style={{ background: '#8586f2' }}>
+        <div ref={heroRef} className="relative py-1 flex items-center justify-between min-h-[116px]">
           <div className="flex-1 pr-2 z-10">
             <h2 className="text-white text-xl font-black leading-tight tracking-tight">
               {banner.title}
@@ -289,8 +297,8 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
         style={{ boxShadow: '0 -8px 30px rgba(0,0,0,0.08)' }}
       >
 
-        {/* ── Sticky search bar with persistent rounded corners ── */}
-        <div className={`sticky top-[58px] z-20 transition-colors duration-150 ${isDocked ? 'bg-[#8586f2]' : 'bg-transparent'}`}>
+        {/* ── Sticky search bar with permanent, persistent rounded corners backed by #8586f2 ── */}
+        <div className="sticky top-[58px] z-20" style={{ background: '#8586f2' }}>
           <div className="bg-white rounded-t-[34px] px-4 pt-3.5 pb-3">
             <button
               className="w-full bg-white hover:bg-gray-50/80 border border-gray-200/80 rounded-full px-4 py-3 flex items-center gap-2.5 active:scale-[0.99] transition-all text-left shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
