@@ -336,15 +336,15 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
             </div>
           </div>
 
-          <div className="flex flex-col gap-2.5 overflow-hidden py-1">
+          <div className="flex flex-col gap-2 overflow-hidden py-1">
             {/* Row 1 */}
-            <div className="animate-marquee-left flex gap-2.5 pl-4">
+            <div className="animate-marquee-left flex gap-2 pl-4">
               {[...BRANDS.slice(0, 6), ...BRANDS.slice(0, 6)].map((brand, i) => (
                 <button
                   key={`${brand.id}-r1-${i}`}
                   onClick={() => setSelectedBrand(brand)}
-                  className="flex-shrink-0 aspect-square rounded-2xl border border-gray-200 overflow-hidden active:scale-95 transition-transform bg-white shadow-xs"
-                  style={{ width: 'calc((min(100vw, 448px) - 52px) / 3)', maxWidth: '128px' }}
+                  className="flex-shrink-0 aspect-square rounded-xl border border-gray-200 overflow-hidden active:scale-95 transition-transform bg-white shadow-2xs"
+                  style={{ width: '82px' }}
                 >
                   <img
                     src={brand.logo}
@@ -357,13 +357,13 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
             </div>
 
             {/* Row 2 */}
-            <div className="animate-marquee-left flex gap-2.5 pl-4" style={{ animationDuration: '24s' }}>
+            <div className="animate-marquee-left flex gap-2 pl-4" style={{ animationDuration: '24s' }}>
               {[...BRANDS.slice(6), BRANDS[0], ...BRANDS.slice(6), BRANDS[0]].map((brand, i) => (
                 <button
                   key={`${brand.id}-r2-${i}`}
                   onClick={() => setSelectedBrand(brand)}
-                  className="flex-shrink-0 aspect-square rounded-2xl border border-gray-200 overflow-hidden active:scale-95 transition-transform bg-white shadow-xs"
-                  style={{ width: 'calc((min(100vw, 448px) - 52px) / 3)', maxWidth: '128px' }}
+                  className="flex-shrink-0 aspect-square rounded-xl border border-gray-200 overflow-hidden active:scale-95 transition-transform bg-white shadow-2xs"
+                  style={{ width: '82px' }}
                 >
                   <img
                     src={brand.logo}
