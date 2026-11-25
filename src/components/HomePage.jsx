@@ -293,13 +293,12 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
       {/* ── Lower White Sheet — slides up over hero, docks right below top bar ── */}
       <div
         ref={sheetRef}
-        className="relative z-10 bg-white rounded-t-[34px] min-h-screen pb-28"
-        style={{ boxShadow: '0 -8px 30px rgba(0,0,0,0.08)' }}
+        className="relative z-10 min-h-screen pb-28"
       >
 
         {/* ── Sticky search bar with permanent, persistent rounded corners backed by #8586f2 ── */}
         <div className="sticky top-[84px] z-20" style={{ background: '#8586f2' }}>
-          <div className="bg-white rounded-t-[34px] px-4 pt-3.5 pb-3">
+          <div className="bg-white rounded-t-[34px] px-4 pt-3.5 pb-3" style={{ boxShadow: '0 -6px 25px rgba(0,0,0,0.06)' }}>
             <button
               className="w-full bg-white hover:bg-gray-50/80 border border-gray-200/80 rounded-full px-4 py-3 flex items-center gap-2.5 active:scale-[0.99] transition-all text-left shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
               onClick={onSearchFocus}
@@ -309,6 +308,9 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
             </button>
           </div>
         </div>
+
+        {/* ── White Sheet Body Content ── */}
+        <div className="bg-white">
 
         {/* ── 3D Category Icons (no borders, no background shapes) ── */}
         <div className="mt-2 px-4">
@@ -643,7 +645,8 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
           </div>
         </div>
 
-        <div className="h-4" />
+          <div className="h-4" />
+        </div>
       </div>
 
       {/* ── Brand Models Bottom Sheet Modal ── */}
