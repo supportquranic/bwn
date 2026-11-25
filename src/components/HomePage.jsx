@@ -69,7 +69,7 @@ function ProductCard({ product, onProduct, customData }) {
         <div className="flex items-center justify-between gap-1.5 pt-2 mt-auto">
           <span className="text-xs font-black text-[#4b47d9]">{fmt(finalProduct.price)}</span>
           <button
-            className="flex-shrink-0 bg-emerald-500 hover:bg-emerald-600 text-white text-[10.5px] font-bold px-3 py-1.5 rounded-full active:scale-95 transition-transform shadow-xs"
+            className="flex-shrink-0 bg-[#4b47d9] hover:bg-[#3d39c6] text-white text-[10.5px] font-bold px-3 py-1.5 rounded-full active:scale-95 transition-transform shadow-xs"
             onClick={e => { e.stopPropagation(); onProduct(product.id); }}
           >
             Buy now
@@ -107,12 +107,14 @@ function HorizontalProductCard({ product, onProduct, customData }) {
       {/* Content on right — matching Image 3 structure */}
       <div className="flex-1 min-w-0 flex flex-col justify-between h-24 py-0.5">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="text-sm font-bold text-black leading-snug truncate flex-1">
-            {finalProduct.name}
-          </h3>
-          <span className="flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100/60">
-            {product.condition === 'new' ? 'Box Pack' : 'In Stock'}
-          </span>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-bold text-black leading-snug truncate">
+              {finalProduct.name}
+            </h3>
+            <span className="text-[10px] font-semibold text-black/60">
+              {product.condition === 'new' ? 'Box Pack' : 'In Stock'}
+            </span>
+          </div>
         </div>
 
         <p className="text-xs text-black/45 line-clamp-1 mt-0.5">
@@ -122,7 +124,7 @@ function HorizontalProductCard({ product, onProduct, customData }) {
         <div className="flex items-center justify-between mt-auto pt-1">
           <span className="text-sm font-black text-[#4b47d9]">{fmt(finalProduct.price)}</span>
           <button
-            className="w-8.5 h-8.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 active:scale-90 transition-transform shadow-xs"
+            className="w-8.5 h-8.5 rounded-full bg-[#4b47d9] hover:bg-[#3d39c6] text-white flex items-center justify-center flex-shrink-0 active:scale-90 transition-transform shadow-xs"
             onClick={e => {
               e.stopPropagation();
               onProduct(product.id);
