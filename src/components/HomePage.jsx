@@ -129,6 +129,39 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
     return () => clearInterval(t);
   }, []);
 
+  /* Elastic bounce-back at scroll boundaries */
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    let bouncing = false;
+
+    const handleScroll = () => {
+      if (bouncing) return;
+
+      const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 2;
+      const atTop = el.scrollTop <= 0;
+
+      if (atBottom || atTop) {
+        bouncing = true;
+        const dir = atBottom ? -1 : 1;
+        el.style.transition = 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        el.style.transform = `translate3d(0, ${dir * 6}px, 0)`;
+
+        setTimeout(() => {
+          el.style.transform = 'translate3d(0, 0, 0)';
+          setTimeout(() => {
+            el.style.transition = '';
+            bouncing = false;
+          }, 350);
+        }, 120);
+      }
+    };
+
+    el.addEventListener('scrollend', handleScroll, { passive: true });
+    return () => el.removeEventListener('scrollend', handleScroll);
+  }, []);
+
   /* Latest phones for top poster carousel */
   const latestPhones = INITIAL_PRODUCTS.filter(p => p.category === 'iphone' || p.category === 'android');
 
@@ -151,7 +184,8 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
     <div ref={scrollRef} className="h-full overflow-y-auto overflow-x-hidden hide-scrollbar gradient-bg-top-light relative smooth-scroll">
 
       {/* ── Sticky Top Bar — always stays visible at the very top ── */}
-      <div className="sticky top-0 z-30 pt-3.5 pb-2.5 px-4 text-white bg-gradient-to-b from-[#8586f2] to-[#7c7deb] gpu-layer">
+      <div className="sticky top-0 z-30 pt-3.5 pb-2.5 px-4 text-white gpu-layer"
+           style={{ background: '#8586f2' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md border border-white/25 flex items-center justify-center">
@@ -181,7 +215,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
       </div>
 
       {/* ── Hero Banner Carousel — stays behind white sheet as it slides up ── */}
-      <div className="sticky top-[58px] z-0 pt-1 pb-4 px-4 text-white gpu-layer">
+      <div className="sticky top-[58px] z-0 pt-1 pb-4 px-4 text-white gpu-layer bg-transparent">
         <div className="relative py-1 flex items-center justify-between min-h-[116px]">
           <div className="flex-1 pr-2 z-10">
             <span className="inline-block bg-white/20 text-white backdrop-blur-md border border-white/25 px-2.5 py-0.5 rounded-full text-[10.5px] font-bold mb-1.5">
@@ -223,7 +257,8 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
       </div>
 
       {/* ── Lower White Sheet — slides up over hero, stops right below top bar ── */}
-      <div className="relative z-10 bg-white rounded-t-[34px] min-h-screen pb-28 gpu-layer">
+      <div className="relative z-10 bg-white rounded-t-[34px] min-h-screen pb-28 gpu-layer"
+           style={{ boxShadow: '0 -8px 30px rgba(0,0,0,0.08)' }}>
 
         {/* ── Sticky search bar — docks at top-[58px] right below the top bar */}
         <div className="sticky top-[58px] z-20 gpu-layer">
