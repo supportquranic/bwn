@@ -106,7 +106,7 @@ export const BRANDS = [
 export const LATEST_POSTERS = [
   {
     id: 'poster-1',
-    image: '/posters/vivo-v80.jpg',
+    image: '/posters/vivo-v80.png',
   },
   {
     id: 'poster-2',
@@ -317,22 +317,22 @@ export const INITIAL_PRODUCTS = [
   {
     id: 'p5',
     shopId: 'shop-4',
-    name: 'Google Pixel 9 Pro',
+    name: 'Google Pixel 9',
     category: 'android',
     condition: 'new',
-    price: 265000,
+    price: 245000,
     originalPrice: null,
     discount: 0,
     badge: 'Box Pack',
-    image: 'https://images.unsplash.com/photo-1598327105854-7d2e3c822e51?w=600&q=80',
-    images: ['https://images.unsplash.com/photo-1598327105854-7d2e3c822e51?w=600&q=80'],
+    image: '/product images/pixel 9.png',
+    images: ['/product images/pixel 9.png'],
     specs: {
-      Display: '6.3" Super Actua OLED 120Hz',
+      Display: '6.3" Actua OLED 120Hz',
       Processor: 'Google Tensor G4',
-      Camera: '50MP Triple Camera + AI',
+      Camera: '50MP Main + 48MP Ultra Wide with Macro',
       Battery: '4700 mAh',
       Storage: '128GB',
-      RAM: '16GB',
+      RAM: '12GB',
       OS: 'Android 15',
       Network: '5G',
     },
