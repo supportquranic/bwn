@@ -41,7 +41,8 @@ function ProductCard({ product, onProduct, customData }) {
     image: customData?.image || product.image,
     name: customData?.name || product.name,
     price: customData?.price !== undefined ? customData.price : product.price,
-    badge: customData?.badge || (product.condition === 'used' ? 'Used' : 'Box Pack'),
+    condition: customData?.condition || (product.condition === 'used' ? 'Used' : 'Box Pack'),
+    ptaStatus: customData?.ptaStatus || 'PTA Approved',
   };
 
   return (
@@ -50,9 +51,20 @@ function ProductCard({ product, onProduct, customData }) {
       onClick={() => onProduct(product.id)}
     >
       <div className="px-2.5 pt-2.5">
-        <span className="inline-block bg-gray-100 text-gray-500 text-[10px] font-medium px-2 py-0.5 rounded-full mb-1.5">
-          {finalProduct.badge}
-        </span>
+        <div className="flex items-center gap-1 mb-1.5 flex-wrap">
+          <span className="inline-block bg-gray-100 text-gray-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
+            {finalProduct.condition}
+          </span>
+          {finalProduct.ptaStatus && (
+            <span className={`inline-block text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
+              finalProduct.ptaStatus.toLowerCase().includes('non') 
+                ? 'bg-amber-100 text-amber-800' 
+                : 'bg-emerald-50 text-emerald-700 border border-emerald-200/60'
+            }`}>
+              {finalProduct.ptaStatus}
+            </span>
+          )}
+        </div>
         <div className="h-28 flex items-center justify-center">
           <img
             src={finalProduct.image}

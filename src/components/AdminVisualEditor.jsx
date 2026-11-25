@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   ArrowLeft, RotateCcw, Upload, Check, X, 
   Image as ImageIcon, ChevronRight, MapPin, 
-  Heart, Bot, Star, Lock, LogOut, Edit3, DollarSign, Tag, Type
+  Heart, Bot, Star, Lock, LogOut, Edit3, DollarSign, Tag, Type, ShieldCheck
 } from 'lucide-react';
 import { 
   BANNERS, CATEGORIES, USAGE_SECTIONS, BUDGET_SECTIONS, 
@@ -43,8 +43,9 @@ function BrandLogo({ id }) {
 }
 
 /**
- * Stable Card Inspector Wrapper
- * Fixes layout shaking by measuring once without feedback loop.
+ * Card Inspector Wrapper:
+ * - Only clicking the pencil button triggers edit.
+ * - Measures and displays the length and width of the IMAGE itself (not the whole card).
  */
 function CardInspectorWrapper({
   itemKey,
@@ -54,84 +55,63 @@ function CardInspectorWrapper({
   children,
   className = ""
 }) {
-  const boxRef = useRef(null);
-  const [size, setSize] = useState({ w: 0, h: 0 });
-  const pressTimer = useRef(null);
+  const imageContainerRef = useRef(null);
+  const [imgSize, setImgSize] = useState({ w: 0, h: 0 });
 
   useEffect(() => {
-    // Measure safely once after rendering without creating layout loops
+    // Measure the image container width & height safely once
     const timer = setTimeout(() => {
-      if (boxRef.current) {
-        const w = Math.round(boxRef.current.offsetWidth);
-        const h = Math.round(boxRef.current.offsetHeight);
+      const el = imageContainerRef.current?.querySelector('img') || imageContainerRef.current;
+      if (el) {
+        const w = Math.round(el.offsetWidth);
+        const h = Math.round(el.offsetHeight);
         if (w > 0 && h > 0) {
-          setSize({ w, h });
+          setImgSize({ w, h });
         }
       }
-    }, 120);
+    }, 150);
     return () => clearTimeout(timer);
   }, []);
 
-  const triggerEdit = (e) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
+  const handlePencilClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     onEdit({
       itemKey,
       itemType,
       cardData,
-      width: size.w || boxRef.current?.offsetWidth || 0,
-      height: size.h || boxRef.current?.offsetHeight || 0,
+      width: imgSize.w || 0,
+      height: imgSize.h || 0,
     });
   };
 
-  const handleTouchStart = () => {
-    pressTimer.current = setTimeout(triggerEdit, 400);
-  };
-
-  const handleTouchEnd = () => {
-    if (pressTimer.current) clearTimeout(pressTimer.current);
-  };
-
-  const handleMouseDown = () => {
-    pressTimer.current = setTimeout(triggerEdit, 400);
-  };
-
-  const handleMouseUp = () => {
-    if (pressTimer.current) clearTimeout(pressTimer.current);
-  };
-
   return (
-    <div className={`relative flex flex-col group ${className}`}>
-      {/* Clickable Card Body */}
-      <div
-        ref={boxRef}
-        onClick={triggerEdit}
-        onContextMenu={triggerEdit}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
-        className="relative cursor-pointer hover:ring-2 hover:ring-[#4b47d9] rounded-2xl select-none"
-        title="Click, Right-Click, or Long-press to edit image, name, or price"
-      >
-        {children}
-
-        {/* Small Edit Pencil Pin */}
-        <div className="absolute top-1.5 left-1.5 z-20 bg-black/80 backdrop-blur-md text-white text-[9.5px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1 shadow pointer-events-none">
-          <Edit3 size={10} className="text-amber-300" />
-          <span>Edit</span>
+    <div className={`relative flex flex-col ${className}`}>
+      {/* Card Content - Normal Non-clickable Body */}
+      <div className="relative rounded-2xl">
+        <div ref={imageContainerRef}>
+          {children}
         </div>
+
+        {/* Dedicated Pencil Button: ONLY THIS BUTTON OPENS THE EDIT PANEL */}
+        <button
+          type="button"
+          onClick={handlePencilClick}
+          className="absolute top-2 right-2 z-30 bg-[#4b47d9] hover:bg-[#3d3ab8] text-white px-2 py-1 rounded-full shadow-lg border border-white/40 flex items-center gap-1 active:scale-95 transition-all cursor-pointer"
+          title="Click to edit image, text, PTA status, and condition"
+        >
+          <Edit3 size={11} className="text-amber-300" />
+          <span className="text-[10px] font-bold">Edit</span>
+        </button>
       </div>
 
-      {/* Stable Dimensions & Info Strip (No loop, fixed height) */}
-      <div className="mt-1 h-5 px-1.5 flex items-center justify-between text-[9.5px] font-semibold text-gray-600 bg-gray-100 rounded-md border border-gray-200 pointer-events-none select-none">
-        <span className="truncate text-black font-bold max-w-[130px]">
+      {/* Stable Dimensions Strip: Shows Length & Width of the IMAGE */}
+      <div className="mt-1 h-5 px-1.5 flex items-center justify-between text-[9.5px] font-semibold text-gray-600 bg-gray-100 rounded-md border border-gray-200 select-none">
+        <span className="truncate text-black font-bold max-w-[125px]">
           {cardData?.name || cardData?.title || cardData?.label || itemKey}
         </span>
         <span className="font-mono text-[#4b47d9] font-bold whitespace-nowrap ml-1">
-          {size.w > 0 ? `↔ ${size.w}px × ↕ ${size.h}px` : '📏 Ready'}
+          {imgSize.w > 0 ? `Image: ↔ ${imgSize.w}px × ↕ ${imgSize.h}px` : 'Image Size Ready'}
         </span>
       </div>
     </div>
@@ -139,7 +119,14 @@ function CardInspectorWrapper({
 }
 
 /**
- * Full Card Editor Modal (Image + Title + Price + Badge/Condition)
+ * Full Card Editor Modal
+ * Fields:
+ * 1. Image (Upload from phone/PC or URL)
+ * 2. Image Dimensions (Length & Width)
+ * 3. Title / Name
+ * 4. Price (PKR)
+ * 5. Condition (Dropdown: Box Pack / Used)
+ * 6. PTA / BT Status (PTA Approved / Non-PTA)
  */
 function CardEditorModal({ target, onClose, onSave, onReset }) {
   const { cardData, itemKey, itemType, width, height } = target || {};
@@ -148,8 +135,12 @@ function CardEditorModal({ target, onClose, onSave, onReset }) {
   const [imagePreview, setImagePreview] = useState(cardData?.image || '');
   const [name, setName] = useState(cardData?.name || cardData?.title || cardData?.label || '');
   const [price, setPrice] = useState(cardData?.price !== undefined ? String(cardData.price) : '');
-  const [badge, setBadge] = useState(cardData?.badge || cardData?.tag || '');
+  const [condition, setCondition] = useState(
+    cardData?.condition === 'used' || cardData?.badge === 'Used' ? 'Used' : 'Box Pack'
+  );
+  const [ptaStatus, setPtaStatus] = useState(cardData?.ptaStatus || 'PTA Approved');
   const [subtitle, setSubtitle] = useState(cardData?.subtitle || '');
+  const [tag, setTag] = useState(cardData?.tag || '');
   const [isDataUrl, setIsDataUrl] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -191,20 +182,20 @@ function CardEditorModal({ target, onClose, onSave, onReset }) {
     } else if (itemType === 'banner') {
       updated.title = name.trim();
       updated.subtitle = subtitle.trim();
-      updated.tag = badge.trim();
+      updated.tag = tag.trim();
     } else if (itemType === 'category') {
       updated.label = name.trim();
     }
 
-    // 3. Price
+    // 3. Product Specific: Price, Condition & PTA Status
     if (itemType === 'product') {
       const cleanPrice = Number(price.replace(/[^0-9]/g, ''));
       if (!isNaN(cleanPrice) && cleanPrice > 0) {
         updated.price = cleanPrice;
       }
-      if (badge) {
-        updated.badge = badge.trim();
-      }
+      updated.condition = condition; // 'Box Pack' or 'Used'
+      updated.badge = condition;     // Reflect in badge as well
+      updated.ptaStatus = ptaStatus; // 'PTA Approved' or 'Non-PTA'
     }
 
     onSave(itemKey, updated);
@@ -233,8 +224,8 @@ function CardEditorModal({ target, onClose, onSave, onReset }) {
         {/* Header */}
         <div className="flex items-start justify-between border-b border-gray-100 pb-3">
           <div>
-            <h3 className="text-base font-black text-black">Edit Card Content</h3>
-            <p className="text-xs text-black/50 mt-0.5">Update image, text, and pricing</p>
+            <h3 className="text-base font-black text-black">Edit Card Details</h3>
+            <p className="text-xs text-black/50 mt-0.5">Edit image, text, PTA status, and condition</p>
           </div>
           <button 
             onClick={onClose} 
@@ -244,9 +235,9 @@ function CardEditorModal({ target, onClose, onSave, onReset }) {
           </button>
         </div>
 
-        {/* Pixel Dimensions Banner */}
+        {/* Image Dimensions Banner */}
         <div className="bg-indigo-50 border border-indigo-100 rounded-xl px-3 py-2 flex items-center justify-between text-xs">
-          <span className="font-bold text-[#4b47d9]">Card Dimensions</span>
+          <span className="font-bold text-[#4b47d9]">Image Dimensions (Length & Width)</span>
           <span className="font-mono font-bold text-[#4b47d9]">
             ↔ {width}px × ↕ {height}px
           </span>
@@ -285,14 +276,14 @@ function CardEditorModal({ target, onClose, onSave, onReset }) {
               className="flex-1 py-2 px-3 bg-gray-100 hover:bg-gray-200 text-black text-xs font-bold rounded-xl border border-gray-300 border-dashed flex items-center justify-center gap-1.5 active:scale-95"
             >
               <Upload size={14} />
-              <span>Upload Photo</span>
+              <span>Select Photo from Device</span>
             </button>
           </div>
           
           <div className="mt-2">
             <input
               type="url"
-              placeholder="Or paste image web link..."
+              placeholder="Or paste web image link..."
               value={imageUrl}
               onChange={e => {
                 setImageUrl(e.target.value);
@@ -319,9 +310,10 @@ function CardEditorModal({ target, onClose, onSave, onReset }) {
           />
         </div>
 
-        {/* Product Specific: Price & Badge */}
+        {/* Product Specific: Price, Condition Dropdown, PTA/BT Status */}
         {isProduct && (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="flex flex-col gap-3">
+            {/* Price */}
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1 flex items-center gap-1">
                 <DollarSign size={12} className="text-emerald-600" />
@@ -337,18 +329,37 @@ function CardEditorModal({ target, onClose, onSave, onReset }) {
               <span className="text-[10px] text-black/50 mt-0.5 block">{fmt(price)}</span>
             </div>
 
+            {/* Condition Dropdown (Exactly 2 options: Box Pack or Used) */}
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1 flex items-center gap-1">
-                <Tag size={12} className="text-indigo-600" />
-                <span>Condition / Badge</span>
+                <Tag size={12} className="text-[#4b47d9]" />
+                <span>Condition</span>
               </label>
-              <input
-                type="text"
-                placeholder="e.g. Box Pack / Used"
-                value={badge}
-                onChange={e => setBadge(e.target.value)}
-                className="w-full text-xs font-semibold bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-black focus:outline-none focus:border-[#4b47d9]"
-              />
+              <select
+                value={condition}
+                onChange={e => setCondition(e.target.value)}
+                className="w-full text-xs font-bold bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-black focus:outline-none focus:border-[#4b47d9]"
+              >
+                <option value="Box Pack">Box Pack</option>
+                <option value="Used">Used</option>
+              </select>
+            </div>
+
+            {/* PTA / BT Status Dropdown */}
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1 flex items-center gap-1">
+                <ShieldCheck size={12} className="text-indigo-600" />
+                <span>PTA / BT Status</span>
+              </label>
+              <select
+                value={ptaStatus}
+                onChange={e => setPtaStatus(e.target.value)}
+                className="w-full text-xs font-bold bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-black focus:outline-none focus:border-[#4b47d9]"
+              >
+                <option value="PTA Approved">PTA Approved</option>
+                <option value="Non-PTA">Non-PTA</option>
+                <option value="">None / Hide</option>
+              </select>
             </div>
           </div>
         )}
@@ -371,8 +382,8 @@ function CardEditorModal({ target, onClose, onSave, onReset }) {
               <input
                 type="text"
                 placeholder="e.g. New Arrival"
-                value={badge}
-                onChange={e => setBadge(e.target.value)}
+                value={tag}
+                onChange={e => setTag(e.target.value)}
                 className="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-black focus:outline-none focus:border-[#4b47d9]"
               />
             </div>
@@ -441,7 +452,7 @@ export default function AdminVisualEditor({ onExit }) {
           </div>
           <h2 className="text-xl font-black tracking-tight text-white">Admin Studio</h2>
           <p className="text-xs text-indigo-200/70 mt-1 mb-5">
-            Enter the admin password to edit images, names, and prices.
+            Enter the admin password to edit images, text, PTA status, and conditions.
           </p>
 
           <form onSubmit={handleUnlock} className="w-full flex flex-col gap-3">
@@ -503,10 +514,10 @@ export default function AdminVisualEditor({ onExit }) {
           </button>
           <div>
             <h1 className="text-xs font-black flex items-center gap-1.5">
-              <span>Admin Studio: Live Content Editor</span>
+              <span>Admin Studio: Live Editor</span>
               <span className="bg-amber-400 text-black text-[9px] font-black px-1.5 py-0.2 rounded-full">ADMIN</span>
             </h1>
-            <p className="text-[10px] text-white/70">Click or long-press any card to edit its image, name, or price</p>
+            <p className="text-[10px] text-white/70">Click the pencil icon on any card to edit it</p>
           </div>
         </div>
 
@@ -675,17 +686,18 @@ export default function AdminVisualEditor({ onExit }) {
             </div>
           </div>
 
-          {/* ── Featured & Unique 2x3 Phones Grid (Editable Image, Name, Price, Badge) ── */}
+          {/* ── Featured & Unique 2x3 Phones Grid (Editable Image, Name, Price, Condition, PTA Status) ── */}
           <div className="mt-6">
             <div className="px-4 mb-3">
               <h2 className="text-base font-bold text-black">Featured & Unique (2×3 Grid)</h2>
-              <p className="text-xs text-black/40">Click any card to edit its photo, name, or price</p>
+              <p className="text-xs text-black/40">Click the pencil icon to edit photo, text, PTA status, or condition</p>
             </div>
 
             <div className="grid grid-cols-2 gap-2.5 px-4">
               {latestPhones.slice(0, 6).map(product => {
                 const activeProduct = getItem(`product_${product.id}`, product);
-                const badgeText = activeProduct.badge || (activeProduct.condition === 'used' ? 'Used' : 'Box Pack');
+                const conditionText = activeProduct.condition || (activeProduct.badge === 'Used' ? 'Used' : 'Box Pack');
+                const ptaText = activeProduct.ptaStatus || 'PTA Approved';
 
                 return (
                   <CardInspectorWrapper
@@ -696,10 +708,23 @@ export default function AdminVisualEditor({ onExit }) {
                     onEdit={setModalTarget}
                   >
                     <div className="bg-white rounded-2xl border border-gray-200 p-2.5 flex flex-col h-full">
-                      <span className="inline-block bg-gray-100 text-gray-500 text-[10px] font-medium px-2 py-0.5 rounded-full mb-1 self-start">
-                        {badgeText}
-                      </span>
+                      {/* Condition & PTA Badges */}
+                      <div className="flex items-center gap-1 mb-1.5 flex-wrap">
+                        <span className="inline-block bg-gray-100 text-gray-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                          {conditionText}
+                        </span>
+                        {ptaText && (
+                          <span className={`inline-block text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
+                            ptaText.toLowerCase().includes('non') 
+                              ? 'bg-amber-100 text-amber-800' 
+                              : 'bg-emerald-50 text-emerald-700 border border-emerald-200/60'
+                          }`}>
+                            {ptaText}
+                          </span>
+                        )}
+                      </div>
                       
+                      {/* Measured Image Area */}
                       <div className="h-28 w-full flex items-center justify-center p-1 bg-gray-50/50 rounded-xl my-1">
                         <img
                           src={activeProduct.image}
