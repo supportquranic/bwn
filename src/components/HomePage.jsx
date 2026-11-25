@@ -157,17 +157,17 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
 
     // Smoothly dissolve hero banner content so corners only ever see pure purple
     if (heroRef.current) {
-      const opacity = Math.max(0, Math.min(1, 1 - st / 85));
+      const opacity = Math.max(0, Math.min(1, 1 - st / 70));
       heroRef.current.style.opacity = opacity;
     }
 
-    // 1. When white sheet scrolls UP to dock point below top bar (~140px)
-    if (st >= 140 && lastSt < 140 && !hasDockBounced.current) {
+    // 1. When white sheet scrolls UP to dock point below top bar (~110px)
+    if (st >= 110 && lastSt < 110 && !hasDockBounced.current) {
       hasDockBounced.current = true;
       triggerSheetBounce(-6);
     }
-    // 2. When white sheet scrolls DOWN back from dock point (~140px)
-    else if (st < 140 && lastSt >= 140 && hasDockBounced.current) {
+    // 2. When white sheet scrolls DOWN back from dock point (~110px)
+    else if (st < 110 && lastSt >= 110 && hasDockBounced.current) {
       hasDockBounced.current = false;
       triggerSheetBounce(6);
     }
@@ -298,7 +298,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
       >
 
         {/* ── Sticky search bar with permanent, persistent rounded corners backed by #8586f2 ── */}
-        <div className="sticky top-[58px] z-20" style={{ background: '#8586f2' }}>
+        <div className="sticky top-[84px] z-20" style={{ background: '#8586f2' }}>
           <div className="bg-white rounded-t-[34px] px-4 pt-3.5 pb-3">
             <button
               className="w-full bg-white hover:bg-gray-50/80 border border-gray-200/80 rounded-full px-4 py-3 flex items-center gap-2.5 active:scale-[0.99] transition-all text-left shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
