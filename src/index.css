@@ -141,11 +141,6 @@ body {
 .animate-marquee-left {
   display: flex;
   width: max-content;
-  animation: marquee-scroll-left 20s linear infinite;
+  animation: marquee-scroll-left 22s linear infinite;
   will-change: transform;
-}
-
-.animate-marquee-left:hover,
-.animate-marquee-left:active {
-  animation-play-state: paused;
 }

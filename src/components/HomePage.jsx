@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { MapPin, Bot, Search, Heart, Star, ChevronRight, X } from 'lucide-react';
-import { BANNERS, CATEGORIES, USAGE_SECTIONS, BUDGET_SECTIONS, BRANDS, LATEST_POSTERS, INITIAL_SHOPS, INITIAL_PRODUCTS } from '../data/mockData';
+import { BANNERS, CATEGORIES, USAGE_SECTIONS, BRANDS, LATEST_POSTERS, INITIAL_SHOPS, INITIAL_PRODUCTS } from '../data/mockData';
 import { useCustomImages } from '../utils/imageStore';
 
 const fmt = n => 'Rs. ' + n.toLocaleString('en-PK');
@@ -35,7 +35,7 @@ function BrandLogo({ id }) {
   return logos[id] || <span className="text-xs font-black text-black">{id}</span>;
 }
 
-/* ── Compact Product card — 2x3 grid (6 on screen), border only, NO shadow, NO cutting price ── */
+/* ── Unified Mobile Product Card (Clean card UI without extraneous badges) ── */
 function ProductCard({ product, onProduct, customData }) {
   const finalProduct = {
     ...product,
@@ -43,8 +43,6 @@ function ProductCard({ product, onProduct, customData }) {
     image: customData?.image || product.image,
     name: customData?.name || product.name,
     price: customData?.price !== undefined ? customData.price : product.price,
-    condition: customData?.condition || (product.condition === 'used' ? 'Used' : 'Box Pack'),
-    ptaStatus: customData?.ptaStatus || 'PTA Approved',
   };
 
   return (
@@ -52,10 +50,7 @@ function ProductCard({ product, onProduct, customData }) {
       className="bg-white rounded-2xl border border-gray-200 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform flex flex-col"
       onClick={() => onProduct(product.id)}
     >
-      <div className="px-2.5 pt-2.5">
-        <span className="inline-block bg-gray-100 text-gray-700 text-[10px] font-bold px-2 py-0.5 rounded-full mb-1.5">
-          {finalProduct.condition}
-        </span>
+      <div className="px-2.5 pt-3 pb-1">
         <div className="h-28 flex items-center justify-center">
           <img
             src={finalProduct.image}
@@ -65,7 +60,7 @@ function ProductCard({ product, onProduct, customData }) {
         </div>
       </div>
 
-      <div className="p-2.5 pt-2 flex flex-col gap-1.5 flex-1">
+      <div className="p-2.5 pt-1.5 flex flex-col gap-1.5 flex-1">
         <p className="text-xs font-bold text-black leading-tight line-clamp-2">{finalProduct.name}</p>
         <div className="flex items-center justify-between gap-1 mt-auto">
           <span className="text-xs font-bold text-[#4b47d9]">{fmt(finalProduct.price)}</span>
@@ -81,7 +76,7 @@ function ProductCard({ product, onProduct, customData }) {
   );
 }
 
-/* ── Budget list item — border only, NO shadow, NO cutting price ── */
+/* ── Budget list item for Brand Modal ── */
 function BudgetItem({ product, shop, onProduct, onToggleFav, isFav, customData }) {
   const finalProduct = {
     ...product,
@@ -162,13 +157,28 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
     return () => el.removeEventListener('scrollend', handleScroll);
   }, []);
 
-  /* Latest phones for top poster carousel */
-  const latestPhones = INITIAL_PRODUCTS.filter(p => p.category === 'iphone' || p.category === 'android');
+  /* 1. Box Pack Phones (Top 6 sealed phones) */
+  const boxPackPhones = activeCategory
+    ? INITIAL_PRODUCTS.filter(p => p.category === activeCategory && p.condition === 'new').slice(0, 6)
+    : INITIAL_PRODUCTS.filter(p => p.condition === 'new' && (p.category === 'iphone' || p.category === 'android')).slice(0, 6);
 
-  /* Featured & Unique: phones only (or filtered by active category), 6 cards = 2x3 on screen */
-  const featuredPhones = activeCategory
-    ? INITIAL_PRODUCTS.filter(p => p.category === activeCategory)
-    : latestPhones;
+  /* 2. Used Phones (Pre-owned verified devices) */
+  const usedPhones = INITIAL_PRODUCTS.filter(p => p.condition === 'used').slice(0, 6);
+
+  /* 3. Best Under 1 Lakh (8 phones, mix of Box Pack & Used) */
+  const under1LakhPhones = [
+    INITIAL_PRODUCTS.find(p => p.id === 'p-l1'),
+    INITIAL_PRODUCTS.find(p => p.id === 'p-l2'),
+    INITIAL_PRODUCTS.find(p => p.id === 'p-l3'),
+    INITIAL_PRODUCTS.find(p => p.id === 'p-u3'),
+    INITIAL_PRODUCTS.find(p => p.id === 'p-l4'),
+    INITIAL_PRODUCTS.find(p => p.id === 'p-u5'),
+    INITIAL_PRODUCTS.find(p => p.id === 'p-u6'),
+    INITIAL_PRODUCTS.find(p => p.id === 'p-l5'),
+  ].filter(Boolean);
+
+  /* 4. Best Under 60k (6 budget smartphones) */
+  const under60kPhones = INITIAL_PRODUCTS.filter(p => p.id.startsWith('p-b')).slice(0, 6);
 
   const rawBanner = BANNERS[bannerIdx];
   const banner = getItem(`banner_${rawBanner.id}`, rawBanner);
@@ -214,30 +224,26 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
         </div>
       </div>
 
-      {/* ── Hero Banner Carousel — stays behind white sheet as it slides up ── */}
+      {/* ── Hero Banner Carousel — Clean, plain purple background, NO inner image container box, NO badge tags ── */}
       <div className="sticky top-[58px] z-0 pt-1 pb-4 px-4 text-white gpu-layer bg-transparent">
         <div className="relative py-1 flex items-center justify-between min-h-[116px]">
           <div className="flex-1 pr-2 z-10">
-            <span className="inline-block bg-white/20 text-white backdrop-blur-md border border-white/25 px-2.5 py-0.5 rounded-full text-[10.5px] font-bold mb-1.5">
-              {banner.tag}
-            </span>
             <h2 className="text-white text-xl font-black leading-tight tracking-tight">
               {banner.title}
             </h2>
             <p className="text-white/85 text-xs font-medium mt-1 leading-snug line-clamp-1">
               {banner.subtitle}
             </p>
-            <div className="mt-2 flex items-center gap-1 text-white font-bold text-xs underline underline-offset-2">
+            <div className="mt-2.5 flex items-center gap-1 text-white font-bold text-xs underline underline-offset-2">
               <span>Shop now</span>
               <ChevronRight size={13} />
             </div>
           </div>
           <div className="relative w-28 h-28 flex-shrink-0 flex items-center justify-center">
-            <div className="absolute inset-0 bg-white/20 rounded-full blur-xl scale-75" />
             <img
               src={getImg(`banner_${banner.id}`, banner.image)}
               alt={banner.title}
-              className="relative z-10 w-24 h-24 object-cover rounded-2xl transform rotate-2 hover:rotate-0 transition-transform duration-300 border-2 border-white/40"
+              className="w-full h-full object-contain filter drop-shadow-md"
             />
           </div>
         </div>
@@ -256,15 +262,15 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
         </div>
       </div>
 
-      {/* ── Lower White Sheet — slides up over hero, stops right below top bar ── */}
+      {/* ── Lower White Sheet — slides up over hero, docks right below top bar ── */}
       <div className="relative z-10 bg-white rounded-t-[34px] min-h-screen pb-28 gpu-layer"
            style={{ boxShadow: '0 -8px 30px rgba(0,0,0,0.08)' }}>
 
-        {/* ── Sticky search bar — docks at top-[58px] right below the top bar */}
+        {/* ── Sticky search bar with subtle, minimal box-shadow ── */}
         <div className="sticky top-[58px] z-20 gpu-layer">
           <div className="bg-white rounded-t-[34px] px-4 pt-3.5 pb-3">
             <button
-              className="w-full bg-gray-100 hover:bg-gray-200/70 rounded-full px-4 py-3 flex items-center gap-2.5 active:scale-[0.99] transition-all text-left"
+              className="w-full bg-white hover:bg-gray-50/80 border border-gray-200/80 rounded-full px-4 py-3 flex items-center gap-2.5 active:scale-[0.99] transition-all text-left shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
               onClick={onSearchFocus}
             >
               <Search size={18} className="text-[#4b47d9] flex-shrink-0" />
@@ -313,8 +319,8 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
         <div className="mt-6">
           <div className="px-4 flex items-center justify-between mb-3">
             <div>
-              <h2 className="text-base font-black text-black tracking-tight">Latest Models</h2>
-              <p className="text-xs text-black/40">Newest phones available in Bahawalnagar</p>
+              <h2 className="text-base font-black text-black tracking-tight">New Launches</h2>
+              <p className="text-xs text-black/40">Official posters in Bahawalnagar</p>
             </div>
             <button onClick={onSearchFocus} className="text-[#4b47d9] text-xs font-bold flex items-center gap-0.5">
               See all <ChevronRight size={13} />
@@ -339,19 +345,19 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
           </div>
         </div>
 
-        {/* ── Featured & Unique — Phones 2x3 Grid (6 on screen, compact height, no shadow) ── */}
+        {/* ── Box Pack Phones (Renamed from Latest Models / Featured & Unique — 2x3 Grid, 6 phones, exact unified card) ── */}
         <div className="mt-6">
           <div className="px-4 flex items-center justify-between mb-3">
             <div>
-              <h2 className="text-base font-bold text-black">Featured & Unique</h2>
-              <p className="text-xs text-black/40">Hand-checked phones in Bahawalnagar</p>
+              <h2 className="text-base font-bold text-black">Box Pack Phones</h2>
+              <p className="text-xs text-black/40">Genuine sealed phones in Bahawalnagar</p>
             </div>
             <button onClick={onSearchFocus} className="text-[#4b47d9] text-xs font-semibold flex items-center gap-0.5">
               See all <ChevronRight size={13} />
             </button>
           </div>
           <div className="grid grid-cols-2 gap-2.5 px-4">
-            {featuredPhones.slice(0, 6).map(p => (
+            {boxPackPhones.map(p => (
               <ProductCard
                 key={p.id}
                 product={p}
@@ -362,7 +368,30 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
           </div>
         </div>
 
-        {/* ── Shop by Brand (Square Logos Only, 3 horizontal x 2 vertical, auto scrolling right to left) ── */}
+        {/* ── Used Phones (Renamed from Mobiles / Used Devices — exact same mobile card size & layout) ── */}
+        <div className="mt-6">
+          <div className="px-4 flex items-center justify-between mb-3">
+            <div>
+              <h2 className="text-base font-bold text-black">Used Phones</h2>
+              <p className="text-xs text-black/40">Hand-checked & verified devices</p>
+            </div>
+            <button onClick={onSearchFocus} className="text-[#4b47d9] text-xs font-semibold flex items-center gap-0.5">
+              See all <ChevronRight size={13} />
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-2.5 px-4">
+            {usedPhones.map(p => (
+              <ProductCard
+                key={p.id}
+                product={p}
+                onProduct={onProduct}
+                customData={getItem(`product_${p.id}`)}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* ── Shop by Brand (Smooth continuous horizontal auto-scroll) ── */}
         <div className="mt-6">
           <div className="px-4 flex items-center justify-between mb-3">
             <div>
@@ -374,7 +403,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
           <div className="flex flex-col gap-2 overflow-hidden py-1">
             {/* Row 1 */}
             <div className="animate-marquee-left flex gap-2 pl-4">
-              {[...BRANDS.slice(0, 6), ...BRANDS.slice(0, 6)].map((brand, i) => (
+              {[...BRANDS, ...BRANDS].map((brand, i) => (
                 <button
                   key={`${brand.id}-r1-${i}`}
                   onClick={() => setSelectedBrand(brand)}
@@ -392,8 +421,8 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
             </div>
 
             {/* Row 2 */}
-            <div className="animate-marquee-left flex gap-2 pl-4" style={{ animationDuration: '24s' }}>
-              {[...BRANDS.slice(6), BRANDS[0], ...BRANDS.slice(6), BRANDS[0]].map((brand, i) => (
+            <div className="animate-marquee-left flex gap-2 pl-4" style={{ animationDuration: '26s' }}>
+              {[...BRANDS.slice(5), ...BRANDS.slice(0, 5), ...BRANDS.slice(5), ...BRANDS.slice(0, 5)].map((brand, i) => (
                 <button
                   key={`${brand.id}-r2-${i}`}
                   onClick={() => setSelectedBrand(brand)}
@@ -412,47 +441,58 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
           </div>
         </div>
 
-        {/* ── Budget Sections (Best under 100,000 / Best under 65,000 / Used Devices — no cutting price, no shadow) ── */}
-        {BUDGET_SECTIONS.map(sec => {
-          let items = sec.used
-            ? INITIAL_PRODUCTS.filter(p => p.condition === 'used')
-            : INITIAL_PRODUCTS.filter(p => p.price <= sec.max);
-          items = items.slice(0, 3);
-          if (!items.length) return null;
-          return (
-            <div key={sec.id} className="mt-6">
-              <div className="px-4 flex items-center justify-between mb-3">
-                <h2 className="text-base font-bold text-black">{sec.label}</h2>
-                <button onClick={onSearchFocus} className="text-[#4b47d9] text-xs font-semibold flex items-center gap-0.5">
-                  See all <ChevronRight size={13} />
-                </button>
-              </div>
-              <div className="px-4 flex flex-col gap-2.5">
-                {items.map(p => {
-                  const shop = INITIAL_SHOPS.find(s => s.id === p.shopId);
-                  return (
-                    <BudgetItem
-                      key={p.id}
-                      product={p}
-                      shop={shop}
-                      onProduct={onProduct}
-                      onToggleFav={onToggleFav}
-                      isFav={favorites.includes(p.id)}
-                      customData={getItem(`product_${p.id}`)}
-                    />
-                  );
-                })}
-              </div>
+        {/* ── Best Under 1 Lakh (8 phones — mix of Box Pack and Used Phones, exact same card) ── */}
+        <div className="mt-6">
+          <div className="px-4 flex items-center justify-between mb-3">
+            <div>
+              <h2 className="text-base font-bold text-black">Best Under 1 Lakh</h2>
+              <p className="text-xs text-black/40">Top value phones under Rs. 100,000</p>
             </div>
-          );
-        })}
+            <button onClick={onSearchFocus} className="text-[#4b47d9] text-xs font-semibold flex items-center gap-0.5">
+              See all <ChevronRight size={13} />
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-2.5 px-4">
+            {under1LakhPhones.map(p => (
+              <ProductCard
+                key={p.id}
+                product={p}
+                onProduct={onProduct}
+                customData={getItem(`product_${p.id}`)}
+              />
+            ))}
+          </div>
+        </div>
 
-        {/* ── Based on Usage (moved to bottom, reduced height, no shadow) ── */}
+        {/* ── Best Under 60k (6 phones — exact same mobile card size & styling) ── */}
+        <div className="mt-6">
+          <div className="px-4 flex items-center justify-between mb-3">
+            <div>
+              <h2 className="text-base font-bold text-black">Best Under 60k</h2>
+              <p className="text-xs text-black/40">Budget-friendly picks under Rs. 60,000</p>
+            </div>
+            <button onClick={onSearchFocus} className="text-[#4b47d9] text-xs font-semibold flex items-center gap-0.5">
+              See all <ChevronRight size={13} />
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-2.5 px-4">
+            {under60kPhones.map(p => (
+              <ProductCard
+                key={p.id}
+                product={p}
+                onProduct={onProduct}
+                customData={getItem(`product_${p.id}`)}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* ── Based on Usage (Redesigned: mobile phones only, NO View button, NO shop metadata) ── */}
         <div className="mt-6">
           <div className="px-4 flex items-center justify-between mb-3">
             <div>
               <h2 className="text-base font-bold text-black">Based on Usage</h2>
-              <p className="text-xs text-black/40">Curated shops by phone purpose</p>
+              <p className="text-xs text-black/40">Handpicked phones curated by your needs</p>
             </div>
             <button onClick={onSearchFocus} className="text-[#4b47d9] text-xs font-semibold flex items-center gap-0.5">
               See all <ChevronRight size={13} />
@@ -460,54 +500,75 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
           </div>
 
           <div className="flex gap-3 overflow-x-auto hide-scrollbar pl-4 pr-4 pb-2 snap-x snap-mandatory scroll-pl-4 smooth-x-scroll">
-            {USAGE_SECTIONS.map((sec, idx) => {
-              const shopIdMap = { gaming: 'shop-4', camera: 'shop-1', daily: 'shop-2', gift: 'shop-3' };
-              const targetId = shopIdMap[sec.id] || INITIAL_SHOPS[idx % INITIAL_SHOPS.length].id;
-              const shop = INITIAL_SHOPS.find(s => s.id === targetId) || INITIAL_SHOPS[0];
-              const isFav = favorites.includes(shop.id);
+            {USAGE_SECTIONS.map(sec => (
+              <div
+                key={sec.id}
+                className="flex-shrink-0 snap-start bg-white rounded-3xl border border-gray-200 overflow-hidden cursor-pointer active:scale-[0.99] transition-all"
+                style={{ width: 'calc(100vw - 60px)', maxWidth: '360px' }}
+                onClick={onSearchFocus}
+              >
+                <div className="relative h-32 w-full overflow-hidden bg-gray-100">
+                  <img src={sec.image} alt={sec.title} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
+                </div>
+                <div className="p-3">
+                  <h3 className="text-sm font-black text-black leading-snug">{sec.title}</h3>
+                  <p className="text-xs text-black/60 mt-1 leading-snug line-clamp-1">{sec.subtitle}</p>
+                  <p className="text-[11px] font-semibold text-[#4b47d9] mt-1">{sec.tagline}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
 
+        {/* ── Explore All Shops (New Section: Same large card dimensions, clean banner, shop info below) ── */}
+        <div className="mt-6 mb-4">
+          <div className="px-4 flex items-center justify-between mb-3">
+            <div>
+              <h2 className="text-base font-bold text-black">Explore All Shops</h2>
+              <p className="text-xs text-black/40">Verified mobile retailers in Bahawalnagar</p>
+            </div>
+            <span className="text-xs text-black/40">{INITIAL_SHOPS.length} shops</span>
+          </div>
+
+          <div className="flex gap-3 overflow-x-auto hide-scrollbar pl-4 pr-4 pb-2 snap-x snap-mandatory scroll-pl-4 smooth-x-scroll">
+            {INITIAL_SHOPS.map(shop => {
+              const isFav = favorites.includes(shop.id);
               return (
                 <div
-                  key={sec.id}
+                  key={shop.id}
                   className="flex-shrink-0 snap-start bg-white rounded-3xl border border-gray-200 overflow-hidden cursor-pointer active:scale-[0.99] transition-all"
                   style={{ width: 'calc(100vw - 60px)', maxWidth: '360px' }}
                   onClick={() => onShop(shop.id)}
                 >
+                  {/* Clean shop banner image — NO pill badges, NO tags, NO overlays */}
                   <div className="relative h-32 w-full overflow-hidden bg-gray-100">
-                    <img src={getImg(`shop_${shop.id}_cover`, shop.coverImage)} alt={shop.name} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
-                    <div className="absolute top-2.5 left-2.5">
-                      <span className="bg-white/20 text-white backdrop-blur-md border border-white/30 text-[11px] font-bold px-2.5 py-1 rounded-full">
-                        {sec.label}
-                      </span>
-                    </div>
+                    <img
+                      src={getImg(`shop_${shop.id}_cover`, shop.coverImage)}
+                      alt={shop.name}
+                      className="w-full h-full object-cover"
+                    />
                     <button
-                      className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center active:scale-90 transition-transform"
+                      className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center active:scale-90 transition-transform shadow-xs"
                       onClick={e => { e.stopPropagation(); onToggleFav(shop.id); }}
                     >
                       <Heart size={15} className={isFav ? 'fill-red-500 text-red-500' : 'text-gray-400'} />
                     </button>
                   </div>
+
+                  {/* Shop Details cleanly displayed below */}
                   <div className="p-3">
-                    <div className="flex items-center gap-1 mb-1">
+                    <h3 className="text-sm font-black text-black leading-snug truncate">{shop.name}</h3>
+                    <p className="text-xs text-black/40 mt-1 flex items-center gap-1 truncate">
+                      <MapPin size={12} className="text-[#4b47d9] flex-shrink-0" />
+                      <span>{shop.distance}</span>
+                      <span className="text-black/20">·</span>
+                      <span className="truncate">{shop.address}</span>
+                    </p>
+                    <div className="flex items-center gap-1 mt-1.5">
                       <Star size={12} className="fill-amber-400 text-amber-400" />
                       <span className="text-xs font-black text-black">{shop.rating}</span>
-                      <span className="text-xs text-black/40">({shop.ratingCount})</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="min-w-0 flex-1 pr-3">
-                        <h3 className="text-sm font-black text-black truncate leading-snug">{shop.name}</h3>
-                        <p className="text-xs text-black/40 mt-0.5 flex items-center gap-1 truncate">
-                          <MapPin size={12} className="text-[#4b47d9] flex-shrink-0" />
-                          <span>{shop.distance}</span>
-                          <span className="text-black/20">·</span>
-                          <span className="truncate">{shop.address}</span>
-                        </p>
-                      </div>
-                      <button className="flex-shrink-0 px-3 py-1.5 rounded-full bg-indigo-50 text-[#4b47d9] text-xs font-bold flex items-center gap-1">
-                        <span>View</span>
-                        <ChevronRight size={13} />
-                      </button>
+                      <span className="text-xs text-black/40">({shop.ratingCount} reviews)</span>
                     </div>
                   </div>
                 </div>
@@ -516,8 +577,8 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
           </div>
         </div>
 
-        {/* ── All Shops Near You (border only, NO shadow) ── */}
-        <div className="mt-6 mb-4">
+        {/* ── All Shops Near You List ── */}
+        <div className="mt-4 mb-4">
           <div className="px-4 flex items-center justify-between mb-3">
             <h2 className="text-base font-bold text-black">All Shops Near You</h2>
             <span className="text-xs text-black/40">{INITIAL_SHOPS.length} shops</span>
