@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { MapPin, Bot, Search, Heart, Star, ChevronRight, X } from 'lucide-react';
-import { BANNERS, CATEGORIES, USAGE_SECTIONS, BUDGET_SECTIONS, BRANDS, INITIAL_SHOPS, INITIAL_PRODUCTS } from '../data/mockData';
+import { BANNERS, CATEGORIES, USAGE_SECTIONS, BUDGET_SECTIONS, BRANDS, LATEST_POSTERS, INITIAL_SHOPS, INITIAL_PRODUCTS } from '../data/mockData';
 
 const fmt = n => 'Rs. ' + n.toLocaleString('en-PK');
 
@@ -262,7 +262,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
           </div>
         </div>
 
-        {/* ── Latest Models (replaces Based on Usage at top, reduced height, no usage pills, no shadow) ── */}
+        {/* ── Latest Models — full-bleed landscape poster cards, no text, no border ── */}
         <div className="mt-6">
           <div className="px-4 flex items-center justify-between mb-3">
             <div>
@@ -275,16 +275,18 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
           </div>
 
           <div className="flex gap-3 overflow-x-auto hide-scrollbar pl-4 pr-4 pb-2 snap-x snap-mandatory scroll-pl-4">
-            {latestPhones.map(phone => (
+            {LATEST_POSTERS.map(poster => (
               <div
-                key={phone.id}
+                key={poster.id}
                 className="flex-shrink-0 snap-start rounded-2xl overflow-hidden cursor-pointer active:scale-[0.99] transition-all"
-                style={{ width: '72%', maxWidth: '280px' }}
-                onClick={() => onProduct(phone.id)}
+                style={{ width: '82%', maxWidth: '340px' }}
               >
-                <div className="h-44 w-full bg-gray-100">
-                  <img src={phone.image} alt={phone.name} className="w-full h-full object-cover" />
-                </div>
+                <img
+                  src={poster.image}
+                  alt=""
+                  className="w-full h-full object-cover block"
+                  style={{ aspectRatio: '16/7' }}
+                />
               </div>
             ))}
           </div>

@@ -102,6 +102,30 @@ export const BRANDS = [
   },
 ];
 
+/* Full-bleed landscape marketing posters for Latest Models carousel */
+export const LATEST_POSTERS = [
+  {
+    id: 'poster-1',
+    image: '/posters/vivo-v80.jpg',
+  },
+  {
+    id: 'poster-2',
+    image: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=900&h=420&fit=crop&q=85',
+  },
+  {
+    id: 'poster-3',
+    image: 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=900&h=420&fit=crop&q=85',
+  },
+  {
+    id: 'poster-4',
+    image: 'https://images.unsplash.com/photo-1565849904461-04a58ad377e0?w=900&h=420&fit=crop&q=85',
+  },
+  {
+    id: 'poster-5',
+    image: 'https://images.unsplash.com/photo-1598327105854-7d2e3c822e51?w=900&h=420&fit=crop&q=85',
+  },
+];
+
 export const RECENT_SEARCHES = [
   'iPhone 13 used',
   'handsfree under 1000',
