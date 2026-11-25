@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Compass, Store, Search, Heart, User } from 'lucide-react';
 import { AppProvider, useApp } from './context/AppContext';
 import { INITIAL_PRODUCTS, INITIAL_SHOPS } from './data/mockData';
-import { Navbar2 } from './components/NavbarOptions';
+import { Navbar1 } from './components/NavbarOptions';
 import HomePage from './components/HomePage';
 import SearchPage from './components/SearchPage';
 import ShopDetailPage from './components/ShopDetailPage';
@@ -269,7 +269,7 @@ function AppShell() {
 
       {/* Bottom Nav */}
       <div className="absolute bottom-4 left-4 right-4 z-40">
-        <Navbar2
+        <Navbar1
           navTab={activeTab}
           favorites={favorites}
           handleNavClick={handleNavClick}
