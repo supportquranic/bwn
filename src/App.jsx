@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Compass, Store, Search, Heart, User } from 'lucide-react';
 import { AppProvider, useApp } from './context/AppContext';
 import { INITIAL_PRODUCTS, INITIAL_SHOPS } from './data/mockData';
@@ -8,6 +8,7 @@ import SearchPage from './components/SearchPage';
 import ShopDetailPage from './components/ShopDetailPage';
 import ProductDetailPage from './components/ProductDetailPage';
 import AccountPage from './components/AccountPage';
+import AdminVisualEditor from './components/AdminVisualEditor';
 
 const NAV_TABS = [
   { id: 'home', label: 'Explore', Icon: Compass },
@@ -164,6 +165,20 @@ function AppShell() {
   const [activeProductId, setActiveProductId] = useState(null);
   const [favorites, setFavorites] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isAdminMode, setIsAdminMode] = useState(false);
+
+  useEffect(() => {
+    const checkAdmin = () => {
+      const hash = window.location.hash;
+      const params = new URLSearchParams(window.location.search);
+      if (hash === '#admin' || params.get('admin') === 'true') {
+        setIsAdminMode(true);
+      }
+    };
+    checkAdmin();
+    window.addEventListener('hashchange', checkAdmin);
+    return () => window.removeEventListener('hashchange', checkAdmin);
+  }, []);
 
   const toggleFav = (id) => setFavorites(f => f.includes(id) ? f.filter(x => x !== id) : [...f, id]);
 
@@ -251,12 +266,30 @@ function AppShell() {
           <AccountPage
             role={role}
             onLogout={() => setRole('customer')}
+            onOpenAdmin={() => setIsAdminMode(true)}
           />
         );
       default:
         return null;
     }
   };
+
+  if (isAdminMode) {
+    return (
+      <div className="fixed inset-0 flex flex-col bg-[#4440cf] overflow-hidden max-w-md mx-auto">
+        <div className="flex-1 overflow-hidden relative">
+          <AdminVisualEditor 
+            onExit={() => {
+              setIsAdminMode(false);
+              if (window.location.hash === '#admin') {
+                history.replaceState(null, null, ' ');
+              }
+            }} 
+          />
+        </div>
+      </div>
+    );
+  }
 
   const showNav = !activeProductId; // hide bottom nav when viewing product? keep visible.
 

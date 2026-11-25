@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import {
   ShoppingBag, Heart as HeartIcon, MapPin, Ticket, Users, HelpCircle,
-  Store, Info, ChevronRight, LogOut, User, Bell, Shield, Star
+  Store, Info, ChevronRight, LogOut, User, Bell, Shield, Star, Lock
 } from 'lucide-react';
 
 const PERKS = [
@@ -13,10 +14,38 @@ const PERKS = [
   { icon: Info, label: 'About & Terms', sub: 'Policies & app info', color: 'text-gray-500', bg: 'bg-gray-100' },
 ];
 
-export default function AccountPage({ role, onLogout }) {
+export default function AccountPage({ role, onLogout, onOpenAdmin }) {
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [pinInput, setPinInput] = useState('');
+  const [pinError, setPinError] = useState('');
+
   const initials = role === 'shopkeeper' ? 'SK' : role === 'admin' ? 'AD' : 'U';
   const name = role === 'shopkeeper' ? 'Shopkeeper' : role === 'admin' ? 'Admin' : 'Guest User';
   const roleLabel = role === 'shopkeeper' ? 'Shopkeeper' : role === 'admin' ? 'Admin' : 'Buyer';
+
+  const handleAdminClick = () => {
+    const isAuthed = sessionStorage.getItem('bm_admin_authed') === 'true';
+    if (isAuthed) {
+      onOpenAdmin();
+    } else {
+      setPinInput('');
+      setPinError('');
+      setShowPinModal(true);
+    }
+  };
+
+  const handleVerifyPin = (e) => {
+    e?.preventDefault();
+    // Accepted passcodes: 7860, 1234, admin
+    const cleanPin = pinInput.trim();
+    if (cleanPin === '7860' || cleanPin === '1234' || cleanPin.toLowerCase() === 'admin') {
+      sessionStorage.setItem('bm_admin_authed', 'true');
+      setShowPinModal(false);
+      onOpenAdmin();
+    } else {
+      setPinError('Incorrect passcode. Try again.');
+    }
+  };
 
   return (
     <div className="h-full overflow-y-auto hide-scrollbar pb-28 bg-gray-50">
@@ -52,6 +81,28 @@ export default function AccountPage({ role, onLogout }) {
             <span className="text-sm font-bold text-gray-800">4.9</span>
             <span className="text-xs text-gray-400 ml-0.5">Member rating</span>
           </div>
+        </div>
+      </div>
+
+      {/* ── Admin Visual Studio (Protected Access) ── */}
+      <div className="mx-4 mt-3">
+        <div 
+          onClick={handleAdminClick}
+          className="bg-gradient-to-r from-[#1e1b4b] to-[#312e81] rounded-2xl p-4 text-white cursor-pointer active:scale-[0.98] transition-transform shadow-md border border-indigo-800 flex items-center justify-between"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
+              <Lock size={18} className="text-amber-400" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold">Admin Visual Studio</h3>
+                <span className="bg-amber-400 text-black text-[9px] font-black px-1.5 py-0.2 rounded-full">PRIVATE</span>
+              </div>
+              <p className="text-xs text-indigo-200 mt-0.5">Live UI clone & pixel-accurate image editor</p>
+            </div>
+          </div>
+          <ChevronRight size={16} className="text-indigo-300" />
         </div>
       </div>
 
@@ -116,6 +167,55 @@ export default function AccountPage({ role, onLogout }) {
       </div>
 
       <div className="h-4" />
+
+      {/* ── Admin Passcode Modal ── */}
+      {showPinModal && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4"
+          onClick={() => setShowPinModal(false)}
+        >
+          <div 
+            className="w-full max-w-xs bg-white rounded-3xl p-5 shadow-2xl flex flex-col gap-4 text-center"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mx-auto text-[#4b47d9]">
+              <Lock size={22} />
+            </div>
+            <div>
+              <h3 className="text-base font-black text-black">Admin Access</h3>
+              <p className="text-xs text-black/50 mt-1">Enter your admin passcode to open the visual image studio</p>
+            </div>
+
+            <form onSubmit={handleVerifyPin} className="flex flex-col gap-3">
+              <input
+                type="password"
+                autoFocus
+                placeholder="Enter Passcode (e.g. 7860)"
+                value={pinInput}
+                onChange={e => { setPinInput(e.target.value); setPinError(''); }}
+                className="w-full text-center text-sm font-bold tracking-widest bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#4b47d9]"
+              />
+              {pinError && <p className="text-[11px] text-red-500 font-bold">{pinError}</p>}
+              
+              <div className="flex gap-2 mt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowPinModal(false)}
+                  className="flex-1 py-2 rounded-xl bg-gray-100 text-black text-xs font-bold active:scale-95"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2 rounded-xl bg-[#4b47d9] text-white text-xs font-bold active:scale-95 shadow"
+                >
+                  Unlock
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

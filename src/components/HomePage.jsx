@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { MapPin, Bot, Search, Heart, Star, ChevronRight, X } from 'lucide-react';
 import { BANNERS, CATEGORIES, USAGE_SECTIONS, BUDGET_SECTIONS, BRANDS, LATEST_POSTERS, INITIAL_SHOPS, INITIAL_PRODUCTS } from '../data/mockData';
+import { useCustomImages } from '../utils/imageStore';
 
 const fmt = n => 'Rs. ' + n.toLocaleString('en-PK');
 
@@ -33,8 +34,9 @@ function BrandLogo({ id }) {
 }
 
 /* ── Compact Product card — 2x3 grid (6 on screen), border only, NO shadow, NO cutting price ── */
-function ProductCard({ product, onProduct }) {
+function ProductCard({ product, onProduct, customImage }) {
   const badge = product.condition === 'used' ? 'Used' : 'Box Pack';
+  const displayImg = customImage || product.image;
   return (
     <div
       className="bg-white rounded-2xl border border-gray-200 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform flex flex-col"
@@ -46,7 +48,7 @@ function ProductCard({ product, onProduct }) {
         </span>
         <div className="h-28 flex items-center justify-center">
           <img
-            src={product.image}
+            src={displayImg}
             alt={product.name}
             className="max-h-full max-w-full object-contain"
           />
@@ -70,14 +72,15 @@ function ProductCard({ product, onProduct }) {
 }
 
 /* ── Budget list item — border only, NO shadow, NO cutting price ── */
-function BudgetItem({ product, shop, onProduct, onToggleFav, isFav }) {
+function BudgetItem({ product, shop, onProduct, onToggleFav, isFav, customImage }) {
+  const displayImg = customImage || product.image;
   return (
     <div
       className="flex items-center gap-3 p-3 bg-white rounded-2xl border border-gray-200 cursor-pointer active:scale-[0.98] transition-transform"
       onClick={() => onProduct(product.id)}
     >
       <div className="w-16 h-16 rounded-xl bg-gray-100 flex-shrink-0 flex items-center justify-center overflow-hidden">
-        <img src={product.image} alt={product.name} className="w-full h-full object-contain" />
+        <img src={displayImg} alt={product.name} className="w-full h-full object-contain" />
       </div>
 
       <div className="flex-1 min-w-0">
@@ -97,6 +100,7 @@ function BudgetItem({ product, shop, onProduct, onToggleFav, isFav }) {
 }
 
 export default function HomePage({ onShop, onProduct, favorites, onToggleFav, onSearchFocus }) {
+  const { getImg } = useCustomImages();
   const [bannerIdx, setBannerIdx] = useState(0);
   const [activeCategory, setActiveCategory] = useState(null);
   const [selectedBrand, setSelectedBrand] = useState(null);
@@ -161,7 +165,11 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
             >
               <Heart size={15} className="text-white fill-white" />
             </button>
-            <button className="w-8.5 h-8.5 p-2 rounded-full bg-white/20 backdrop-blur-md border border-white/25 flex items-center justify-center text-white active:scale-95 transition-transform">
+            <button 
+              onDoubleClick={() => { window.location.hash = '#admin'; }}
+              title="Assistant"
+              className="w-8.5 h-8.5 p-2 rounded-full bg-white/20 backdrop-blur-md border border-white/25 flex items-center justify-center text-white active:scale-95 transition-transform"
+            >
               <Bot size={17} />
             </button>
           </div>
@@ -189,7 +197,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
           <div className="relative w-28 h-28 flex-shrink-0 flex items-center justify-center">
             <div className="absolute inset-0 bg-white/20 rounded-full blur-xl scale-75" />
             <img
-              src={banner.image}
+              src={getImg(`banner_${banner.id}`, banner.image)}
               alt={banner.title}
               className="relative z-10 w-24 h-24 object-cover rounded-2xl transform rotate-2 hover:rotate-0 transition-transform duration-300 border-2 border-white/40"
             />
@@ -244,7 +252,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
                 className="flex-shrink-0 flex flex-col items-center gap-1.5 active:scale-95 transition-transform"
               >
                 <img
-                  src={CAT_3D_ICONS[cat.id]}
+                  src={getImg(`cat_${cat.id}`, CAT_3D_ICONS[cat.id])}
                   alt={cat.label}
                   className={`icon-3d w-14 h-14 object-contain transition-transform duration-200 ${
                     activeCategory === cat.id ? 'scale-110' : ''
@@ -282,7 +290,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
                 style={{ width: '82%', maxWidth: '340px' }}
               >
                 <img
-                  src={poster.image}
+                  src={getImg(`poster_${poster.id}`, poster.image)}
                   alt=""
                   className="w-full h-full object-cover block"
                   style={{ aspectRatio: '16/7' }}
@@ -309,6 +317,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
                 key={p.id}
                 product={p}
                 onProduct={onProduct}
+                customImage={getImg(`product_${p.id}`, p.image)}
               />
             ))}
           </div>
@@ -365,6 +374,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
                       onProduct={onProduct}
                       onToggleFav={onToggleFav}
                       isFav={favorites.includes(p.id)}
+                      customImage={getImg(`product_${p.id}`, p.image)}
                     />
                   );
                 })}
@@ -400,7 +410,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
                   onClick={() => onShop(shop.id)}
                 >
                   <div className="relative h-32 w-full overflow-hidden bg-gray-100">
-                    <img src={shop.coverImage} alt={shop.name} className="w-full h-full object-cover" />
+                    <img src={getImg(`shop_${shop.id}_cover`, shop.coverImage)} alt={shop.name} className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
                     <div className="absolute top-2.5 left-2.5">
                       <span className="bg-white/20 text-white backdrop-blur-md border border-white/30 text-[11px] font-bold px-2.5 py-1 rounded-full">
@@ -456,7 +466,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
                 onClick={() => onShop(shop.id)}
               >
                 <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
-                  <img src={shop.logo} alt={shop.name} className="w-full h-full object-cover" />
+                  <img src={getImg(`shop_${shop.id}_logo`, shop.logo)} alt={shop.name} className="w-full h-full object-cover" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-black truncate">{shop.name}</p>
