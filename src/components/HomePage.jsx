@@ -1,23 +1,18 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import {
-  MapPin, Bot, Search, Heart, Star, ChevronRight,
-  Smartphone, Apple, Tablet, Headphones, Mic2, Zap, Cable, Shield,
-} from 'lucide-react';
+import { MapPin, Bot, Search, Heart, Star, ChevronRight } from 'lucide-react';
 import { BANNERS, CATEGORIES, USAGE_SECTIONS, BUDGET_SECTIONS, INITIAL_SHOPS, INITIAL_PRODUCTS } from '../data/mockData';
 
 const fmt = n => 'Rs. ' + n.toLocaleString('en-PK');
 
-/* Category icon map — Lucide only, no emojis */
-const CAT_ICONS = {
-  android:    <Smartphone size={22} strokeWidth={1.8} />,
-  iphone:     <Apple size={22} strokeWidth={1.8} />,
-  ipad:       <Tablet size={22} strokeWidth={1.8} />,
-  headphones: <Headphones size={22} strokeWidth={1.8} />,
-  handsfree:  <Mic2 size={22} strokeWidth={1.8} />,
-  chargers:   <Zap size={22} strokeWidth={1.8} />,
-  cables:     <Cable size={22} strokeWidth={1.8} />,
-  covers:     <Shield size={22} strokeWidth={1.8} />,
+/* 3D category icon images — no borders, no container shapes */
+const CAT_3D_ICONS = {
+  android:    '/icons/categories/android.png',
+  iphone:     '/icons/categories/iphone.png',
+  ipad:       '/icons/categories/ipad.png',
+  headphones: '/icons/categories/headphones.png',
+  handsfree:  '/icons/categories/handsfree.png',
+  cables:     '/icons/categories/cables.png',
 };
 
 /* ── Product card — matches reference: 2-col grid, stroke border, gray pill, black Buy now ── */
@@ -201,7 +196,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
           </button>
         </div>
 
-        {/* ── Category Icons (Lucide, no emojis) ── */}
+        {/* ── 3D Category Icons (no borders, no background shapes) ── */}
         <div className="mt-2 px-4">
           <div className="flex items-center justify-between mb-2.5">
             <h2 className="text-sm font-black text-black tracking-tight">Browse Categories</h2>
@@ -211,22 +206,20 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
               </button>
             )}
           </div>
-          <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-1">
-            {CATEGORIES.map(cat => (
+          <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-1">
+            {CATEGORIES.filter(cat => CAT_3D_ICONS[cat.id]).map(cat => (
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(prev => (prev === cat.id ? null : cat.id))}
                 className="flex-shrink-0 flex flex-col items-center gap-1.5 active:scale-95 transition-transform"
               >
-                <div
-                  className={`icon-3d w-14 h-14 rounded-2xl flex items-center justify-center bg-gray-50 shadow-md border border-gray-100 transition-all duration-200 ${
-                    activeCategory === cat.id ? 'ring-2 ring-[#4b47d9] scale-105 bg-indigo-50' : ''
+                <img
+                  src={CAT_3D_ICONS[cat.id]}
+                  alt={cat.label}
+                  className={`icon-3d w-14 h-14 object-contain transition-transform duration-200 ${
+                    activeCategory === cat.id ? 'scale-110' : ''
                   }`}
-                >
-                  <span className={activeCategory === cat.id ? 'text-[#4b47d9]' : 'text-black/60'}>
-                    {CAT_ICONS[cat.id]}
-                  </span>
-                </div>
+                />
                 <span
                   className={`text-[11px] font-semibold ${
                     activeCategory === cat.id ? 'text-[#4b47d9] font-bold' : 'text-black/70'
