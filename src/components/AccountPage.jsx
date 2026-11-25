@@ -36,14 +36,13 @@ export default function AccountPage({ role, onLogout, onOpenAdmin }) {
 
   const handleVerifyPin = (e) => {
     e?.preventDefault();
-    // Accepted passcodes: 7860, 1234, admin
     const cleanPin = pinInput.trim();
-    if (cleanPin === '7860' || cleanPin === '1234' || cleanPin.toLowerCase() === 'admin') {
+    if (cleanPin === '3344') {
       sessionStorage.setItem('bm_admin_authed', 'true');
       setShowPinModal(false);
       onOpenAdmin();
     } else {
-      setPinError('Incorrect passcode. Try again.');
+      setPinError('Incorrect password. Please enter 3344.');
     }
   };
 

@@ -165,11 +165,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
             >
               <Heart size={15} className="text-white fill-white" />
             </button>
-            <button 
-              onDoubleClick={() => { window.location.hash = '#admin'; }}
-              title="Assistant"
-              className="w-8.5 h-8.5 p-2 rounded-full bg-white/20 backdrop-blur-md border border-white/25 flex items-center justify-center text-white active:scale-95 transition-transform"
-            >
+            <button className="w-8.5 h-8.5 p-2 rounded-full bg-white/20 backdrop-blur-md border border-white/25 flex items-center justify-center text-white active:scale-95 transition-transform">
               <Bot size={17} />
             </button>
           </div>

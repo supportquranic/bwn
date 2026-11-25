@@ -169,15 +169,20 @@ function AppShell() {
 
   useEffect(() => {
     const checkAdmin = () => {
-      const hash = window.location.hash;
+      const path = window.location.pathname.toLowerCase();
+      const hash = window.location.hash.toLowerCase();
       const params = new URLSearchParams(window.location.search);
-      if (hash === '#admin' || params.get('admin') === 'true') {
+      if (path === '/admin' || path.startsWith('/admin') || hash === '#admin' || params.get('admin') === 'true') {
         setIsAdminMode(true);
       }
     };
     checkAdmin();
     window.addEventListener('hashchange', checkAdmin);
-    return () => window.removeEventListener('hashchange', checkAdmin);
+    window.addEventListener('popstate', checkAdmin);
+    return () => {
+      window.removeEventListener('hashchange', checkAdmin);
+      window.removeEventListener('popstate', checkAdmin);
+    };
   }, []);
 
   const toggleFav = (id) => setFavorites(f => f.includes(id) ? f.filter(x => x !== id) : [...f, id]);
@@ -281,8 +286,10 @@ function AppShell() {
           <AdminVisualEditor 
             onExit={() => {
               setIsAdminMode(false);
-              if (window.location.hash === '#admin') {
-                history.replaceState(null, null, ' ');
+              if (window.location.pathname.toLowerCase().startsWith('/admin')) {
+                window.history.pushState(null, '', '/');
+              } else if (window.location.hash === '#admin') {
+                window.history.replaceState(null, '', ' ');
               }
             }} 
           />

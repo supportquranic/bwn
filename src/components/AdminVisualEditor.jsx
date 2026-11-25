@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   ArrowLeft, RotateCcw, Upload, Link as LinkIcon, Check, 
   X, Info, Image as ImageIcon, Sparkles, ChevronRight, MapPin, 
-  Heart, Bot, Star
+  Heart, Bot, Star, Lock, LogOut
 } from 'lucide-react';
 import { 
   BANNERS, CATEGORIES, USAGE_SECTIONS, BUDGET_SECTIONS, 
@@ -333,6 +333,73 @@ export default function AdminVisualEditor({ onExit }) {
   const { overrides, getImg, setImage, resetImage, resetAllImages } = useCustomImages();
   const [activeModalTarget, setActiveModalTarget] = useState(null);
   const [bannerIdx, setBannerIdx] = useState(0);
+  const [isAuthed, setIsAuthed] = useState(() => sessionStorage.getItem('bm_admin_authed') === 'true');
+  const [passInput, setPassInput] = useState('');
+  const [passError, setPassError] = useState('');
+
+  const handleUnlock = (e) => {
+    e?.preventDefault();
+    if (passInput.trim() === '3344') {
+      sessionStorage.setItem('bm_admin_authed', 'true');
+      setIsAuthed(true);
+      setPassError('');
+    } else {
+      setPassError('Incorrect password. Please enter 3344.');
+    }
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('bm_admin_authed');
+    setIsAuthed(false);
+    onExit();
+  };
+
+  if (!isAuthed) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center bg-[#0f0e26] p-6 text-white text-center">
+        <div className="w-full max-w-sm bg-[#1a1838] border border-indigo-900/80 rounded-3xl p-6 shadow-2xl flex flex-col items-center">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#4b47d9] to-indigo-500 flex items-center justify-center shadow-lg mb-4 text-white">
+            <Lock size={26} />
+          </div>
+          <h2 className="text-xl font-black tracking-tight text-white">Admin Studio</h2>
+          <p className="text-xs text-indigo-200/70 mt-1 mb-5">
+            Enter the admin password to manage and change images.
+          </p>
+
+          <form onSubmit={handleUnlock} className="w-full flex flex-col gap-3">
+            <div>
+              <input
+                type="password"
+                autoFocus
+                placeholder="Password (3344)"
+                value={passInput}
+                onChange={e => { setPassInput(e.target.value); setPassError(''); }}
+                className="w-full text-center text-base tracking-widest font-black bg-black/40 border border-indigo-800 rounded-xl px-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:border-[#4b47d9]"
+              />
+              {passError && (
+                <p className="text-xs text-rose-400 font-bold mt-1.5">{passError}</p>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-3 bg-[#4b47d9] hover:bg-[#3d3ab8] text-white font-bold text-sm rounded-xl shadow-lg active:scale-95 transition-transform"
+            >
+              Unlock Admin Studio
+            </button>
+
+            <button
+              type="button"
+              onClick={onExit}
+              className="w-full py-2.5 text-xs text-indigo-300/80 hover:text-white font-medium transition-colors"
+            >
+              ← Back to Bahawal Market
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   const banner = BANNERS[bannerIdx];
   const latestPhones = INITIAL_PRODUCTS.filter(p => p.category === 'iphone' || p.category === 'android');
@@ -355,7 +422,7 @@ export default function AdminVisualEditor({ onExit }) {
           <button
             onClick={onExit}
             className="p-1 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 transition-transform"
-            title="Exit Admin Visual Studio"
+            title="Back to Website"
           >
             <ArrowLeft size={16} />
           </button>
@@ -378,10 +445,12 @@ export default function AdminVisualEditor({ onExit }) {
             <span>Reset All</span>
           </button>
           <button
-            onClick={onExit}
-            className="text-[10px] font-bold bg-[#4b47d9] hover:bg-[#3d3ab8] text-white px-2.5 py-1 rounded-lg shadow transition-colors"
+            onClick={handleLogout}
+            className="text-[10px] font-bold bg-white/10 hover:bg-white/20 text-indigo-200 px-2 py-1 rounded-lg transition-colors flex items-center gap-1"
+            title="Log out of Admin"
           >
-            Exit Studio
+            <LogOut size={11} />
+            <span>Lock</span>
           </button>
         </div>
       </div>
