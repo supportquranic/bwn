@@ -9,19 +9,19 @@ export const INITIAL_REPORTS = [];
 export const BANNERS = [
   {
     id: 'b1',
-    title: 'Get up to 20% OFF',
-    subtitle: 'On your first mobile purchase!',
-    tag: 'New User Deal',
+    title: 'Latest iPhones Available',
+    subtitle: 'New models at Al-Madina Mobile Zone',
+    tag: 'New Arrival',
     gradient: 'from-blue-700 via-blue-500 to-sky-400',
-    image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&q=80',
+    image: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=600&q=80',
   },
   {
     id: 'b2',
-    title: 'iPhone 15 Series',
+    title: 'Samsung Galaxy S24',
     subtitle: 'Now available at Suleman Mobile Hub',
     tag: 'Just Arrived',
     gradient: 'from-indigo-700 via-blue-600 to-blue-400',
-    image: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=600&q=80',
+    image: 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=600&q=80',
   },
   {
     id: 'b3',
@@ -52,9 +52,54 @@ export const USAGE_SECTIONS = [
 ];
 
 export const BUDGET_SECTIONS = [
-  { id: 'under40k', label: 'Best under 40,000', max: 40000 },
-  { id: 'under15k', label: 'Best under 15,000', max: 15000 },
+  { id: 'under100k', label: 'Best under 100,000', max: 100000 },
+  { id: 'under65k', label: 'Best under 65,000', max: 65000 },
   { id: 'used', label: 'Used Devices', used: true },
+];
+
+export const BRANDS = [
+  {
+    id: 'apple',
+    name: 'Apple',
+    tagline: 'iPhone & iPad',
+    keywords: ['iphone', 'ipad', 'apple'],
+    newModels: ['iPhone 16 Pro Max', 'iPhone 16', 'iPhone 15 Pro', 'iPhone 15', 'iPad 10th Gen'],
+  },
+  {
+    id: 'samsung',
+    name: 'Samsung',
+    tagline: 'Galaxy S & A Series',
+    keywords: ['samsung', 'galaxy'],
+    newModels: ['Galaxy S24 Ultra', 'Galaxy S24', 'Galaxy A55', 'Galaxy A54', 'Galaxy A35'],
+  },
+  {
+    id: 'xiaomi',
+    name: 'Xiaomi',
+    tagline: 'Redmi & Note Series',
+    keywords: ['xiaomi', 'redmi'],
+    newModels: ['Xiaomi 14', 'Redmi Note 13 Pro+', 'Redmi Note 13 Pro', 'Redmi 13C'],
+  },
+  {
+    id: 'oneplus',
+    name: 'OnePlus',
+    tagline: 'Flagship Killers',
+    keywords: ['oneplus'],
+    newModels: ['OnePlus 12', 'OnePlus 12R', 'OnePlus Nord CE 4'],
+  },
+  {
+    id: 'realme',
+    name: 'Realme',
+    tagline: 'GT & Audio',
+    keywords: ['realme'],
+    newModels: ['Realme GT 6', 'Realme 12 Pro+', 'Realme Buds Air 5'],
+  },
+  {
+    id: 'jbl',
+    name: 'JBL',
+    tagline: 'Headphones & Audio',
+    keywords: ['jbl'],
+    newModels: ['JBL Tune 510BT', 'JBL Tune 760NC', 'JBL Wave Beam'],
+  },
 ];
 
 export const RECENT_SEARCHES = [
@@ -159,10 +204,10 @@ export const INITIAL_PRODUCTS = [
     originalPrice: 420000,
     discount: 13,
     badge: 'Featured Deal',
-    image: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&q=80',
+    image: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=600&q=80',
     images: [
-      'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=600&q=80',
       'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=600&q=80',
+      'https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?w=600&q=80',
     ],
     specs: {
       Display: '6.1" Super Retina XDR OLED',
@@ -240,8 +285,8 @@ export const INITIAL_PRODUCTS = [
     originalPrice: 85000,
     discount: 27,
     badge: 'Value Pick',
-    image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600&q=80',
-    images: ['https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600&q=80'],
+    image: 'https://images.unsplash.com/photo-1598327105854-7d2e3c822e51?w=600&q=80',
+    images: ['https://images.unsplash.com/photo-1598327105854-7d2e3c822e51?w=600&q=80'],
     specs: {
       Display: '6.4" Super AMOLED 120Hz',
       Processor: 'Exynos 1380',
