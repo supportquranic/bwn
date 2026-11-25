@@ -343,13 +343,13 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
                 <button
                   key={`${brand.id}-r1-${i}`}
                   onClick={() => setSelectedBrand(brand)}
-                  className="flex-shrink-0 aspect-square bg-white rounded-2xl border border-gray-200 p-3.5 flex items-center justify-center active:scale-95 transition-transform"
+                  className="flex-shrink-0 aspect-square rounded-2xl border border-gray-200 overflow-hidden active:scale-95 transition-transform bg-white shadow-xs"
                   style={{ width: 'calc((min(100vw, 448px) - 52px) / 3)', maxWidth: '128px' }}
                 >
                   <img
                     src={brand.logo}
                     alt={brand.name}
-                    className="w-full h-full object-contain pointer-events-none"
+                    className="w-full h-full object-cover block pointer-events-none"
                     loading="lazy"
                   />
                 </button>
@@ -362,13 +362,13 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
                 <button
                   key={`${brand.id}-r2-${i}`}
                   onClick={() => setSelectedBrand(brand)}
-                  className="flex-shrink-0 aspect-square bg-white rounded-2xl border border-gray-200 p-3.5 flex items-center justify-center active:scale-95 transition-transform"
+                  className="flex-shrink-0 aspect-square rounded-2xl border border-gray-200 overflow-hidden active:scale-95 transition-transform bg-white shadow-xs"
                   style={{ width: 'calc((min(100vw, 448px) - 52px) / 3)', maxWidth: '128px' }}
                 >
                   <img
                     src={brand.logo}
                     alt={brand.name}
-                    className="w-full h-full object-contain pointer-events-none"
+                    className="w-full h-full object-cover block pointer-events-none"
                     loading="lazy"
                   />
                 </button>
@@ -532,8 +532,8 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
               <div className="flex items-center gap-3">
                 {selectedBrand.logo ? (
-                  <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-200 p-1.5 flex items-center justify-center flex-shrink-0">
-                    <img src={selectedBrand.logo} alt={selectedBrand.name} className="w-full h-full object-contain" />
+                  <div className="w-10 h-10 rounded-xl border border-gray-200 overflow-hidden flex items-center justify-center flex-shrink-0">
+                    <img src={selectedBrand.logo} alt={selectedBrand.name} className="w-full h-full object-cover" />
                   </div>
                 ) : (
                   <BrandLogo id={selectedBrand.id} />
