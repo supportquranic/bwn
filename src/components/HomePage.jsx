@@ -116,12 +116,12 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
   const [bannerIdx, setBannerIdx] = useState(0);
   const [activeCategory, setActiveCategory] = useState(null);
   const [selectedBrand, setSelectedBrand] = useState(null);
+  const [isDocked, setIsDocked] = useState(false);
   const scrollRef = useRef(null);
   const sheetRef = useRef(null);
-  const heroRef = useRef(null);
 
+  const touchStartY = useRef(0);
   const lastScrollTop = useRef(0);
-  const hasDockBounced = useRef(false);
   const isBouncing = useRef(false);
 
   /* Auto-advance banner */
@@ -149,33 +149,44 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
     }, 110);
   };
 
-  const handleContainerScroll = () => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const st = el.scrollTop;
-    const lastSt = lastScrollTop.current;
+  const handleTouchStart = (e) => {
+    touchStartY.current = e.touches[0].clientY;
+  };
 
-    // Smoothly dissolve hero banner content so corners only ever see pure purple
-    if (heroRef.current) {
-      const opacity = Math.max(0, Math.min(1, 1 - st / 70));
-      heroRef.current.style.opacity = opacity;
-    }
+  const handleTouchMove = (e) => {
+    const currentY = e.touches[0].clientY;
+    const diff = currentY - touchStartY.current;
 
-    // 1. When white sheet scrolls UP to dock point below top bar (~110px)
-    if (st >= 110 && lastSt < 110 && !hasDockBounced.current) {
-      hasDockBounced.current = true;
+    // Swiping up when banner is expanded -> dock
+    if (!isDocked && diff < -20) {
+      setIsDocked(true);
       triggerSheetBounce(-6);
     }
-    // 2. When white sheet scrolls DOWN back from dock point (~110px)
-    else if (st < 110 && lastSt >= 110 && hasDockBounced.current) {
-      hasDockBounced.current = false;
+    // Pulling down when at top of sheet -> expand
+    else if (isDocked && (scrollRef.current?.scrollTop || 0) <= 0 && diff > 40) {
+      setIsDocked(false);
       triggerSheetBounce(6);
     }
-    // 3. When white sheet reaches bottom end of scroll
-    else if (st + el.clientHeight >= el.scrollHeight - 3) {
-      triggerSheetBounce(-6);
-    }
+  };
 
+  const handleWheel = (e) => {
+    if (!isDocked && e.deltaY > 15) {
+      setIsDocked(true);
+      triggerSheetBounce(-6);
+    } else if (isDocked && (scrollRef.current?.scrollTop || 0) <= 0 && e.deltaY < -20) {
+      setIsDocked(false);
+      triggerSheetBounce(6);
+    }
+  };
+
+  const handleSheetScroll = (e) => {
+    const st = e.currentTarget.scrollTop;
+    if (!isDocked && st > 5) {
+      setIsDocked(true);
+      triggerSheetBounce(-6);
+    } else if (st + e.currentTarget.clientHeight >= e.currentTarget.scrollHeight - 5) {
+      triggerSheetBounce(-4);
+    }
     lastScrollTop.current = st;
   };
 
@@ -214,15 +225,15 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
 
   return (
     <div
-      ref={scrollRef}
-      onScroll={handleContainerScroll}
-      className="h-full overflow-y-auto overflow-x-hidden hide-scrollbar gradient-bg-top-light relative smooth-scroll"
-      style={{ WebkitOverflowScrolling: 'touch' }}
+      className="h-full flex flex-col relative overflow-hidden"
+      style={{ background: '#8586f2' }}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onWheel={handleWheel}
     >
 
-      {/* ── Sticky Top Bar — always stays visible at the very top ── */}
-      <div className="sticky top-0 z-30 pt-3.5 pb-2.5 px-4 text-white"
-           style={{ background: '#8586f2' }}>
+      {/* ── Fixed Top Bar (Always at top, solid #8586f2, z-30, never scrolls, never bounces) ── */}
+      <div className="pt-3.5 pb-2 px-4 text-white flex-shrink-0 z-30" style={{ background: '#8586f2' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md border border-white/25 flex items-center justify-center">
@@ -251,10 +262,17 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
         </div>
       </div>
 
-      {/* ── Hero Banner Carousel — Solid #8586f2 background, content dissolves as sheet slides up ── */}
-      <div className="sticky top-[58px] z-0 pt-1 pb-4 px-4 text-white"
-           style={{ background: '#8586f2' }}>
-        <div ref={heroRef} className="relative py-1 flex items-center justify-between min-h-[116px]">
+      {/* ── Collapsible Hero Banner Carousel (Solid #8586f2, collapses smoothly on scroll/swipe) ── */}
+      <div
+        style={{
+          maxHeight: isDocked ? '0px' : '150px',
+          opacity: isDocked ? 0 : 1,
+          overflow: 'hidden',
+          transition: 'max-height 0.35s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.25s ease',
+        }}
+        className="flex-shrink-0 px-4 text-white"
+      >
+        <div className="relative py-1 flex items-center justify-between min-h-[116px]">
           <div className="flex-1 pr-2 z-10">
             <h2 className="text-white text-xl font-black leading-tight tracking-tight">
               {banner.title}
@@ -262,7 +280,10 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
             <p className="text-white/85 text-xs font-medium mt-1 leading-snug line-clamp-1">
               {banner.subtitle}
             </p>
-            <div className="mt-2.5 flex items-center gap-1 text-white font-bold text-xs underline underline-offset-2">
+            <div
+              className="mt-2.5 flex items-center gap-1 text-white font-bold text-xs underline underline-offset-2 cursor-pointer"
+              onClick={() => { setIsDocked(true); triggerSheetBounce(-6); }}
+            >
               <span>Shop now</span>
               <ChevronRight size={13} />
             </div>
@@ -277,7 +298,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
         </div>
 
         {/* Dots Indicator */}
-        <div className="flex justify-center items-center gap-1.5 pt-2 pb-0.5">
+        <div className="flex justify-center items-center gap-1.5 pt-2 pb-1">
           {BANNERS.map((_, i) => (
             <button
               key={i}
@@ -290,27 +311,49 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
         </div>
       </div>
 
-      {/* ── Lower White Sheet — slides up over hero, docks right below top bar ── */}
+      {/* ── Divider Location on Purple BG (Exact Image 1 breathing room: ~14px of pure solid #8586f2) ── */}
+      <div
+        className="h-3.5 flex-shrink-0 cursor-pointer flex items-center justify-center"
+        style={{ background: '#8586f2' }}
+        onClick={() => {
+          if (isDocked) {
+            setIsDocked(false);
+            triggerSheetBounce(6);
+          }
+        }}
+      >
+        {isDocked && (
+          <div className="w-8 h-1 rounded-full bg-white/30 hover:bg-white/50 transition-colors" />
+        )}
+      </div>
+
+      {/* ── White Sheet Container — DOCKED at divider location, permanently preserves rounded-t-[34px] ── */}
       <div
         ref={sheetRef}
-        className="relative z-10 min-h-screen pb-28"
+        className="flex-1 bg-white rounded-t-[34px] overflow-hidden flex flex-col relative"
+        style={{
+          boxShadow: '0 -8px 30px rgba(0,0,0,0.08)',
+          isolation: 'isolate',
+        }}
       >
-
-        {/* ── Sticky search bar with permanent, persistent rounded corners backed by #8586f2 ── */}
-        <div className="sticky top-[84px] z-20" style={{ background: '#8586f2' }}>
-          <div className="bg-white rounded-t-[34px] px-4 pt-3.5 pb-3" style={{ boxShadow: '0 -6px 25px rgba(0,0,0,0.06)' }}>
-            <button
-              className="w-full bg-white hover:bg-gray-50/80 border border-gray-200/80 rounded-full px-4 py-3 flex items-center gap-2.5 active:scale-[0.99] transition-all text-left shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
-              onClick={onSearchFocus}
-            >
-              <Search size={18} className="text-[#4b47d9] flex-shrink-0" />
-              <span className="text-black/40 text-sm font-medium">Search for mobile shops and devices</span>
-            </button>
-          </div>
+        {/* Fixed Search Bar at top of White Sheet — always keeps white background inside rounded sheet */}
+        <div className="bg-white px-4 pt-3.5 pb-2.5 flex-shrink-0 z-20">
+          <button
+            className="w-full bg-white hover:bg-gray-50/80 border border-gray-200/80 rounded-full px-4 py-3 flex items-center gap-2.5 active:scale-[0.99] transition-all text-left shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
+            onClick={onSearchFocus}
+          >
+            <Search size={18} className="text-[#4b47d9] flex-shrink-0" />
+            <span className="text-black/40 text-sm font-medium">Search for mobile shops and devices</span>
+          </button>
         </div>
 
-        {/* ── White Sheet Body Content ── */}
-        <div className="bg-white">
+        {/* ── Scrollable Sheet Body (Fluid momentum scrolling, content completely contained inside sheet) ── */}
+        <div
+          ref={scrollRef}
+          onScroll={handleSheetScroll}
+          className="flex-1 overflow-y-auto overflow-x-hidden hide-scrollbar smooth-scroll pb-28 relative"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
 
         {/* ── 3D Category Icons (no borders, no background shapes) ── */}
         <div className="mt-2 px-4">
