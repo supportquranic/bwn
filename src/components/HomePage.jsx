@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { MapPin, Bot, Search, Heart, Star, ChevronRight, ChevronDown, ChevronUp, SlidersHorizontal, X } from 'lucide-react';
+import { MapPin, Bot, Search, Heart, Star, ChevronRight, ChevronDown, ChevronUp, SlidersHorizontal, ArrowUpRight, ShoppingBag, X } from 'lucide-react';
 import { BANNERS, CATEGORIES, USAGE_SECTIONS, BRANDS, LATEST_POSTERS, INITIAL_SHOPS, INITIAL_PRODUCTS } from '../data/mockData';
 import { useCustomImages } from '../utils/imageStore';
 
@@ -35,7 +35,7 @@ function BrandLogo({ id }) {
   return logos[id] || <span className="text-xs font-black text-black">{id}</span>;
 }
 
-/* ── Unified Mobile Product Card (Clean card UI without extraneous badges) ── */
+/* ── Unified Mobile Product Card (15% taller, sleek non-square proportions, lite green buy now button) ── */
 function ProductCard({ product, onProduct, customData }) {
   const finalProduct = {
     ...product,
@@ -47,11 +47,12 @@ function ProductCard({ product, onProduct, customData }) {
 
   return (
     <div
-      className="bg-white rounded-2xl border border-gray-200 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform flex flex-col"
+      className="bg-white rounded-2xl border border-gray-200 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform flex flex-col shadow-[0_2px_8px_rgba(0,0,0,0.03)]"
       onClick={() => onProduct(product.id)}
     >
-      <div className="px-2.5 pt-3 pb-1">
-        <div className="h-28 flex items-center justify-center">
+      {/* Taller image area with generous breathing room */}
+      <div className="px-3 pt-3.5 pb-1.5">
+        <div className="h-34 flex items-center justify-center">
           <img
             src={finalProduct.image}
             alt={finalProduct.name}
@@ -60,15 +61,75 @@ function ProductCard({ product, onProduct, customData }) {
         </div>
       </div>
 
-      <div className="p-2.5 pt-1.5 flex flex-col gap-1.5 flex-1">
-        <p className="text-xs font-bold text-black leading-tight line-clamp-2">{finalProduct.name}</p>
-        <div className="flex items-center justify-between gap-1 mt-auto">
-          <span className="text-xs font-bold text-[#4b47d9]">{fmt(finalProduct.price)}</span>
+      {/* Spacious content area with room for title, price, and button */}
+      <div className="p-3 pt-1 flex flex-col justify-between flex-1 min-h-[96px]">
+        <div>
+          <p className="text-xs font-bold text-black leading-snug line-clamp-2">{finalProduct.name}</p>
+        </div>
+        <div className="flex items-center justify-between gap-1.5 pt-2 mt-auto">
+          <span className="text-xs font-black text-[#4b47d9]">{fmt(finalProduct.price)}</span>
           <button
-            className="flex-shrink-0 bg-[#4b47d9] hover:bg-[#3d39c6] text-white text-[10px] font-bold px-2.5 py-1 rounded-full active:scale-95 transition-transform shadow-xs"
+            className="flex-shrink-0 bg-emerald-500 hover:bg-emerald-600 text-white text-[10.5px] font-bold px-3 py-1.5 rounded-full active:scale-95 transition-transform shadow-xs"
             onClick={e => { e.stopPropagation(); onProduct(product.id); }}
           >
             Buy now
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Horizontal Product Card (Image 3 layout for Best Under 1 Lakh: clean image, no border, no shape, title, price, cart button) ── */
+function HorizontalProductCard({ product, onProduct, customData }) {
+  const finalProduct = {
+    ...product,
+    ...customData,
+    image: customData?.image || product.image,
+    name: customData?.name || product.name,
+    price: customData?.price !== undefined ? customData.price : product.price,
+  };
+
+  return (
+    <div
+      className="bg-white rounded-3xl p-3.5 flex items-center gap-3.5 shadow-[0_2px_14px_rgba(0,0,0,0.04)] active:scale-[0.99] transition-transform cursor-pointer"
+      onClick={() => onProduct(product.id)}
+    >
+      {/* Clean image on left — no border, no background shape */}
+      <div className="w-24 h-24 flex-shrink-0 flex items-center justify-center">
+        <img
+          src={finalProduct.image}
+          alt={finalProduct.name}
+          className="w-full h-full object-contain"
+        />
+      </div>
+
+      {/* Content on right — matching Image 3 structure */}
+      <div className="flex-1 min-w-0 flex flex-col justify-between h-24 py-0.5">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="text-sm font-bold text-black leading-snug truncate flex-1">
+            {finalProduct.name}
+          </h3>
+          <span className="flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100/60">
+            {product.condition === 'new' ? 'Box Pack' : 'In Stock'}
+          </span>
+        </div>
+
+        <p className="text-xs text-black/45 line-clamp-1 mt-0.5">
+          {product.specs?.Display || '120Hz Display'} · {product.specs?.Storage || '128GB'}
+        </p>
+
+        <div className="flex items-center justify-between mt-auto pt-1">
+          <span className="text-sm font-black text-[#4b47d9]">{fmt(finalProduct.price)}</span>
+          <button
+            className="w-8.5 h-8.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 active:scale-90 transition-transform shadow-xs"
+            onClick={e => {
+              e.stopPropagation();
+              onProduct(product.id);
+            }}
+            title="Buy now"
+          >
+            <ShoppingBag size={15} />
           </button>
         </div>
       </div>
@@ -107,6 +168,119 @@ function BudgetItem({ product, shop, onProduct, onToggleFav, isFav, customData }
       >
         <Heart size={18} className={isFav ? 'fill-red-500 text-red-500' : 'text-gray-300'} />
       </button>
+    </div>
+  );
+}
+
+/* ── Interactive Auto-Scroll Brand Carousel (60% slower, drag left/right with touch or mouse, resumes auto-scroll from exact position on release) ── */
+function InteractiveBrandCarousel({ brands, onSelectBrand }) {
+  const containerRef = useRef(null);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const scrollLeftStart = useRef(0);
+  const dragDistance = useRef(0);
+  const animFrameId = useRef(null);
+
+  // Quadruple brands list for seamless infinite loop
+  const list = [...brands, ...brands, ...brands, ...brands];
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    // Slow down 60%: speed = 0.4px per frame (smooth & relaxed)
+    const speed = 0.4;
+
+    const step = () => {
+      if (!isDragging.current && el) {
+        el.scrollLeft += speed;
+        // Seamless loop reset
+        const loopThreshold = el.scrollWidth / 2;
+        if (el.scrollLeft >= loopThreshold) {
+          el.scrollLeft -= el.scrollWidth / 4;
+        } else if (el.scrollLeft <= 0) {
+          el.scrollLeft += el.scrollWidth / 4;
+        }
+      }
+      animFrameId.current = requestAnimationFrame(step);
+    };
+
+    animFrameId.current = requestAnimationFrame(step);
+    return () => {
+      if (animFrameId.current) cancelAnimationFrame(animFrameId.current);
+    };
+  }, []);
+
+  const handleTouchStart = (e) => {
+    isDragging.current = true;
+    startX.current = e.touches[0].clientX;
+    scrollLeftStart.current = containerRef.current?.scrollLeft || 0;
+    dragDistance.current = 0;
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isDragging.current || !containerRef.current) return;
+    const currentX = e.touches[0].clientX;
+    const diff = currentX - startX.current;
+    dragDistance.current = Math.abs(diff);
+    containerRef.current.scrollLeft = scrollLeftStart.current - diff;
+  };
+
+  const handleTouchEnd = () => {
+    isDragging.current = false;
+  };
+
+  const handleMouseDown = (e) => {
+    isDragging.current = true;
+    startX.current = e.clientX;
+    scrollLeftStart.current = containerRef.current?.scrollLeft || 0;
+    dragDistance.current = 0;
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging.current || !containerRef.current) return;
+    const diff = e.clientX - startX.current;
+    dragDistance.current = Math.abs(diff);
+    containerRef.current.scrollLeft = scrollLeftStart.current - diff;
+  };
+
+  const handleMouseUp = () => {
+    isDragging.current = false;
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      className="overflow-x-auto hide-scrollbar flex gap-2 pl-4 py-1 select-none cursor-grab active:cursor-grabbing"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+      style={{ WebkitOverflowScrolling: 'touch' }}
+    >
+      {list.map((brand, i) => (
+        <button
+          key={`${brand.id}-${i}`}
+          onClick={() => {
+            if (dragDistance.current < 6) {
+              onSelectBrand(brand);
+            }
+          }}
+          className="flex-shrink-0 aspect-square rounded-xl border border-gray-200 overflow-hidden active:scale-95 transition-transform bg-white shadow-2xs"
+          style={{ width: '82px' }}
+        >
+          <img
+            src={brand.logo}
+            alt={brand.name}
+            className="w-full h-full object-cover block pointer-events-none"
+            loading="lazy"
+            draggable={false}
+          />
+        </button>
+      ))}
     </div>
   );
 }
@@ -378,27 +552,24 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
           className="flex-1 overflow-y-auto overflow-x-hidden hide-scrollbar smooth-scroll pb-28 relative"
           style={{ WebkitOverflowScrolling: 'touch' }}
         >
-          {/* Search Bar inside scrollable sheet — scrolls up with content */}
-          <div className="px-4 pt-1 pb-2">
+          {/* Search Bar inside scrollable sheet — Image 1: Inset shadow inside (deeper recessed look), no drop-shadow, shorter from right, separate white filter button with purple icon */}
+          <div className="px-4 pt-1 pb-2 flex items-center gap-2.5">
             <div
-              className="w-full bg-white hover:bg-gray-50/80 border border-gray-200/80 rounded-full pl-4 pr-1.5 py-1.5 flex items-center gap-2 shadow-[0_2px_12px_rgba(0,0,0,0.06)] cursor-pointer"
+              className="flex-1 bg-gray-50/90 border border-gray-200/90 rounded-full px-4 py-2.5 flex items-center gap-2.5 cursor-pointer shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)]"
               onClick={onSearchFocus}
             >
               <Search size={18} className="text-[#4b47d9] flex-shrink-0" />
-              <span className="text-black/40 text-sm font-medium flex-1 truncate">
+              <span className="text-black/40 text-sm font-medium truncate">
                 Search for mobile shops and devices
               </span>
-              <button
-                className="w-8 h-8 rounded-full bg-[#4b47d9] hover:bg-[#3d39c6] text-white flex items-center justify-center flex-shrink-0 active:scale-95 transition-transform"
-                onClick={e => {
-                  e.stopPropagation();
-                  onSearchFocus();
-                }}
-                title="Filter"
-              >
-                <SlidersHorizontal size={14} />
-              </button>
             </div>
+            <button
+              className="w-10 h-10 rounded-full bg-white border border-gray-200/90 flex items-center justify-center text-[#4b47d9] shadow-xs active:scale-95 transition-transform flex-shrink-0"
+              onClick={onSearchFocus}
+              title="Filter"
+            >
+              <SlidersHorizontal size={17} />
+            </button>
           </div>
 
         {/* ── 3D Category Icons (no borders, no background shapes) ── */}
@@ -513,38 +684,19 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
           </div>
         </div>
 
-        {/* ── Shop by Brand (Smooth continuous horizontal auto-scroll) ── */}
+        {/* ── Shop by Brand (Interactive auto-scroll: 60% slower, drag left/right with touch/mouse, resumes from exact position) ── */}
         <div className="mt-6">
           <div className="px-4 flex items-center justify-between mb-3">
             <div>
               <h2 className="text-base font-bold text-black">Shop by Brand</h2>
-              <p className="text-xs text-black/40">Tap a brand to explore all models</p>
+              <p className="text-xs text-black/40">Tap or drag brands to explore models</p>
             </div>
           </div>
 
-          <div className="overflow-hidden py-1">
-            {/* Single Continuous Auto-Scroll Brand Row */}
-            <div className="animate-marquee-left flex gap-2 pl-4">
-              {[...BRANDS, ...BRANDS].map((brand, i) => (
-                <button
-                  key={`${brand.id}-${i}`}
-                  onClick={() => setSelectedBrand(brand)}
-                  className="flex-shrink-0 aspect-square rounded-xl border border-gray-200 overflow-hidden active:scale-95 transition-transform bg-white shadow-2xs"
-                  style={{ width: '82px' }}
-                >
-                  <img
-                    src={brand.logo}
-                    alt={brand.name}
-                    className="w-full h-full object-cover block pointer-events-none"
-                    loading="lazy"
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
+          <InteractiveBrandCarousel brands={BRANDS} onSelectBrand={setSelectedBrand} />
         </div>
 
-        {/* ── Best Under 1 Lakh (4 cards initially, expandable to all) ── */}
+        {/* ── Best Under 1 Lakh (Image 3 layout: horizontal cards, no border, no shape, clean phone image, title, specs, price, cart button) ── */}
         <div className="mt-6">
           <div className="px-4 flex items-center justify-between mb-3">
             <div>
@@ -559,9 +711,9 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
               {showAllUnder1Lakh ? <ChevronUp size={13} /> : <ChevronRight size={13} />}
             </button>
           </div>
-          <div className="grid grid-cols-2 gap-2.5 px-4">
+          <div className="flex flex-col gap-2.5 px-4">
             {(showAllUnder1Lakh ? under1LakhPhones : under1LakhPhones.slice(0, 4)).map(p => (
-              <ProductCard
+              <HorizontalProductCard
                 key={p.id}
                 product={p}
                 onProduct={onProduct}
@@ -632,7 +784,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
           </div>
         </div>
 
-        {/* ── Explore All Shops (New Section: Same large card dimensions, clean banner, shop info below) ── */}
+        {/* ── Explore All Shops (Image 2 Design: clean top banner, verified badge, white logo circle, shop details, rating pill, Visit Shop button) ── */}
         <div className="mt-6 mb-4">
           <div className="px-4 flex items-center justify-between mb-3">
             <div>
@@ -648,38 +800,68 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
               return (
                 <div
                   key={shop.id}
-                  className="flex-shrink-0 snap-start bg-white rounded-3xl border border-gray-200 overflow-hidden cursor-pointer active:scale-[0.99] transition-all"
+                  className="flex-shrink-0 snap-start bg-white rounded-3xl border border-gray-100 p-3 shadow-[0_4px_20px_rgba(0,0,0,0.06)] overflow-hidden cursor-pointer active:scale-[0.99] transition-all flex flex-col"
                   style={{ width: 'calc(100vw - 60px)', maxWidth: '360px' }}
                   onClick={() => onShop(shop.id)}
                 >
-                  {/* Clean shop banner image — NO pill badges, NO tags, NO overlays */}
-                  <div className="relative h-32 w-full overflow-hidden bg-gray-100">
+                  {/* Top photo banner with rounded corners, verified pill, and circular logo matching Image 2 */}
+                  <div className="relative h-40 w-full rounded-2xl overflow-hidden bg-gray-100">
                     <img
                       src={getImg(`shop_${shop.id}_cover`, shop.coverImage)}
                       alt={shop.name}
                       className="w-full h-full object-cover"
                     />
-                    <button
-                      className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center active:scale-90 transition-transform shadow-xs"
-                      onClick={e => { e.stopPropagation(); onToggleFav(shop.id); }}
-                    >
-                      <Heart size={15} className={isFav ? 'fill-red-500 text-red-500' : 'text-gray-400'} />
-                    </button>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
+
+                    {/* Top-left: Verified / Best Seller pill */}
+                    <span className="absolute top-2.5 left-2.5 bg-black/50 backdrop-blur-md text-white text-[10.5px] font-semibold px-2.5 py-1 rounded-full">
+                      {shop.verified ? 'Verified Shop' : 'Best Seller'}
+                    </span>
+
+                    {/* Top-right: Clean white circular shop logo badge */}
+                    <div className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white p-1 shadow-md flex items-center justify-center overflow-hidden">
+                      <img
+                        src={getImg(`shop_${shop.id}_logo`, shop.logo)}
+                        alt=""
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    </div>
+
+                    {/* Image indicator dots at bottom matching Image 2 */}
+                    <div className="absolute bottom-2 inset-x-0 flex justify-center items-center gap-1">
+                      <span className="w-2.5 h-1 rounded-full bg-white" />
+                      <span className="w-1 h-1 rounded-full bg-white/50" />
+                      <span className="w-1 h-1 rounded-full bg-white/50" />
+                    </div>
                   </div>
 
-                  {/* Shop Details cleanly displayed below */}
-                  <div className="p-3">
-                    <h3 className="text-sm font-black text-black leading-snug truncate">{shop.name}</h3>
-                    <p className="text-xs text-black/40 mt-1 flex items-center gap-1 truncate">
-                      <MapPin size={12} className="text-[#4b47d9] flex-shrink-0" />
-                      <span>{shop.distance}</span>
-                      <span className="text-black/20">·</span>
-                      <span className="truncate">{shop.address}</span>
+                  {/* Shop Details matching Image 2 typography & layout */}
+                  <div className="pt-2.5 pb-1 flex flex-col flex-1">
+                    <h3 className="text-base font-bold text-black leading-snug truncate">{shop.name}</h3>
+                    <p className="text-xs font-semibold text-black/50 mt-0.5 truncate">
+                      {shop.featuredQuote || 'Official Retailer in Bahawalnagar'}
                     </p>
-                    <div className="flex items-center gap-1 mt-1.5">
-                      <Star size={12} className="fill-amber-400 text-amber-400" />
-                      <span className="text-xs font-black text-black">{shop.rating}</span>
-                      <span className="text-xs text-black/40">({shop.ratingCount} reviews)</span>
+                    <p className="text-xs text-black/40 mt-1 line-clamp-2 leading-relaxed">
+                      {shop.address}
+                    </p>
+
+                    {/* Bottom row: Rating pill on left, Visit Shop button on right */}
+                    <div className="flex items-center justify-between mt-3 pt-1">
+                      <div className="bg-gray-100 rounded-full px-3 py-1.5 flex items-center gap-1 text-xs font-bold text-black">
+                        <Star size={11} className="fill-amber-400 text-amber-400" />
+                        <span>{shop.rating}</span>
+                        <span className="text-black/35 font-normal">({shop.ratingCount})</span>
+                      </div>
+                      <button
+                        className="bg-black hover:bg-black/85 text-white text-xs font-bold px-4 py-2 rounded-full flex items-center gap-1.5 active:scale-95 transition-transform"
+                        onClick={e => {
+                          e.stopPropagation();
+                          onShop(shop.id);
+                        }}
+                      >
+                        <span>Visit Shop</span>
+                        <ArrowUpRight size={13} />
+                      </button>
                     </div>
                   </div>
                 </div>
