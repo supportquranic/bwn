@@ -117,12 +117,68 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
   const [activeCategory, setActiveCategory] = useState(null);
   const [selectedBrand, setSelectedBrand] = useState(null);
   const scrollRef = useRef(null);
+  const sheetRef = useRef(null);
+
+  const lastScrollTop = useRef(0);
+  const hasDockBounced = useRef(false);
+  const hasTopBounced = useRef(true);
+  const isBouncing = useRef(false);
 
   /* Auto-advance banner */
   useEffect(() => {
     const t = setInterval(() => setBannerIdx(i => (i + 1) % BANNERS.length), 4000);
     return () => clearInterval(t);
   }, []);
+
+  /* Smooth minimal elastic bounce exclusively on the White Sheet (purple top stays solid) */
+  const triggerSheetBounce = (deltaY) => {
+    const sheet = sheetRef.current;
+    if (!sheet || isBouncing.current) return;
+    isBouncing.current = true;
+
+    sheet.style.transition = 'transform 0.16s cubic-bezier(0.25, 1, 0.5, 1)';
+    sheet.style.transform = `translate3d(0, ${deltaY}px, 0)`;
+
+    setTimeout(() => {
+      sheet.style.transition = 'transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1)';
+      sheet.style.transform = 'translate3d(0, 0, 0)';
+      setTimeout(() => {
+        sheet.style.transition = '';
+        isBouncing.current = false;
+      }, 330);
+    }, 110);
+  };
+
+  const handleContainerScroll = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const st = el.scrollTop;
+    const lastSt = lastScrollTop.current;
+
+    // 1. When white sheet slides up to the dock point below top bar (~140px-160px)
+    if (st >= 145 && lastSt < 145 && !hasDockBounced.current) {
+      hasDockBounced.current = true;
+      hasTopBounced.current = false;
+      triggerSheetBounce(-6);
+    }
+    // 2. When white sheet slides back down to resting position (top boundary)
+    else if (st <= 5 && lastSt > 5 && !hasTopBounced.current) {
+      hasTopBounced.current = true;
+      hasDockBounced.current = false;
+      triggerSheetBounce(6);
+    }
+    // 3. When white sheet reaches bottom end of scroll
+    else if (st + el.clientHeight >= el.scrollHeight - 3) {
+      triggerSheetBounce(-6);
+    }
+    // Reset flags in intermediate zone so next arrival triggers smoothly
+    else if (st > 25 && st < 125) {
+      hasDockBounced.current = false;
+      hasTopBounced.current = false;
+    }
+
+    lastScrollTop.current = st;
+  };
 
   /* 1. Box Pack Phones (Top 6 sealed phones) */
   const boxPackPhones = activeCategory
@@ -158,7 +214,12 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
     : [];
 
   return (
-    <div ref={scrollRef} className="h-full overflow-y-auto overflow-x-hidden hide-scrollbar gradient-bg-top-light relative smooth-scroll" style={{ WebkitOverflowScrolling: 'touch' }}>
+    <div
+      ref={scrollRef}
+      onScroll={handleContainerScroll}
+      className="h-full overflow-y-auto overflow-x-hidden hide-scrollbar gradient-bg-top-light relative smooth-scroll"
+      style={{ WebkitOverflowScrolling: 'touch' }}
+    >
 
       {/* ── Sticky Top Bar — always stays visible at the very top ── */}
       <div className="sticky top-0 z-30 pt-3.5 pb-2.5 px-4 text-white"
@@ -230,8 +291,11 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
       </div>
 
       {/* ── Lower White Sheet — slides up over hero, docks right below top bar ── */}
-      <div className="relative z-10 bg-white rounded-t-[34px] min-h-screen pb-28"
-           style={{ boxShadow: '0 -8px 30px rgba(0,0,0,0.08)' }}>
+      <div
+        ref={sheetRef}
+        className="relative z-10 bg-white rounded-t-[34px] min-h-screen pb-28"
+        style={{ boxShadow: '0 -8px 30px rgba(0,0,0,0.08)' }}
+      >
 
         {/* ── Sticky search bar with subtle, minimal box-shadow ── */}
         <div className="sticky top-[58px] z-20">
