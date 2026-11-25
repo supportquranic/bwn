@@ -116,12 +116,11 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
   const [bannerIdx, setBannerIdx] = useState(0);
   const [activeCategory, setActiveCategory] = useState(null);
   const [selectedBrand, setSelectedBrand] = useState(null);
+  const [isDocked, setIsDocked] = useState(false);
   const scrollRef = useRef(null);
   const sheetRef = useRef(null);
 
   const lastScrollTop = useRef(0);
-  const hasDockBounced = useRef(false);
-  const hasTopBounced = useRef(true);
   const isBouncing = useRef(false);
 
   /* Auto-advance banner */
@@ -155,26 +154,19 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
     const st = el.scrollTop;
     const lastSt = lastScrollTop.current;
 
-    // 1. When white sheet slides up to the dock point below top bar (~140px-160px)
-    if (st >= 145 && lastSt < 145 && !hasDockBounced.current) {
-      hasDockBounced.current = true;
-      hasTopBounced.current = false;
-      triggerSheetBounce(-6);
+    // 1. When white sheet scrolls UP to dock point below top bar (~140px)
+    if (st >= 140 && !isDocked) {
+      setIsDocked(true);
+      triggerSheetBounce(-7);
     }
-    // 2. When white sheet slides back down to resting position (top boundary)
-    else if (st <= 5 && lastSt > 5 && !hasTopBounced.current) {
-      hasTopBounced.current = true;
-      hasDockBounced.current = false;
-      triggerSheetBounce(6);
+    // 2. When white sheet scrolls DOWN back from dock point (~140px)
+    else if (st < 140 && isDocked) {
+      setIsDocked(false);
+      triggerSheetBounce(7);
     }
     // 3. When white sheet reaches bottom end of scroll
     else if (st + el.clientHeight >= el.scrollHeight - 3) {
-      triggerSheetBounce(-6);
-    }
-    // Reset flags in intermediate zone so next arrival triggers smoothly
-    else if (st > 25 && st < 125) {
-      hasDockBounced.current = false;
-      hasTopBounced.current = false;
+      triggerSheetBounce(-7);
     }
 
     lastScrollTop.current = st;
@@ -297,8 +289,8 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
         style={{ boxShadow: '0 -8px 30px rgba(0,0,0,0.08)' }}
       >
 
-        {/* ── Sticky search bar with subtle, minimal box-shadow ── */}
-        <div className="sticky top-[58px] z-20">
+        {/* ── Sticky search bar with persistent rounded corners ── */}
+        <div className={`sticky top-[58px] z-20 transition-colors duration-150 ${isDocked ? 'bg-[#8586f2]' : 'bg-transparent'}`}>
           <div className="bg-white rounded-t-[34px] px-4 pt-3.5 pb-3">
             <button
               className="w-full bg-white hover:bg-gray-50/80 border border-gray-200/80 rounded-full px-4 py-3 flex items-center gap-2.5 active:scale-[0.99] transition-all text-left shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
