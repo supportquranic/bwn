@@ -522,31 +522,12 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 overflow-hidden py-1">
-            {/* Row 1 */}
+          <div className="overflow-hidden py-1">
+            {/* Single Continuous Auto-Scroll Brand Row */}
             <div className="animate-marquee-left flex gap-2 pl-4">
               {[...BRANDS, ...BRANDS].map((brand, i) => (
                 <button
-                  key={`${brand.id}-r1-${i}`}
-                  onClick={() => setSelectedBrand(brand)}
-                  className="flex-shrink-0 aspect-square rounded-xl border border-gray-200 overflow-hidden active:scale-95 transition-transform bg-white shadow-2xs"
-                  style={{ width: '82px' }}
-                >
-                  <img
-                    src={brand.logo}
-                    alt={brand.name}
-                    className="w-full h-full object-cover block pointer-events-none"
-                    loading="lazy"
-                  />
-                </button>
-              ))}
-            </div>
-
-            {/* Row 2 */}
-            <div className="animate-marquee-left flex gap-2 pl-4" style={{ animationDuration: '26s' }}>
-              {[...BRANDS.slice(5), ...BRANDS.slice(0, 5), ...BRANDS.slice(5), ...BRANDS.slice(0, 5)].map((brand, i) => (
-                <button
-                  key={`${brand.id}-r2-${i}`}
+                  key={`${brand.id}-${i}`}
                   onClick={() => setSelectedBrand(brand)}
                   className="flex-shrink-0 aspect-square rounded-xl border border-gray-200 overflow-hidden active:scale-95 transition-transform bg-white shadow-2xs"
                   style={{ width: '82px' }}
