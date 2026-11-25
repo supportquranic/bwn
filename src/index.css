@@ -127,3 +127,25 @@ body {
   -webkit-backface-visibility: hidden;
   will-change: transform;
 }
+
+/* Continuous smooth right-to-left marquee scroll */
+@keyframes marquee-scroll-left {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-marquee-left {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll-left 20s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-left:hover,
+.animate-marquee-left:active {
+  animation-play-state: paused;
+}

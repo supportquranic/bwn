@@ -327,7 +327,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
           </div>
         </div>
 
-        {/* ── Shop by Brand (Brand Logos / Posters — click to see all models in market) ── */}
+        {/* ── Shop by Brand (Square Logos Only, 3 horizontal x 2 vertical, auto scrolling right to left) ── */}
         <div className="mt-6">
           <div className="px-4 flex items-center justify-between mb-3">
             <div>
@@ -335,20 +335,45 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
               <p className="text-xs text-black/40">Tap a brand to explore all models</p>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-2.5 px-4">
-            {BRANDS.map(brand => (
-              <button
-                key={brand.id}
-                onClick={() => setSelectedBrand(brand)}
-                className="bg-white rounded-2xl border border-gray-200 p-3 flex flex-col items-center justify-center gap-1.5 active:scale-95 transition-transform"
-              >
-                <div className="h-9 flex items-center justify-center">
-                  <BrandLogo id={brand.id} />
-                </div>
-                <span className="text-[11px] font-bold text-black">{brand.name}</span>
-                <span className="text-[10px] text-black/40 truncate max-w-full">{brand.newModels.length} models</span>
-              </button>
-            ))}
+
+          <div className="flex flex-col gap-2.5 overflow-hidden py-1">
+            {/* Row 1 */}
+            <div className="animate-marquee-left flex gap-2.5 pl-4">
+              {[...BRANDS.slice(0, 6), ...BRANDS.slice(0, 6)].map((brand, i) => (
+                <button
+                  key={`${brand.id}-r1-${i}`}
+                  onClick={() => setSelectedBrand(brand)}
+                  className="flex-shrink-0 aspect-square bg-white rounded-2xl border border-gray-200 p-3.5 flex items-center justify-center active:scale-95 transition-transform"
+                  style={{ width: 'calc((min(100vw, 448px) - 52px) / 3)', maxWidth: '128px' }}
+                >
+                  <img
+                    src={brand.logo}
+                    alt={brand.name}
+                    className="w-full h-full object-contain pointer-events-none"
+                    loading="lazy"
+                  />
+                </button>
+              ))}
+            </div>
+
+            {/* Row 2 */}
+            <div className="animate-marquee-left flex gap-2.5 pl-4" style={{ animationDuration: '24s' }}>
+              {[...BRANDS.slice(6), BRANDS[0], ...BRANDS.slice(6), BRANDS[0]].map((brand, i) => (
+                <button
+                  key={`${brand.id}-r2-${i}`}
+                  onClick={() => setSelectedBrand(brand)}
+                  className="flex-shrink-0 aspect-square bg-white rounded-2xl border border-gray-200 p-3.5 flex items-center justify-center active:scale-95 transition-transform"
+                  style={{ width: 'calc((min(100vw, 448px) - 52px) / 3)', maxWidth: '128px' }}
+                >
+                  <img
+                    src={brand.logo}
+                    alt={brand.name}
+                    className="w-full h-full object-contain pointer-events-none"
+                    loading="lazy"
+                  />
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -506,7 +531,13 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
           >
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
               <div className="flex items-center gap-3">
-                <BrandLogo id={selectedBrand.id} />
+                {selectedBrand.logo ? (
+                  <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-200 p-1.5 flex items-center justify-center flex-shrink-0">
+                    <img src={selectedBrand.logo} alt={selectedBrand.name} className="w-full h-full object-contain" />
+                  </div>
+                ) : (
+                  <BrandLogo id={selectedBrand.id} />
+                )}
                 <div>
                   <h3 className="text-base font-black text-black">{selectedBrand.name} Models</h3>
                   <p className="text-xs text-black/40">{selectedBrand.tagline} · Available in Bahawalnagar</p>
