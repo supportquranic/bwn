@@ -275,36 +275,18 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
           </div>
 
           <div className="flex gap-3 overflow-x-auto hide-scrollbar pl-4 pr-4 pb-2 snap-x snap-mandatory scroll-pl-4">
-            {latestPhones.map(phone => {
-              const shop = INITIAL_SHOPS.find(s => s.id === phone.shopId);
-              const isFav = favorites.includes(phone.id);
-              return (
-                <div
-                  key={phone.id}
-                  className="flex-shrink-0 snap-start bg-white rounded-2xl border border-gray-200 overflow-hidden cursor-pointer active:scale-[0.99] transition-all"
-                  style={{ width: '72%', maxWidth: '280px' }}
-                  onClick={() => onProduct(phone.id)}
-                >
-                  <div className="relative h-36 w-full overflow-hidden bg-gray-50">
-                    <img src={phone.image} alt={phone.name} className="w-full h-full object-cover" />
-                    <button
-                      className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/90 flex items-center justify-center active:scale-90 transition-transform"
-                      onClick={e => { e.stopPropagation(); onToggleFav(phone.id); }}
-                    >
-                      <Heart size={13} className={isFav ? 'fill-red-500 text-red-500' : 'text-gray-400'} />
-                    </button>
-                  </div>
-                  <div className="p-3">
-                    <h3 className="text-xs font-black text-black line-clamp-2 leading-snug mb-1">{phone.name}</h3>
-                    <p className="text-[11px] text-black/40 truncate mb-1.5">{shop?.name}</p>
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-bold text-[#4b47d9]">{fmt(phone.price)}</p>
-                      <span className="text-[10px] font-bold text-[#4b47d9] bg-indigo-50 px-2 py-0.5 rounded-full">View</span>
-                    </div>
-                  </div>
+            {latestPhones.map(phone => (
+              <div
+                key={phone.id}
+                className="flex-shrink-0 snap-start rounded-2xl overflow-hidden cursor-pointer active:scale-[0.99] transition-all"
+                style={{ width: '72%', maxWidth: '280px' }}
+                onClick={() => onProduct(phone.id)}
+              >
+                <div className="h-44 w-full bg-gray-100">
+                  <img src={phone.image} alt={phone.name} className="w-full h-full object-cover" />
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         </div>
 
