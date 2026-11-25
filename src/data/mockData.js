@@ -110,7 +110,7 @@ export const LATEST_POSTERS = [
   },
   {
     id: 'poster-2',
-    image: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=900&h=420&fit=crop&q=85',
+    image: '/posters/kvphone.avif',
   },
   {
     id: 'poster-3',
