@@ -710,21 +710,10 @@ export default function AdminVisualEditor({ onExit }) {
                     onEdit={setModalTarget}
                   >
                     <div className="bg-white rounded-2xl border border-gray-200 p-2.5 flex flex-col h-full">
-                      {/* Condition & PTA Badges */}
-                      <div className="flex items-center gap-1 mb-1.5 flex-wrap">
-                        <span className="inline-block bg-gray-100 text-gray-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                          {conditionText}
-                        </span>
-                        {ptaText && (
-                          <span className={`inline-block text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
-                            ptaText.toLowerCase().includes('non') 
-                              ? 'bg-amber-100 text-amber-800' 
-                              : 'bg-emerald-50 text-emerald-700 border border-emerald-200/60'
-                          }`}>
-                            {ptaText}
-                          </span>
-                        )}
-                      </div>
+                      {/* Condition Badge */}
+                      <span className="inline-block bg-gray-100 text-gray-700 text-[10px] font-bold px-2 py-0.5 rounded-full mb-1.5 self-start">
+                        {conditionText}
+                      </span>
                       
                       {/* Measured Image Area */}
                       <div className="h-28 w-full flex items-center justify-center p-1 bg-gray-50/50 rounded-xl my-1">

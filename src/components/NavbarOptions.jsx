@@ -59,18 +59,29 @@ export const Navbar1 = (props) => (
 );
 
 /**
- * Navbar2: White Background with Inner Glass Shadows
+ * Navbar2: White Background with Inner Glass Shadows & Floating Elevation
  */
 export const Navbar2 = (props) => (
-  <GlassSurface
-    width="100%"
-    height={72}
-    borderRadius={36}
-    distortionScale={-180}
-    displace={3}
-    backgroundOpacity={0.18}
-    style={{ background: '#ffffff' }}
+  <div
+    className="w-full rounded-[36px] overflow-hidden"
+    style={{
+      boxShadow: '0 12px 36px -6px rgba(0, 0, 0, 0.18), 0 4px 16px -2px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.06)'
+    }}
   >
-    <NavbarContent {...props} />
-  </GlassSurface>
+    <GlassSurface
+      width="100%"
+      height={72}
+      borderRadius={36}
+      distortionScale={-180}
+      displace={3}
+      backgroundOpacity={0.18}
+      style={{ 
+        background: '#ffffff',
+        boxShadow: 'inset 0 3px 8px rgba(0, 0, 0, 0.09), inset 0 -3px 8px rgba(0, 0, 0, 0.05), inset 0 1px 2px rgba(255, 255, 255, 0.9)',
+        border: '1px solid rgba(0, 0, 0, 0.08)'
+      }}
+    >
+      <NavbarContent {...props} />
+    </GlassSurface>
+  </div>
 );
