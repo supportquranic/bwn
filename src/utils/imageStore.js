@@ -3,31 +3,34 @@
 
 import { useState, useEffect } from 'react';
 
+const SCHEMA_VERSION = 'bm_v4_canonical_2026';
+const VERSION_KEY = 'bm_schema_version';
 const CONTENT_STORAGE_KEY = 'bm_custom_content';
 const OLD_IMAGES_KEY = 'bm_custom_images';
+
+// Automatically purge outdated / conflicting localStorage overrides on all browsers
+if (typeof window !== 'undefined') {
+  try {
+    const savedVer = localStorage.getItem(VERSION_KEY);
+    if (savedVer !== SCHEMA_VERSION) {
+      localStorage.removeItem(CONTENT_STORAGE_KEY);
+      localStorage.removeItem(OLD_IMAGES_KEY);
+      localStorage.removeItem('bm_products');
+      localStorage.removeItem('bm_shops');
+      localStorage.removeItem('bm_product_private');
+      localStorage.removeItem('bm_shop_private');
+      localStorage.setItem(VERSION_KEY, SCHEMA_VERSION);
+    }
+  } catch (e) {
+    // Ignore private browsing storage restrictions
+  }
+}
 
 // Get all stored content overrides
 export function getStoredContent() {
   try {
     const raw = localStorage.getItem(CONTENT_STORAGE_KEY);
-    const content = raw ? JSON.parse(raw) : {};
-
-    // Backward compatibility: migrate any old image-only keys if present
-    const oldRaw = localStorage.getItem(OLD_IMAGES_KEY);
-    if (oldRaw) {
-      try {
-        const oldImages = JSON.parse(oldRaw);
-        Object.keys(oldImages).forEach(key => {
-          if (!content[key]) {
-            content[key] = { image: oldImages[key] };
-          } else if (!content[key].image) {
-            content[key].image = oldImages[key];
-          }
-        });
-      } catch (err) {}
-    }
-
-    return content;
+    return raw ? JSON.parse(raw) : {};
   } catch (e) {
     console.error('Error reading custom content from localStorage:', e);
     return {};

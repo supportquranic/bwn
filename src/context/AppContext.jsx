@@ -19,40 +19,20 @@ export const AppProvider = ({ children }) => {
   const [activeShopId, setActiveShopId] = useState(null); // When opened into full shop view
   const [deviceFrame, setDeviceFrame] = useState(false); // Mobile frame simulation toggle
 
-  // Core Data
-  const [shops, setShops] = useState(() => {
-    const saved = localStorage.getItem('bm_shops');
-    return saved ? JSON.parse(saved) : INITIAL_SHOPS;
-  });
-
-  const [shopPrivate, setShopPrivate] = useState(() => {
-    const saved = localStorage.getItem('bm_shop_private');
-    return saved ? JSON.parse(saved) : INITIAL_SHOP_PRIVATE;
-  });
-
-  const [products, setProducts] = useState(() => {
-    const saved = localStorage.getItem('bm_products');
-    return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
-  });
-
-  const [productPrivate, setProductPrivate] = useState(() => {
-    const saved = localStorage.getItem('bm_product_private');
-    return saved ? JSON.parse(saved) : INITIAL_PRODUCT_PRIVATE;
-  });
-
-  const [reviews, setReviews] = useState(() => {
-    const saved = localStorage.getItem('bm_reviews');
-    return saved ? JSON.parse(saved) : INITIAL_REVIEWS;
-  });
-
-  const [reports, setReports] = useState(() => {
-    const saved = localStorage.getItem('bm_reports');
-    return saved ? JSON.parse(saved) : INITIAL_REPORTS;
-  });
-
+  // Core Data — always seeded with canonical data
+  const [shops, setShops] = useState(INITIAL_SHOPS);
+  const [shopPrivate, setShopPrivate] = useState(INITIAL_SHOP_PRIVATE);
+  const [products, setProducts] = useState(INITIAL_PRODUCTS);
+  const [productPrivate, setProductPrivate] = useState(INITIAL_PRODUCT_PRIVATE);
+  const [reviews, setReviews] = useState(INITIAL_REVIEWS);
+  const [reports, setReports] = useState(INITIAL_REPORTS);
   const [favorites, setFavorites] = useState(() => {
-    const saved = localStorage.getItem('bm_favorites');
-    return saved ? JSON.parse(saved) : ['prod-1', 'prod-4'];
+    try {
+      const saved = localStorage.getItem('bm_favorites');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
   });
 
   // Current Logged in User simulation
