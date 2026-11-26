@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 
-const SCHEMA_VERSION = 'bm_v16_canonical_2026';
+const SCHEMA_VERSION = 'bm_v17_canonical_2026';
 const VERSION_KEY = 'bm_schema_version';
 const CONTENT_STORAGE_KEY = 'bm_custom_content';
 const OLD_IMAGES_KEY = 'bm_custom_images';
