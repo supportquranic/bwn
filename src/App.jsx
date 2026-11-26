@@ -20,79 +20,161 @@ const NAV_TABS = [
 
 const fmt = n => 'Rs. ' + n.toLocaleString('en-PK');
 
-/* ── Favorites Page (inline) ── */
+/* ── Horizontal Shop Card (Exact match of Explore Page card) ── */
+function HorizontalShopCard({ shop, onShop }) {
+  return (
+    <div
+      key={shop.id}
+      className="bg-white rounded-3xl border border-gray-200 p-3.5 flex items-center gap-3.5 active:scale-[0.99] transition-transform cursor-pointer"
+      onClick={() => onShop(shop.id)}
+    >
+      {/* Shop Image / Logo on left — clean rounded square */}
+      <div className="w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0 bg-gray-100 border border-gray-100">
+        <img
+          src={shop.logo}
+          alt={shop.name}
+          className="w-full h-full object-cover"
+        />
+      </div>
+
+      {/* Content in middle */}
+      <div className="flex-1 min-w-0 flex flex-col justify-between min-h-[76px] py-0.5">
+        <div className="flex items-start justify-between gap-1">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-bold text-black leading-snug truncate">
+              {shop.name}
+            </h3>
+            <span className="text-[10px] font-semibold text-emerald-600">
+              {shop.verified ? 'Verified Shop' : 'Local Retailer'} · {shop.distance}
+            </span>
+          </div>
+        </div>
+
+        <p className="text-xs text-black/45 truncate mt-0.5">
+          {shop.address}
+        </p>
+
+        <div className="flex items-center justify-between mt-auto pt-1">
+          <div className="flex items-center gap-1">
+            <span className="text-amber-400 text-xs">★</span>
+            <span className="text-xs font-bold text-black">{shop.rating}</span>
+            <span className="text-[10.5px] text-black/40">({shop.ratingCount})</span>
+          </div>
+          <button
+            className="flex-shrink-0 bg-[#4b47d9] hover:bg-[#3d39c6] text-white text-[10.5px] font-bold px-3 py-1.5 rounded-full active:scale-95 transition-transform shadow-xs"
+            onClick={e => {
+              e.stopPropagation();
+              onShop(shop.id);
+            }}
+          >
+            Visit Shop
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Square Product Card (Exact match of Explore Page ProductCard) ── */
+function ProductSquareCard({ product, onProduct }) {
+  const storage = product.specs?.Storage || (product.condition === 'new' ? 'Box Pack' : 'In Stock');
+
+  return (
+    <div
+      className="bg-white rounded-2xl border border-gray-200 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform flex flex-col shadow-[0_2px_8px_rgba(0,0,0,0.03)]"
+      onClick={() => onProduct(product.id)}
+    >
+      {/* Taller upper image area — image centered with extra vertical room */}
+      <div className="px-3 pt-4 pb-2.5 flex-1 flex items-center justify-center min-h-[156px]">
+        <img
+          src={product.image}
+          alt={product.name}
+          className="max-h-36 max-w-full object-contain"
+        />
+      </div>
+
+      {/* Content area at bottom: title sits near price, storage directly under price */}
+      <div className="px-3 pb-3.5 pt-0 flex flex-col justify-end">
+        <p className="text-xs font-bold text-black leading-snug line-clamp-2 mb-2">
+          {product.name}
+        </p>
+        <div className="flex items-center justify-between gap-1.5">
+          <div className="flex flex-col">
+            <span className="text-xs font-black text-[#4b47d9]">{fmt(product.price)}</span>
+            <span className="text-[10px] font-semibold text-black/45 leading-none mt-1">
+              {storage}
+            </span>
+          </div>
+          <button
+            className="flex-shrink-0 bg-[#4b47d9] hover:bg-[#3d39c6] text-white text-[10.5px] font-bold px-3 py-1.5 rounded-full active:scale-95 transition-transform shadow-xs"
+            onClick={e => { e.stopPropagation(); onProduct(product.id); }}
+          >
+            Buy now
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Favorites Page (Clean two-section distribution: Saved Shops & Saved Devices) ── */
 function FavoritesPage({ favorites, onProduct, onShop, onToggleFav }) {
   const favProducts = INITIAL_PRODUCTS.filter(p => favorites.includes(p.id));
   const favShops = INITIAL_SHOPS.filter(s => favorites.includes(s.id));
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
-      <div className="gradient-hero px-4 pt-5 pb-5">
-        <h2 className="text-white text-xl font-black">Saved</h2>
-        <p className="text-blue-200 text-xs mt-0.5">{favorites.length} saved items</p>
+    <div className="h-full flex flex-col overflow-hidden bg-white">
+      <div className="px-4 pt-4 pb-3.5 text-white flex-shrink-0 z-30" style={{ background: '#8586f2' }}>
+        <h2 className="text-white text-lg font-black tracking-tight">Saved</h2>
+        <p className="text-white/80 text-[11px] font-medium">{favorites.length} saved items</p>
       </div>
-      <div className="flex-1 overflow-y-auto hide-scrollbar pb-28 bg-gray-50 smooth-scroll">
+
+      <div className="flex-1 overflow-y-auto hide-scrollbar pb-28 bg-[#f8f9fc] smooth-scroll">
+        {/* Distinct Section 1: Saved Shops */}
         {favShops.length > 0 && (
           <div className="mt-4">
-            <h3 className="text-sm font-bold text-gray-700 px-4 mb-2.5">🏪 Saved Shops</h3>
+            <div className="px-4 mb-3 flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-black">Saved Shops</h3>
+                <p className="text-xs text-black/40">Verified retailers you bookmarked</p>
+              </div>
+              <span className="text-xs font-semibold text-[#4b47d9]">{favShops.length} shops</span>
+            </div>
             <div className="px-4 flex flex-col gap-2.5">
               {favShops.map(shop => (
-                <div
-                  key={shop.id}
-                  className="flex gap-3 items-center bg-white rounded-2xl p-3 card-shadow cursor-pointer active:scale-[0.98] transition-transform"
-                  onClick={() => onShop(shop.id)}
-                >
-                  <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0">
-                    <img src={shop.logo} alt={shop.name} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-gray-800 truncate">{shop.name}</p>
-                    <p className="text-xs text-gray-400 mt-0.5 truncate">{shop.address}</p>
-                  </div>
-                  <button onClick={e => { e.stopPropagation(); onToggleFav(shop.id); }}>
-                    <Heart size={18} className="fill-red-500 text-red-500" />
-                  </button>
-                </div>
+                <HorizontalShopCard key={shop.id} shop={shop} onShop={onShop} />
               ))}
             </div>
           </div>
         )}
 
+        {/* Distinct Section 2: Saved Devices */}
         {favProducts.length > 0 && (
-          <div className="mt-4">
-            <h3 className="text-sm font-bold text-gray-700 px-4 mb-2.5">📱 Saved Products</h3>
-            <div className="px-4 flex flex-col gap-2.5">
-              {favProducts.map(p => {
-                const shop = INITIAL_SHOPS.find(s => s.id === p.shopId);
-                return (
-                  <div
-                    key={p.id}
-                    className="flex gap-3 items-center bg-white rounded-2xl p-3 card-shadow cursor-pointer active:scale-[0.98] transition-transform"
-                    onClick={() => onProduct(p.id)}
-                  >
-                    <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0">
-                      <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-800 leading-tight line-clamp-2">{p.name}</p>
-                      <p className="text-xs text-gray-400 mt-0.5 truncate">🏪 {shop?.name}</p>
-                      <p className="text-sm font-bold text-blue-700 mt-0.5">{fmt(p.price)}</p>
-                    </div>
-                    <button onClick={e => { e.stopPropagation(); onToggleFav(p.id); }}>
-                      <Heart size={18} className="fill-red-500 text-red-500" />
-                    </button>
-                  </div>
-                );
-              })}
+          <div className="mt-6">
+            <div className="px-4 mb-3 flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold text-black">Saved Devices</h3>
+                <p className="text-xs text-black/40">Phones and accessories in your wishlist</p>
+              </div>
+              <span className="text-xs font-semibold text-[#4b47d9]">{favProducts.length} items</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2.5 px-4">
+              {favProducts.map(p => (
+                <ProductSquareCard key={p.id} product={p} onProduct={onProduct} />
+              ))}
             </div>
           </div>
         )}
 
         {favorites.length === 0 && (
-          <div className="mt-24 flex flex-col items-center text-center px-8">
-            <span className="text-6xl mb-4">❤️</span>
-            <p className="text-gray-700 font-bold text-lg">Nothing saved yet</p>
-            <p className="text-gray-400 text-sm mt-2">Tap the heart icon on any shop or product to save it here.</p>
+          <div className="mt-28 flex flex-col items-center text-center px-8">
+            <div className="w-16 h-16 rounded-3xl bg-gray-100 flex items-center justify-center mb-4 text-[#4b47d9]">
+              <Heart size={28} />
+            </div>
+            <p className="text-black font-bold text-lg">Nothing saved yet</p>
+            <p className="text-black/40 text-sm mt-1 max-w-xs">
+              Save your favourite shops and devices to easily access them anytime.
+            </p>
           </div>
         )}
       </div>
@@ -100,56 +182,18 @@ function FavoritesPage({ favorites, onProduct, onShop, onToggleFav }) {
   );
 }
 
-/* ── Shops Page (all shops list) ── */
+/* ── Shops Page (All shops rendered in Explore page's horizontal card style) ── */
 function ShopsPage({ onShop, favorites, onToggleFav }) {
   return (
-    <div className="h-full flex flex-col overflow-hidden">
-      <div className="gradient-hero px-4 pt-5 pb-5">
-        <h2 className="text-white text-xl font-black">All Shops</h2>
-        <p className="text-blue-200 text-xs mt-0.5">Bahawalnagar, Pakistan · {INITIAL_SHOPS.length} shops</p>
+    <div className="h-full flex flex-col overflow-hidden bg-white">
+      <div className="px-4 pt-4 pb-3.5 text-white flex-shrink-0 z-30" style={{ background: '#8586f2' }}>
+        <h2 className="text-white text-lg font-black tracking-tight">All Shops</h2>
+        <p className="text-white/80 text-[11px] font-medium">Bahawalnagar, Pakistan · {INITIAL_SHOPS.length} verified retailers</p>
       </div>
-      <div className="flex-1 overflow-y-auto hide-scrollbar pb-28 bg-gray-50 smooth-scroll">
-        <div className="px-4 mt-4 flex flex-col gap-3">
+      <div className="flex-1 overflow-y-auto hide-scrollbar pb-28 bg-[#f8f9fc] smooth-scroll">
+        <div className="px-4 mt-4 flex flex-col gap-2.5">
           {INITIAL_SHOPS.map(shop => (
-            <div
-              key={shop.id}
-              className="bg-white rounded-2xl card-shadow overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
-              onClick={() => onShop(shop.id)}
-            >
-              <div className="relative h-32">
-                <img src={shop.coverImage} alt={shop.name} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                {shop.verified && (
-                  <span className="absolute top-2 left-2 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">✓ Verified</span>
-                )}
-                <span className={`absolute top-2 right-2 text-[10px] font-bold px-2 py-0.5 rounded-full ${shop.status === 'open' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
-                  {shop.status === 'open' ? '● Open' : '● Closed'}
-                </span>
-                <button
-                  className="absolute bottom-2 right-2 w-7 h-7 rounded-full bg-white/90 flex items-center justify-center shadow"
-                  onClick={e => { e.stopPropagation(); onToggleFav(shop.id); }}
-                >
-                  <Heart size={13} className={favorites.includes(shop.id) ? 'fill-red-500 text-red-500' : 'text-gray-400'} />
-                </button>
-              </div>
-              <div className="p-3">
-                <div className="flex items-center gap-1.5">
-                  <img src={shop.logo} alt="" className="w-8 h-8 rounded-lg object-cover" />
-                  <div>
-                    <p className="text-sm font-bold text-gray-800">{shop.name}</p>
-                    <div className="flex items-center gap-1 mt-0.5">
-                      <span className="text-amber-400">★</span>
-                      <span className="text-xs font-semibold text-gray-700">{shop.rating}</span>
-                      <span className="text-xs text-gray-400">({shop.ratingCount}) · {shop.distance}</span>
-                    </div>
-                  </div>
-                </div>
-                <p className="text-xs text-gray-400 mt-1.5 truncate">{shop.address}</p>
-                {shop.featuredQuote && (
-                  <p className="text-xs text-blue-600 italic mt-1 truncate">"{shop.featuredQuote}"</p>
-                )}
-              </div>
-            </div>
+            <HorizontalShopCard key={shop.id} shop={shop} onShop={onShop} />
           ))}
         </div>
       </div>
