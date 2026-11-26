@@ -779,7 +779,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
             {USAGE_SECTIONS.map(sec => (
               <div
                 key={sec.id}
-                className="flex-shrink-0 snap-start bg-white rounded-3xl border border-gray-100 p-3 shadow-[0_4px_20px_rgba(0,0,0,0.06)] overflow-hidden cursor-pointer active:scale-[0.99] transition-all flex flex-col"
+                className="flex-shrink-0 snap-start bg-white rounded-3xl border border-gray-200 p-3 overflow-hidden cursor-pointer active:scale-[0.99] transition-all flex flex-col"
                 style={{ width: 'calc(100vw - 60px)', maxWidth: '360px' }}
                 onClick={onSearchFocus}
               >
@@ -854,7 +854,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
               return (
                 <div
                   key={shop.id}
-                  className="flex-shrink-0 snap-start bg-white rounded-3xl border border-gray-100 p-3 shadow-[0_4px_20px_rgba(0,0,0,0.06)] overflow-hidden cursor-pointer active:scale-[0.99] transition-all flex flex-col"
+                  className="flex-shrink-0 snap-start bg-white rounded-3xl border border-gray-200 p-3 overflow-hidden cursor-pointer active:scale-[0.99] transition-all flex flex-col"
                   style={{ width: 'calc(100vw - 60px)', maxWidth: '360px' }}
                   onClick={() => onShop(shop.id)}
                 >
@@ -937,7 +937,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
             {INITIAL_SHOPS.map(shop => (
               <div
                 key={shop.id}
-                className="bg-white rounded-3xl p-3.5 flex items-center gap-3.5 shadow-[0_2px_14px_rgba(0,0,0,0.04)] active:scale-[0.99] transition-transform cursor-pointer"
+                className="bg-white rounded-3xl border border-gray-200 p-3.5 flex items-center gap-3.5 active:scale-[0.99] transition-transform cursor-pointer"
                 onClick={() => onShop(shop.id)}
               >
                 {/* Shop Image / Logo on left — clean rounded square */}
