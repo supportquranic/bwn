@@ -35,7 +35,7 @@ function BrandLogo({ id }) {
   return logos[id] || <span className="text-xs font-black text-black">{id}</span>;
 }
 
-/* ── Unified Mobile Product Card (Sleek proportions, title positioned near price & Buy now button) ── */
+/* ── Unified Mobile Product Card (Sleek proportions, taller card, storage under price, Buy now button) ── */
 function ProductCard({ product, onProduct, customData }) {
   const finalProduct = {
     ...product,
@@ -45,27 +45,34 @@ function ProductCard({ product, onProduct, customData }) {
     price: customData?.price !== undefined ? customData.price : product.price,
   };
 
+  const storage = product.specs?.Storage || (product.condition === 'new' ? 'Box Pack' : 'In Stock');
+
   return (
     <div
       className="bg-white rounded-2xl border border-gray-200 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform flex flex-col shadow-[0_2px_8px_rgba(0,0,0,0.03)]"
       onClick={() => onProduct(product.id)}
     >
-      {/* Upper image area — phone image centered */}
-      <div className="px-3 pt-3.5 pb-2 flex-1 flex items-center justify-center min-h-[140px]">
+      {/* Taller upper image area — phone image centered with extra vertical room */}
+      <div className="px-3 pt-4 pb-2.5 flex-1 flex items-center justify-center min-h-[156px]">
         <img
           src={finalProduct.image}
           alt={finalProduct.name}
-          className="max-h-32 max-w-full object-contain"
+          className="max-h-36 max-w-full object-contain"
         />
       </div>
 
-      {/* Content area at bottom: title sits right near price & button */}
-      <div className="px-3 pb-3 pt-0 flex flex-col justify-end">
-        <p className="text-xs font-bold text-black leading-snug line-clamp-2 mb-1.5">
+      {/* Content area at bottom: title sits near price, storage directly under price */}
+      <div className="px-3 pb-3.5 pt-0 flex flex-col justify-end">
+        <p className="text-xs font-bold text-black leading-snug line-clamp-2 mb-2">
           {finalProduct.name}
         </p>
         <div className="flex items-center justify-between gap-1.5">
-          <span className="text-xs font-black text-[#4b47d9]">{fmt(finalProduct.price)}</span>
+          <div className="flex flex-col">
+            <span className="text-xs font-black text-[#4b47d9]">{fmt(finalProduct.price)}</span>
+            <span className="text-[10px] font-semibold text-black/45 leading-none mt-1">
+              {storage}
+            </span>
+          </div>
           <button
             className="flex-shrink-0 bg-[#4b47d9] hover:bg-[#3d39c6] text-white text-[10.5px] font-bold px-3 py-1.5 rounded-full active:scale-95 transition-transform shadow-xs"
             onClick={e => { e.stopPropagation(); onProduct(product.id); }}
