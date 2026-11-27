@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, Heart, Star, Phone, MessageCircle, ChevronRight, Battery, Shield, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Heart, Star, Phone, MessageCircle, ChevronRight, ChevronLeft, Battery, Shield, AlertTriangle } from 'lucide-react';
 import { INITIAL_PRODUCTS, INITIAL_SHOPS } from '../data/mockData';
 
 const fmt = n => 'Rs. ' + n.toLocaleString('en-PK');
@@ -10,7 +10,96 @@ const batteryColor = (h) => {
   return 'text-red-600 bg-red-50';
 };
 
-export default function ProductDetailPage({ productId, onBack, onShop, favorites, onToggleFav }) {
+/* ── Helper: Related Covers & Glass Protectors (Checks current shop first, then others) ── */
+function getRelatedAccessories(currentProduct, allProducts) {
+  if (!currentProduct) return [];
+  const productNameLower = (currentProduct.name || '').toLowerCase();
+  
+  const terms = [];
+  if (productNameLower.includes('iphone') || currentProduct.category === 'iphone') terms.push('iphone', 'apple');
+  if (productNameLower.includes('s25') || productNameLower.includes('s21') || productNameLower.includes('samsung') || productNameLower.includes('galaxy')) terms.push('samsung', 'galaxy', 's25', 's21');
+  if (productNameLower.includes('pixel')) terms.push('pixel', 'google');
+  if (productNameLower.includes('redmi') || productNameLower.includes('xiaomi')) terms.push('redmi', 'xiaomi');
+  if (productNameLower.includes('tecno') || productNameLower.includes('camon') || productNameLower.includes('spark')) terms.push('tecno', 'camon', 'spark');
+  if (productNameLower.includes('infinix') || productNameLower.includes('hot') || productNameLower.includes('gt')) terms.push('infinix', 'gt', 'hot');
+  if (productNameLower.includes('realme')) terms.push('realme');
+  if (productNameLower.includes('vivo')) terms.push('vivo');
+  if (productNameLower.includes('itel')) terms.push('itel');
+  if (productNameLower.includes('oneplus')) terms.push('oneplus');
+
+  const isCoverOrGlass = (p) => {
+    const name = (p.name || '').toLowerCase();
+    const cat = (p.category || '').toLowerCase();
+    return cat === 'cases' || name.includes('case') || name.includes('cover') || name.includes('glass') || name.includes('protector');
+  };
+
+  const matchesPhone = (p) => {
+    if (p.compatibleModels && Array.isArray(p.compatibleModels)) {
+      return p.compatibleModels.some(model => {
+        const m = model.toLowerCase();
+        return terms.some(t => m.includes(t) || t.includes(m)) || productNameLower.includes(m);
+      });
+    }
+    const name = (p.name || '').toLowerCase();
+    return terms.some(t => name.includes(t));
+  };
+
+  // 1. From current shop first
+  const fromThisShop = allProducts.filter(p =>
+    p.id !== currentProduct.id &&
+    p.shopId === currentProduct.shopId &&
+    isCoverOrGlass(p) &&
+    matchesPhone(p)
+  );
+
+  // 2. From other shops for the same phone
+  const fromOtherShops = allProducts.filter(p =>
+    p.id !== currentProduct.id &&
+    p.shopId !== currentProduct.shopId &&
+    isCoverOrGlass(p) &&
+    matchesPhone(p)
+  );
+
+  // 3. Fallback covers & protectors if specific device match is low
+  const fallbackCovers = allProducts.filter(p =>
+    p.id !== currentProduct.id &&
+    isCoverOrGlass(p) &&
+    !fromThisShop.includes(p) &&
+    !fromOtherShops.includes(p)
+  );
+
+  const combined = [...fromThisShop, ...fromOtherShops, ...fallbackCovers];
+
+  const glassProtectors = combined.filter(p => {
+    const n = (p.name || '').toLowerCase();
+    return n.includes('glass') || n.includes('protector');
+  });
+  const covers = combined.filter(p => {
+    const n = (p.name || '').toLowerCase();
+    return n.includes('case') || n.includes('cover') || (!n.includes('glass') && !n.includes('protector'));
+  });
+
+  const selected = [];
+  let g = 0, c = 0;
+  // Ensure a diverse mix of 3-4 options (both covers and protectors)
+  while (selected.length < 4 && (g < glassProtectors.length || c < covers.length)) {
+    if (c < covers.length && !selected.includes(covers[c])) {
+      selected.push(covers[c++]);
+    }
+    if (selected.length < 4 && g < glassProtectors.length && !selected.includes(glassProtectors[g])) {
+      selected.push(glassProtectors[g++]);
+    }
+  }
+
+  for (const item of combined) {
+    if (selected.length >= 4) break;
+    if (!selected.includes(item)) selected.push(item);
+  }
+
+  return selected.slice(0, 4);
+}
+
+export default function ProductDetailPage({ productId, onBack, onShop, onProduct, favorites, onToggleFav }) {
   const product = INITIAL_PRODUCTS.find(p => p.id === productId);
   const shop = product ? INITIAL_SHOPS.find(s => s.id === product.shopId) : null;
   const [imgIdx, setImgIdx] = useState(0);
@@ -22,44 +111,76 @@ export default function ProductDetailPage({ productId, onBack, onShop, favorites
     </div>
   );
 
-  const images = product.images || [product.image];
+  // Guarantee at least 2 images for the hero section carousel
+  const images = (product.images && product.images.length >= 2)
+    ? product.images
+    : [product.image, product.image];
+
   const specs = product.specs || {};
   const used = product.usedDetails;
+  const relatedItems = getRelatedAccessories(product, INITIAL_PRODUCTS);
 
   return (
     <div className="h-full flex flex-col overflow-hidden bg-gray-50">
       {/* ── Scrollable Content (Carousel + Details) ── */}
       <div className="flex-1 overflow-y-auto hide-scrollbar pb-6 smooth-scroll">
         {/* ── Image Carousel ── */}
-        <div className="relative bg-white">
+        <div className="relative bg-white border-b border-gray-100">
           {/* Back + Fav */}
-          <div className="absolute top-4 left-4 right-4 flex justify-between z-10">
-            <button onClick={onBack} className="w-9 h-9 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center active:scale-95 transition-transform">
-              <ArrowLeft size={18} className="text-white" />
+          <div className="absolute top-4 left-4 right-4 flex justify-between z-10 pointer-events-none">
+            <button
+              onClick={onBack}
+              className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white pointer-events-auto active:scale-95 transition-transform shadow-xs"
+            >
+              <ArrowLeft size={18} />
             </button>
             <button
               onClick={() => onToggleFav(productId)}
-              className="w-9 h-9 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center active:scale-95 transition-transform"
+              className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center pointer-events-auto active:scale-95 transition-transform shadow-xs"
             >
               <Heart size={18} className={isFav ? 'fill-red-500 text-red-500' : 'text-white'} />
             </button>
           </div>
 
           {/* Image */}
-          <div className="h-72 overflow-hidden">
+          <div className="h-72 overflow-hidden flex items-center justify-center bg-gray-50/40 relative">
             <img
               src={images[imgIdx]}
               alt={product.name}
-              className="w-full h-full object-cover transition-all duration-300"
+              className="max-h-72 max-w-full object-contain transition-all duration-300"
             />
+            {/* Left / Right chevron buttons */}
+            {images.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setImgIdx((imgIdx - 1 + images.length) % images.length); }}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center text-white active:scale-90 transition-transform shadow-xs"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setImgIdx((imgIdx + 1) % images.length); }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center text-white active:scale-90 transition-transform shadow-xs"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </>
+            )}
+            {/* Image counter indicator (e.g. 1 / 2, 2 / 2) */}
+            <div className="absolute bottom-3 right-3 bg-black/50 backdrop-blur-sm text-white text-[10.5px] font-bold px-2 py-0.5 rounded-full">
+              {imgIdx + 1} / {images.length}
+            </div>
           </div>
 
-          {/* Dots */}
+          {/* Dots Indicator */}
           {images.length > 1 && (
-            <div className="flex justify-center gap-1.5 py-2.5">
+            <div className="flex justify-center items-center gap-1.5 py-2.5 bg-white">
               {images.map((_, i) => (
                 <button
                   key={i}
+                  type="button"
                   onClick={() => setImgIdx(i)}
                   className={`h-1.5 rounded-full transition-all duration-300 ${i === imgIdx ? 'w-5 bg-[#4b47d9]' : 'w-1.5 bg-gray-200'}`}
                 />
@@ -171,6 +292,82 @@ export default function ProductDetailPage({ productId, onBack, onShop, favorites
                 <span className="text-xs text-gray-800 font-medium flex-1">{val}</span>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* ── Related Covers & Glass Protectors Section (Current Shop First, then Others) ── */}
+        {relatedItems.length > 0 && (
+          <div className="mx-4 mt-3 bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-xs p-3.5">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h3 className="text-sm font-black text-black">Available Covers & Protectors</h3>
+                <p className="text-[10.5px] font-semibold text-black/45 mt-0.5">Compatible with {product.name}</p>
+              </div>
+              <span className="text-[10px] font-bold text-[#4b47d9] bg-[#4b47d9]/10 px-2.5 py-0.5 rounded-full">
+                {relatedItems.length} Options
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5">
+              {relatedItems.map(item => {
+                const isCurrentShop = item.shopId === product.shopId;
+                const itemShop = INITIAL_SHOPS.find(s => s.id === item.shopId);
+                const isGlass = (item.name || '').toLowerCase().includes('glass') || (item.name || '').toLowerCase().includes('protector');
+
+                return (
+                  <div
+                    key={item.id}
+                    onClick={() => onProduct && onProduct(item.id)}
+                    className="bg-white rounded-2xl border border-gray-200 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform flex flex-col shadow-[0_2px_8px_rgba(0,0,0,0.03)]"
+                  >
+                    {/* Badge: Shop Availability */}
+                    <div className="px-2.5 pt-2.5 flex items-center justify-between gap-1">
+                      {isCurrentShop ? (
+                        <span className="text-[9.5px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 flex items-center gap-1">
+                          ✓ This Shop
+                        </span>
+                      ) : (
+                        <span className="text-[9.5px] font-semibold text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full truncate max-w-[95px]" title={itemShop?.name}>
+                          {itemShop ? itemShop.name.split(' ')[0] : 'Other Shop'}
+                        </span>
+                      )}
+                      <span className="text-[9.5px] font-bold text-black/40 flex-shrink-0">
+                        {isGlass ? 'Glass' : 'Cover'}
+                      </span>
+                    </div>
+
+                    {/* Image */}
+                    <div className="px-2 py-2 flex items-center justify-center min-h-[105px] bg-gray-50/40">
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="max-h-24 max-w-full object-contain"
+                      />
+                    </div>
+
+                    {/* Details */}
+                    <div className="px-3 pb-3 pt-1 flex flex-col justify-between flex-1">
+                      <p className="text-xs font-bold text-black leading-snug line-clamp-2 mb-2">
+                        {item.name}
+                      </p>
+                      <div className="flex items-center justify-between gap-1 mt-auto">
+                        <span className="text-xs font-black text-[#4b47d9]">{fmt(item.price)}</span>
+                        <button
+                          type="button"
+                          className="flex-shrink-0 bg-[#4b47d9] hover:bg-[#3d39c6] text-white text-[10px] font-bold px-2.5 py-1 rounded-full active:scale-95 transition-transform"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (onProduct) onProduct(item.id);
+                          }}
+                        >
+                          View
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
 

@@ -378,6 +378,7 @@ function AppShell() {
           productId={activeProductId}
           onBack={goBackFromProduct}
           onShop={goShopFromProduct}
+          onProduct={goProduct}
           favorites={favorites}
           onToggleFav={toggleFav}
         />
