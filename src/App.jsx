@@ -118,9 +118,9 @@ function ProductSquareCard({ product, onProduct }) {
   );
 }
 
-/* ── Favorites Page (Full-width toggle switch: Saved Shops or Saved Products) ── */
+/* ── Favorites Page (Full-width toggle switch: Saved Products or Saved Shops) ── */
 function FavoritesPage({ favorites, onProduct, onShop, onToggleFav }) {
-  const [savedTab, setSavedTab] = useState('shops'); // 'shops' | 'products'
+  const [savedTab, setSavedTab] = useState('products'); // 'products' | 'shops'
   const favProducts = INITIAL_PRODUCTS.filter(p => favorites.includes(p.id));
   const favShops = INITIAL_SHOPS.filter(s => favorites.includes(s.id));
 
@@ -132,27 +132,9 @@ function FavoritesPage({ favorites, onProduct, onShop, onToggleFav }) {
         <p className="text-white/80 text-[11px] font-medium">{favorites.length} total saved items</p>
       </div>
 
-      {/* ── Full-Width Segmented Toggle Switch ── */}
+      {/* ── Full-Width Segmented Toggle Switch (Saved Products on left, Saved Shops on right) ── */}
       <div className="px-4 py-2.5 bg-white border-b border-gray-100 flex-shrink-0">
         <div className="w-full bg-gray-100 p-1 rounded-2xl flex items-center">
-          <button
-            onClick={() => setSavedTab('shops')}
-            className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-              savedTab === 'shops'
-                ? 'bg-white text-black shadow-xs font-black'
-                : 'text-black/60 hover:text-black'
-            }`}
-          >
-            <span>Saved Shops</span>
-            <span
-              className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold transition-colors ${
-                savedTab === 'shops' ? 'bg-[#4b47d9] text-white' : 'bg-gray-200 text-black/60'
-              }`}
-            >
-              {favShops.length}
-            </span>
-          </button>
-
           <button
             onClick={() => setSavedTab('products')}
             className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
@@ -168,6 +150,24 @@ function FavoritesPage({ favorites, onProduct, onShop, onToggleFav }) {
               }`}
             >
               {favProducts.length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setSavedTab('shops')}
+            className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+              savedTab === 'shops'
+                ? 'bg-white text-black shadow-xs font-black'
+                : 'text-black/60 hover:text-black'
+            }`}
+          >
+            <span>Saved Shops</span>
+            <span
+              className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold transition-colors ${
+                savedTab === 'shops' ? 'bg-[#4b47d9] text-white' : 'bg-gray-200 text-black/60'
+              }`}
+            >
+              {favShops.length}
             </span>
           </button>
         </div>
