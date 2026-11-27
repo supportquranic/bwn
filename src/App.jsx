@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Compass, Store, Headphones, Heart, User } from 'lucide-react';
+import { Compass, Store, Headphones, Heart, User, Star, ArrowUpRight } from 'lucide-react';
 import { AppProvider, useApp } from './context/AppContext';
 import { INITIAL_PRODUCTS, INITIAL_SHOPS } from './data/mockData';
+import { useCustomImages } from './utils/imageStore';
 import { Navbar2 } from './components/NavbarOptions';
 import HomePage from './components/HomePage';
 import SearchPage from './components/SearchPage';
@@ -231,7 +232,81 @@ function FavoritesPage({ favorites, onProduct, onShop, onToggleFav }) {
   );
 }
 
-/* ── Shops Page (All shops rendered in Explore page's horizontal card style) ── */
+/* ── Shop Showcase Card (Exact match of Explore Page "Explore All Shops" card) ── */
+function ShopShowcaseCard({ shop, onShop }) {
+  const { getImg } = useCustomImages();
+
+  return (
+    <div
+      key={shop.id}
+      className="bg-white rounded-3xl border border-gray-200 p-3 overflow-hidden cursor-pointer active:scale-[0.99] transition-all flex flex-col"
+      onClick={() => onShop(shop.id)}
+    >
+      {/* Top photo banner with rounded corners, verified pill, and circular logo matching Explore page */}
+      <div className="relative h-44 w-full rounded-2xl overflow-hidden bg-gray-100">
+        <img
+          src={getImg(`shop_${shop.id}_cover`, shop.coverImage)}
+          alt={shop.name}
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
+
+        {/* Top-left: Verified / Best Seller pill */}
+        <span className="absolute top-2.5 left-2.5 bg-black/50 backdrop-blur-md text-white text-[10.5px] font-semibold px-2.5 py-1 rounded-full">
+          {shop.verified ? 'Verified Shop' : 'Best Seller'}
+        </span>
+
+        {/* Top-right: Clean white circular shop logo badge */}
+        <div className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white p-1 shadow-md flex items-center justify-center overflow-hidden">
+          <img
+            src={getImg(`shop_${shop.id}_logo`, shop.logo)}
+            alt=""
+            className="w-full h-full object-cover rounded-full"
+          />
+        </div>
+
+        {/* Image indicator dots at bottom matching Explore page */}
+        <div className="absolute bottom-2 inset-x-0 flex justify-center items-center gap-1">
+          <span className="w-2.5 h-1 rounded-full bg-white" />
+          <span className="w-1 h-1 rounded-full bg-white/50" />
+          <span className="w-1 h-1 rounded-full bg-white/50" />
+        </div>
+      </div>
+
+      {/* Shop Details matching Explore page typography & layout */}
+      <div className="pt-2.5 pb-1 flex flex-col flex-1">
+        <h3 className="text-base font-bold text-black leading-snug truncate">{shop.name}</h3>
+        <p className="text-xs font-semibold text-black/50 mt-0.5 truncate">
+          {shop.featuredQuote || 'Official Retailer in Bahawalnagar'}
+        </p>
+        <p className="text-xs text-black/40 mt-1 line-clamp-2 leading-relaxed">
+          {shop.address}
+        </p>
+
+        {/* Bottom row: Rating pill on left, Visit Shop button on right */}
+        <div className="flex items-center justify-between mt-3 pt-1">
+          <div className="bg-gray-100 rounded-full px-3 py-1.5 flex items-center gap-1 text-xs font-bold text-black">
+            <Star size={11} className="fill-amber-400 text-amber-400" />
+            <span>{shop.rating}</span>
+            <span className="text-black/35 font-normal">({shop.ratingCount})</span>
+          </div>
+          <button
+            className="bg-black hover:bg-black/85 text-white text-xs font-bold px-4 py-2 rounded-full flex items-center gap-1.5 active:scale-95 transition-transform"
+            onClick={e => {
+              e.stopPropagation();
+              onShop(shop.id);
+            }}
+          >
+            <span>Visit Shop</span>
+            <ArrowUpRight size={13} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Shops Page (All shops rendered in Explore page's showcase card style) ── */
 function ShopsPage({ onShop, favorites, onToggleFav }) {
   return (
     <div className="h-full flex flex-col overflow-hidden bg-white">
@@ -240,9 +315,9 @@ function ShopsPage({ onShop, favorites, onToggleFav }) {
         <p className="text-white/80 text-[11px] font-medium">Bahawalnagar, Pakistan · {INITIAL_SHOPS.length} verified retailers</p>
       </div>
       <div className="flex-1 overflow-y-auto hide-scrollbar pb-28 bg-[#f8f9fc] smooth-scroll">
-        <div className="px-4 mt-4 flex flex-col gap-2.5">
+        <div className="px-4 mt-4 flex flex-col gap-3.5">
           {INITIAL_SHOPS.map(shop => (
-            <HorizontalShopCard key={shop.id} shop={shop} onShop={onShop} />
+            <ShopShowcaseCard key={shop.id} shop={shop} onShop={onShop} />
           ))}
         </div>
       </div>
