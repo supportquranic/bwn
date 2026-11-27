@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, Heart, Star, Phone, MessageCircle, ChevronRight, ChevronLeft, Battery, Shield, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Heart, Star, Phone, MessageCircle, ChevronRight, Battery, Shield, AlertTriangle, ShoppingCart, CheckCircle } from 'lucide-react';
 import { INITIAL_PRODUCTS, INITIAL_SHOPS } from '../data/mockData';
 
 const fmt = n => 'Rs. ' + n.toLocaleString('en-PK');
@@ -9,6 +9,37 @@ const batteryColor = (h) => {
   if (h >= 80) return 'text-amber-600 bg-amber-50';
   return 'text-red-600 bg-red-50';
 };
+
+/* ── Fallback generator to guarantee exactly 3 images ── */
+function getThreeImages(product) {
+  if (!product) return [];
+  const list = product.images && Array.isArray(product.images) && product.images.length > 0
+    ? [...product.images]
+    : [product.image];
+
+  const pName = (product.name || '').toLowerCase();
+  const fallbacks = [];
+  if (pName.includes('iphone') || product.category === 'iphone') {
+    fallbacks.push('/product images/ip18pblk.png', '/product images/ip 17p.png', '/product images/ip 17pm.png', 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&q=80');
+  } else if (pName.includes('samsung') || pName.includes('galaxy') || pName.includes('s25')) {
+    fallbacks.push('/product images/s25 ultra.png', 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=800&q=80', 'https://images.unsplash.com/photo-1580910051074-3eb694886505?w=800&q=80');
+  } else if (pName.includes('pixel')) {
+    fallbacks.push('/product images/pixel 9.png', 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=800&q=80', 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&q=80');
+  } else if (pName.includes('glass') || pName.includes('protector')) {
+    fallbacks.push('https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=600&q=80', 'https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=600&q=80', 'https://images.unsplash.com/photo-1616348436168-de43ad0db179?w=600&q=80');
+  } else if (pName.includes('case') || pName.includes('cover')) {
+    fallbacks.push('https://images.unsplash.com/photo-1603313011101-320f26a4f6f6?w=600&q=80', 'https://images.unsplash.com/photo-1586105251261-72a756497a11?w=600&q=80', 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=600&q=80');
+  } else {
+    fallbacks.push('https://images.unsplash.com/photo-1580910051074-3eb694886505?w=800&q=80', 'https://images.unsplash.com/photo-1598327105854-7d2e3c822e51?w=800&q=80', 'https://images.unsplash.com/photo-1565849904461-04a58ad377e0?w=800&q=80');
+  }
+
+  while (list.length < 3) {
+    const next = fallbacks.find(f => !list.includes(f)) || product.image;
+    list.push(next);
+  }
+
+  return list.slice(0, 3);
+}
 
 /* ── Helper: Related Covers & Glass Protectors (Checks current shop first, then others) ── */
 function getRelatedAccessories(currentProduct, allProducts) {
@@ -103,6 +134,9 @@ export default function ProductDetailPage({ productId, onBack, onShop, onProduct
   const product = INITIAL_PRODUCTS.find(p => p.id === productId);
   const shop = product ? INITIAL_SHOPS.find(s => s.id === product.shopId) : null;
   const [imgIdx, setImgIdx] = useState(0);
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
+  const [addedToast, setAddedToast] = useState(false);
   const isFav = favorites.includes(productId);
 
   if (!product) return (
@@ -111,93 +145,118 @@ export default function ProductDetailPage({ productId, onBack, onShop, onProduct
     </div>
   );
 
-  // Guarantee at least 2 images for the hero section carousel
-  const images = (product.images && product.images.length >= 2)
-    ? product.images
-    : [product.image, product.image];
+  // Guarantee exactly 3 images for the hero section carousel
+  const images = (product.images && product.images.length >= 3)
+    ? product.images.slice(0, 3)
+    : getThreeImages(product);
 
   const specs = product.specs || {};
   const used = product.usedDetails;
   const relatedItems = getRelatedAccessories(product, INITIAL_PRODUCTS);
 
+  // Swipe support without needing left/right chevron icons
+  const minSwipeDistance = 45;
+  const onTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+  const onTouchMove = (e) => setTouchEnd(e.targetTouches[0].clientX);
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    if (distance > minSwipeDistance) {
+      setImgIdx((prev) => (prev + 1) % images.length);
+    } else if (distance < -minSwipeDistance) {
+      setImgIdx((prev) => (prev - 1 + images.length) % images.length);
+    }
+  };
+
+  const handleAddToCart = () => {
+    setAddedToast(true);
+    setTimeout(() => setAddedToast(false), 2400);
+  };
+
+  const handleBuyNow = () => {
+    const msg = `Hi, I want to buy *${product.name}* (${fmt(product.price)}) from *${shop?.name || 'Bahawal Market'}*. Is it available?`;
+    window.open(`https://wa.me/${shop?.whatsapp || '923121234567'}?text=${encodeURIComponent(msg)}`, '_blank');
+  };
+
   return (
-    <div className="h-full flex flex-col overflow-hidden bg-gray-50">
+    <div className="h-full flex flex-col overflow-hidden bg-gray-50 relative">
+      {/* Toast Notification */}
+      {addedToast && (
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-black/90 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-lg flex items-center gap-2 pointer-events-none">
+          <CheckCircle size={15} className="text-emerald-400" />
+          <span>Item added to cart!</span>
+        </div>
+      )}
+
       {/* ── Scrollable Content (Carousel + Details) ── */}
       <div className="flex-1 overflow-y-auto hide-scrollbar pb-6 smooth-scroll">
-        {/* ── Image Carousel ── */}
+        {/* ── Image Carousel (3 Images, Left/Right Icons Removed) ── */}
         <div className="relative bg-white border-b border-gray-100">
-          {/* Back + Fav */}
-          <div className="absolute top-4 left-4 right-4 flex justify-between z-10 pointer-events-none">
+          {/* Back button only (Favorite moved under image) */}
+          <div className="absolute top-4 left-4 z-10">
             <button
               onClick={onBack}
-              className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white pointer-events-auto active:scale-95 transition-transform shadow-xs"
+              className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white active:scale-95 transition-transform shadow-xs"
+              aria-label="Go back"
             >
               <ArrowLeft size={18} />
             </button>
-            <button
-              onClick={() => onToggleFav(productId)}
-              className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center pointer-events-auto active:scale-95 transition-transform shadow-xs"
-            >
-              <Heart size={18} className={isFav ? 'fill-red-500 text-red-500' : 'text-white'} />
-            </button>
           </div>
 
-          {/* Image */}
-          <div className="h-72 overflow-hidden flex items-center justify-center bg-gray-50/40 relative">
+          {/* Image Display with Touch Swipe */}
+          <div
+            className="h-72 overflow-hidden flex items-center justify-center bg-gray-50/40 relative cursor-pointer select-none"
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+            onClick={() => setImgIdx((prev) => (prev + 1) % images.length)}
+          >
             <img
               src={images[imgIdx]}
-              alt={product.name}
+              alt={`${product.name} view ${imgIdx + 1}`}
               className="max-h-72 max-w-full object-contain transition-all duration-300"
             />
-            {/* Left / Right chevron buttons */}
-            {images.length > 1 && (
-              <>
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); setImgIdx((imgIdx - 1 + images.length) % images.length); }}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center text-white active:scale-90 transition-transform shadow-xs"
-                >
-                  <ChevronLeft size={16} />
-                </button>
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); setImgIdx((imgIdx + 1) % images.length); }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center text-white active:scale-90 transition-transform shadow-xs"
-                >
-                  <ChevronRight size={16} />
-                </button>
-              </>
-            )}
-            {/* Image counter indicator (e.g. 1 / 2, 2 / 2) */}
-            <div className="absolute bottom-3 right-3 bg-black/50 backdrop-blur-sm text-white text-[10.5px] font-bold px-2 py-0.5 rounded-full">
+            {/* Image counter indicator (1/3, 2/3, 3/3) */}
+            <div className="absolute bottom-3 right-3 bg-black/50 backdrop-blur-sm text-white text-[10.5px] font-bold px-2.5 py-0.5 rounded-full pointer-events-none">
               {imgIdx + 1} / {images.length}
             </div>
           </div>
 
-          {/* Dots Indicator */}
-          {images.length > 1 && (
-            <div className="flex justify-center items-center gap-1.5 py-2.5 bg-white">
-              {images.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setImgIdx(i)}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${i === imgIdx ? 'w-5 bg-[#4b47d9]' : 'w-1.5 bg-gray-200'}`}
-                />
-              ))}
-            </div>
-          )}
+          {/* 3 Dots Indicator (Interactive) */}
+          <div className="flex justify-center items-center gap-2 py-3 bg-white">
+            {images.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setImgIdx(i)}
+                aria-label={`View image ${i + 1}`}
+                className={`h-2 rounded-full transition-all duration-300 ${i === imgIdx ? 'w-6 bg-[#4b47d9]' : 'w-2 bg-gray-300'}`}
+              />
+            ))}
+          </div>
         </div>
 
-        {/* Product Info */}
+        {/* Product Info Card (With Favorite Icon Moved Under Image) */}
         <div className="bg-white px-4 py-4 mt-2 shadow-sm">
-          <div className="flex items-start gap-2">
-            <div className="flex-1">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
               {product.badge && (
                 <span className="text-[11px] bg-gray-100 text-gray-500 font-medium px-2.5 py-0.5 rounded-full">{product.badge}</span>
               )}
               <h1 className="text-lg font-black text-gray-900 mt-2 leading-snug">{product.name}</h1>
             </div>
+
+            {/* ── Moved Add to Favorite Icon Directly Under Image ── */}
+            <button
+              onClick={() => onToggleFav(productId)}
+              className="w-10 h-10 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center active:scale-95 transition-transform flex-shrink-0 mt-1 shadow-xs"
+              aria-label={isFav ? 'Remove from Saved' : 'Add to Favorite'}
+            >
+              <Heart size={20} className={isFav ? 'fill-red-500 text-red-500' : 'text-gray-500'} />
+            </button>
           </div>
 
           {/* Price row */}
@@ -208,7 +267,7 @@ export default function ProductDetailPage({ productId, onBack, onShop, onProduct
             )}
           </div>
 
-          {/* Condition pills — gray only */}
+          {/* Condition pills */}
           <div className="flex items-center gap-2 mt-1.5">
             <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-500">
               {product.condition === 'new' ? 'New' : 'Used'}
@@ -372,33 +431,50 @@ export default function ProductDetailPage({ productId, onBack, onShop, onProduct
         )}
 
         {/* Spacer */}
-        <div className="h-4" />
+        <div className="h-6" />
       </div>
 
-      {/* ── Action Buttons ── */}
-      {shop && (
-        <div className="flex-shrink-0 bg-white border-t border-gray-100 px-4 py-3 pb-safe flex gap-2.5">
-          <a
-            href={`tel:${shop.phone}`}
-            className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-full bg-black text-white text-sm font-bold active:scale-95 transition-transform"
-          >
-            <Phone size={16} /> Call
-          </a>
-          <a
-            href={`https://wa.me/${shop.whatsapp}`}
-            target="_blank" rel="noreferrer"
-            className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-full border border-gray-200 text-black text-sm font-bold active:scale-95 transition-transform"
-          >
-            <MessageCircle size={16} /> WhatsApp
-          </a>
-          <button
-            onClick={() => onShop(shop.id)}
-            className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-full bg-[#4b47d9] text-white text-sm font-bold active:scale-95 transition-transform"
-          >
-            View Shop
-          </button>
-        </div>
-      )}
+      {/* ── Fixed Bottom Action Bar with Add to Cart & Buy Now ── */}
+      <div className="flex-shrink-0 bg-white border-t border-gray-100 px-4 py-3 pb-safe flex items-center gap-2.5 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] z-30">
+        {/* Contact Icons (WhatsApp & Call) */}
+        {shop && (
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <a
+              href={`https://wa.me/${shop.whatsapp}?text=${encodeURIComponent(`Hi, I am interested in buying ${product.name} (${fmt(product.price)}) from ${shop.name}. Is it available?`)}`}
+              target="_blank"
+              rel="noreferrer"
+              className="w-10 h-10 rounded-full border border-green-200 bg-green-50 text-green-600 flex items-center justify-center active:scale-95 transition-transform"
+              title="Chat on WhatsApp"
+            >
+              <MessageCircle size={18} />
+            </a>
+            <a
+              href={`tel:${shop.phone}`}
+              className="w-10 h-10 rounded-full border border-gray-200 bg-gray-50 text-gray-700 flex items-center justify-center active:scale-95 transition-transform"
+              title="Call Shop"
+            >
+              <Phone size={17} />
+            </a>
+          </div>
+        )}
+
+        {/* Add to Cart Button */}
+        <button
+          onClick={handleAddToCart}
+          className="flex-1 py-3 rounded-full border-2 border-[#4b47d9] text-[#4b47d9] hover:bg-[#4b47d9]/5 text-xs font-bold active:scale-95 transition-transform flex items-center justify-center gap-1.5"
+        >
+          <ShoppingCart size={15} />
+          <span>Add to Cart</span>
+        </button>
+
+        {/* Buy Now Button */}
+        <button
+          onClick={handleBuyNow}
+          className="flex-1 py-3 rounded-full bg-[#4b47d9] hover:bg-[#3d39c6] text-white text-xs font-bold active:scale-95 transition-transform shadow-md shadow-[#4b47d9]/25 flex items-center justify-center gap-1.5"
+        >
+          <span>Buy Now</span>
+        </button>
+      </div>
     </div>
   );
 }

@@ -483,14 +483,16 @@ function AppShell() {
       </div>
 
       {/* Bottom Nav */}
-      <div className="absolute bottom-4 left-4 right-4 z-40">
-        <Navbar2
-          navTab={activeTab}
-          favorites={favorites}
-          handleNavClick={handleNavClick}
-          role={role}
-        />
-      </div>
+      {showNav && (
+        <div className="absolute bottom-4 left-4 right-4 z-40">
+          <Navbar2
+            navTab={activeTab}
+            favorites={favorites}
+            handleNavClick={handleNavClick}
+            role={role}
+          />
+        </div>
+      )}
     </div>
   );
 }

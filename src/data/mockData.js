@@ -293,7 +293,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/product images/ip duo.png',
-    images: ['/product images/ip duo.png', '/product images/iphne air.png'],
+    images: ['/product images/ip duo.png', '/product images/iphne air.png', '/product images/ip 17e.png'],
     specs: {
       Display: 'Dual 6.3" Super Retina XDR OLED',
       Processor: 'Apple A19 Pro Dual',
@@ -317,7 +317,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/product images/iphone 18 pro.png',
-    images: ['/product images/iphone 18 pro.png', '/product images/ip18pblk.png'],
+    images: ['/product images/iphone 18 pro.png', '/product images/ip18pblk.png', '/product images/ip 17pm.png'],
     specs: {
       Display: '6.9" Super Retina XDR OLED 120Hz',
       Processor: 'Apple A20 Pro',
@@ -341,7 +341,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/product images/ip 17pm.png',
-    images: ['/product images/ip 17pm.png', '/product images/ip 17p.png'],
+    images: ['/product images/ip 17pm.png', '/product images/ip 17p.png', '/product images/iphone 18 pro.png'],
     specs: {
       Display: '6.9" Super Retina XDR OLED 120Hz',
       Processor: 'Apple A19 Pro',
@@ -365,7 +365,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/product images/ip 16.png',
-    images: ['/product images/ip 16.png', 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&q=80'],
+    images: ['/product images/ip 16.png', 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=800&q=80', 'https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?w=800&q=80'],
     specs: {
       Display: '6.1" Super Retina XDR OLED',
       Processor: 'Apple A18 Bionic',
@@ -389,7 +389,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/product images/pixel 9.png',
-    images: ['/product images/pixel 9.png', 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=800&q=80'],
+    images: ['/product images/pixel 9.png', 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=800&q=80', 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&q=80'],
     specs: {
       Display: '6.3" Actua OLED 120Hz',
       Processor: 'Google Tensor G4',
@@ -413,7 +413,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/product images/s25 ultra.png',
-    images: ['/product images/s25 ultra.png', 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=800&q=80'],
+    images: ['/product images/s25 ultra.png', 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=800&q=80', 'https://images.unsplash.com/photo-1580910051074-3eb694886505?w=800&q=80'],
     specs: {
       Display: '6.86" Dynamic AMOLED 2X 120Hz',
       Processor: 'Snapdragon 8 Elite',
@@ -437,7 +437,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/product images/ip 17p.png',
-    images: ['/product images/ip 17p.png', '/product images/ip 17pm.png'],
+    images: ['/product images/ip 17p.png', '/product images/ip 17pm.png', '/product images/ip 16.png'],
     specs: {
       Display: '6.3" Super Retina XDR OLED 120Hz',
       Processor: 'Apple A19 Pro',
@@ -461,7 +461,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/product images/ip 17.png',
-    images: ['/product images/ip 17.png', '/product images/ip 17e.png'],
+    images: ['/product images/ip 17.png', '/product images/ip 17e.png', '/product images/ip 17p.png'],
     specs: {
       Display: '6.3" Super Retina XDR OLED 120Hz',
       Processor: 'Apple A19',
@@ -485,7 +485,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/product images/iphne air.png',
-    images: ['/product images/iphne air.png', '/product images/ip 17e.png'],
+    images: ['/product images/iphne air.png', '/product images/ip 17e.png', '/product images/ip duo.png'],
     specs: {
       Display: '6.6" Super Slim Titanium OLED',
       Processor: 'Apple A19 Pro',
@@ -509,7 +509,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/product images/ip 17e.png',
-    images: ['/product images/ip 17e.png', '/product images/iphne air.png'],
+    images: ['/product images/ip 17e.png', '/product images/iphne air.png', '/product images/ip 17.png'],
     specs: {
       Display: '6.1" OLED 90Hz',
       Processor: 'Apple A18',
@@ -533,7 +533,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/product images/airpods-pro.png',
-    images: ['/product images/airpods-pro.png', 'https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=800&q=80'],
+    images: ['/product images/airpods-pro.png', 'https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=800&q=80', 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=800&q=80'],
     specs: {
       Type: 'In-Ear TWS with MagSafe Case',
       Audio: 'Active Noise Cancellation & Spatial Audio',
@@ -554,7 +554,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/product images/apple-watch-s10.png',
-    images: ['/product images/apple-watch-s10.png', 'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=800&q=80'],
+    images: ['/product images/apple-watch-s10.png', 'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=800&q=80', 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80'],
     specs: {
       Display: '46mm Always-On Retina OLED',
       Processor: 'Apple S10 SiP',
@@ -577,7 +577,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/icons/categories/airpods.png',
-    images: ['/icons/categories/airpods.png', 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=800&q=80'],
+    images: ['/icons/categories/airpods.png', 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=800&q=80', 'https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=800&q=80'],
     specs: {
       Audio: '24-bit Hi-Fi Sound & Blade Lights',
       Battery: '30 Hours with Case',
@@ -597,7 +597,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/icons/categories/smartwatch.png',
-    images: ['/icons/categories/smartwatch.png', 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80'],
+    images: ['/icons/categories/smartwatch.png', 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80', 'https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=800&q=80'],
     specs: {
       Display: 'Super AMOLED Sapphire Glass',
       Processor: '3nm Exynos W1000',
@@ -617,7 +617,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/icons/categories/headphones.png',
-    images: ['/icons/categories/headphones.png', 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80'],
+    images: ['/icons/categories/headphones.png', 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80', 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=800&q=80'],
     specs: {
       Audio: 'Auto NC Optimizer & 8 Mics',
       Battery: '30 Hours Quick Charge',
@@ -637,7 +637,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/icons/categories/chargers.png',
-    images: ['/icons/categories/chargers.png', 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=800&q=80'],
+    images: ['/icons/categories/chargers.png', 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=800&q=80', 'https://images.unsplash.com/photo-1622445262464-84b25e40a6c6?w=800&q=80'],
     specs: {
       Power: '20W Power Delivery (PD)',
       Port: 'USB Type-C Fast Charge',
@@ -657,7 +657,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/icons/categories/chargers.png',
-    images: ['/icons/categories/chargers.png', 'https://images.unsplash.com/photo-1622445262464-84b25e40a6c6?w=800&q=80'],
+    images: ['/icons/categories/chargers.png', 'https://images.unsplash.com/photo-1622445262464-84b25e40a6c6?w=800&q=80', 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=800&q=80'],
     specs: {
       Power: '65W GaNPrime Ultra Fast',
       Ports: '2x USB-C + 1x USB-A',
@@ -677,7 +677,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/icons/categories/cases.png',
-    images: ['/icons/categories/cases.png', 'https://images.unsplash.com/photo-1603313011101-320f26a4f6f6?w=800&q=80'],
+    images: ['/icons/categories/cases.png', 'https://images.unsplash.com/photo-1603313011101-320f26a4f6f6?w=800&q=80', 'https://images.unsplash.com/photo-1586105251261-72a756497a11?w=800&q=80'],
     specs: {
       Material: 'Optically Clear Polycarbonate',
       Protection: 'Anti-Yellowing Drop Armor',
@@ -697,7 +697,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/icons/categories/handsfree.png',
-    images: ['/icons/categories/handsfree.png', 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80'],
+    images: ['/icons/categories/handsfree.png', 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&q=80', 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=800&q=80'],
     specs: {
       Audio: '2-Way Speakers Tuned by AKG',
       Connector: 'USB Type-C with DAC',
@@ -717,7 +717,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/icons/categories/cables.png',
-    images: ['/icons/categories/cables.png', 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=800&q=80'],
+    images: ['/icons/categories/cables.png', 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=800&q=80', 'https://images.unsplash.com/photo-1622445262464-84b25e40a6c6?w=800&q=80'],
     specs: {
       Power: '100W 5A E-Marker Chip',
       Length: '2 Meters Braided Nylon',
@@ -738,7 +738,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Used',
     image: '/product images/ip 16.png',
-    images: ['/product images/ip 16.png', 'https://images.unsplash.com/photo-1632661674596-df8be070a5c5?w=800&q=80'],
+    images: ['/product images/ip 16.png', 'https://images.unsplash.com/photo-1632661674596-df8be070a5c5?w=800&q=80', 'https://images.unsplash.com/photo-1591337676887-a217a6970a8a?w=800&q=80'],
     specs: {
       Condition: '9.5/10 Flawless',
       BatteryHealth: '88%',
@@ -758,7 +758,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Used',
     image: '/product images/ip 17p.png',
-    images: ['/product images/ip 17p.png', 'https://images.unsplash.com/photo-1605236453806-6ff36851218e?w=800&q=80'],
+    images: ['/product images/ip 17p.png', 'https://images.unsplash.com/photo-1605236453806-6ff36851218e?w=800&q=80', 'https://images.unsplash.com/photo-1603791440384-56cd371ee9a7?w=800&q=80'],
     specs: {
       Condition: '9/10 Minor Scratches',
       BatteryHealth: '85%',
@@ -778,7 +778,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Used',
     image: '/product images/pixel 9.png',
-    images: ['/product images/pixel 9.png', 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=800&q=80'],
+    images: ['/product images/pixel 9.png', 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=800&q=80', 'https://images.unsplash.com/photo-1580910051074-3eb694886505?w=800&q=80'],
     specs: {
       Condition: '9.8/10 Like New',
       PTA: 'Approved Official',
@@ -798,7 +798,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Used',
     image: '/product images/s25 ultra.png',
-    images: ['/product images/s25 ultra.png', 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=800&q=80'],
+    images: ['/product images/s25 ultra.png', 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=800&q=80', 'https://images.unsplash.com/photo-1580910051074-3eb694886505?w=800&q=80'],
     specs: {
       Condition: '9/10 Clean Body',
       Storage: '128GB',
@@ -818,7 +818,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Used',
     image: '/product images/ip 17e.png',
-    images: ['/product images/ip 17e.png', 'https://images.unsplash.com/photo-1574755393849-623942496936?w=800&q=80'],
+    images: ['/product images/ip 17e.png', 'https://images.unsplash.com/photo-1574755393849-623942496936?w=800&q=80', 'https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?w=800&q=80'],
     specs: {
       Condition: '9/10 Mint',
       BatteryHealth: '84%',
@@ -838,7 +838,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Used',
     image: '/product images/pixel 9.png',
-    images: ['/product images/pixel 9.png', 'https://images.unsplash.com/photo-1565849904461-04a58ad377e0?w=800&q=80'],
+    images: ['/product images/pixel 9.png', 'https://images.unsplash.com/photo-1565849904461-04a58ad377e0?w=800&q=80', 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&q=80'],
     specs: {
       Condition: '9.2/10 Clean',
       Storage: '256GB',
@@ -859,7 +859,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/product images/pixel 9.png',
-    images: ['/product images/pixel 9.png', 'https://images.unsplash.com/photo-1598327105854-7d2e3c822e51?w=800&q=80'],
+    images: ['/product images/pixel 9.png', 'https://images.unsplash.com/photo-1598327105854-7d2e3c822e51?w=800&q=80', 'https://images.unsplash.com/photo-1565849904461-04a58ad377e0?w=800&q=80'],
     specs: {
       Display: '6.67" AMOLED 120Hz',
       Camera: '200MP OIS Camera',
@@ -879,7 +879,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/product images/ip 17.png',
-    images: ['/product images/ip 17.png', 'https://images.unsplash.com/photo-1565849904461-04a58ad377e0?w=800&q=80'],
+    images: ['/product images/ip 17.png', 'https://images.unsplash.com/photo-1565849904461-04a58ad377e0?w=800&q=80', 'https://images.unsplash.com/photo-1598327105854-7d2e3c822e51?w=800&q=80'],
     specs: {
       Processor: 'Dimensity 8200 Ultimate 5G',
       Display: '144Hz FHD+ AMOLED',
@@ -899,7 +899,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/product images/s25 ultra.png',
-    images: ['/product images/s25 ultra.png', 'https://images.unsplash.com/photo-1580910051074-3eb694886505?w=800&q=80'],
+    images: ['/product images/s25 ultra.png', 'https://images.unsplash.com/photo-1580910051074-3eb694886505?w=800&q=80', 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=800&q=80'],
     specs: {
       Camera: '50MP Sony IMX890 OIS',
       Display: '144Hz AMOLED',
@@ -919,7 +919,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/product images/s25 ultra.png',
-    images: ['/product images/s25 ultra.png', 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=800&q=80'],
+    images: ['/product images/s25 ultra.png', 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=800&q=80', 'https://images.unsplash.com/photo-1580910051074-3eb694886505?w=800&q=80'],
     specs: {
       Display: '6.6" Super AMOLED 120Hz',
       Battery: '5000 mAh 25W',
@@ -939,7 +939,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/product images/ip 16.png',
-    images: ['/product images/ip 16.png', 'https://images.unsplash.com/photo-1598327105854-7d2e3c822e51?w=800&q=80'],
+    images: ['/product images/ip 16.png', 'https://images.unsplash.com/photo-1598327105854-7d2e3c822e51?w=800&q=80', 'https://images.unsplash.com/photo-1565849904461-04a58ad377e0?w=800&q=80'],
     specs: {
       Display: '120Hz Curved Vision',
       Camera: '32MP Telephoto Portrait',
@@ -960,7 +960,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/product images/pixel 9.png',
-    images: ['/product images/pixel 9.png', 'https://images.unsplash.com/photo-1565849904461-04a58ad377e0?w=800&q=80'],
+    images: ['/product images/pixel 9.png', 'https://images.unsplash.com/photo-1565849904461-04a58ad377e0?w=800&q=80', 'https://images.unsplash.com/photo-1580910051074-3eb694886505?w=800&q=80'],
     specs: {
       Camera: '108MP Super-Clear Camera',
       Charging: '33W Fast Charging',
@@ -980,7 +980,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/product images/ip 17e.png',
-    images: ['/product images/ip 17e.png', 'https://images.unsplash.com/photo-1580910051074-3eb694886505?w=800&q=80'],
+    images: ['/product images/ip 17e.png', 'https://images.unsplash.com/photo-1580910051074-3eb694886505?w=800&q=80', 'https://images.unsplash.com/photo-1598327105854-7d2e3c822e51?w=800&q=80'],
     specs: {
       Camera: '108MP 3X In-sensor Zoom',
       Processor: 'Snapdragon 685 6nm',
@@ -1000,7 +1000,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/product images/ip 17.png',
-    images: ['/product images/ip 17.png', 'https://images.unsplash.com/photo-1598327105854-7d2e3c822e51?w=800&q=80'],
+    images: ['/product images/ip 17.png', 'https://images.unsplash.com/photo-1598327105854-7d2e3c822e51?w=800&q=80', 'https://images.unsplash.com/photo-1565849904461-04a58ad377e0?w=800&q=80'],
     specs: {
       Display: '120Hz FHD+ Punch-Hole',
       Camera: '108MP Ultra Sensing',
@@ -1020,7 +1020,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/product images/pixel 9.png',
-    images: ['/product images/pixel 9.png', 'https://images.unsplash.com/photo-1565849904461-04a58ad377e0?w=800&q=80'],
+    images: ['/product images/pixel 9.png', 'https://images.unsplash.com/photo-1565849904461-04a58ad377e0?w=800&q=80', 'https://images.unsplash.com/photo-1580910051074-3eb694886505?w=800&q=80'],
     specs: {
       Processor: 'Helio G99 Gaming',
       Display: '120Hz FHD+ Display',
@@ -1040,7 +1040,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/product images/ip 16.png',
-    images: ['/product images/ip 16.png', 'https://images.unsplash.com/photo-1580910051074-3eb694886505?w=800&q=80'],
+    images: ['/product images/ip 16.png', 'https://images.unsplash.com/photo-1580910051074-3eb694886505?w=800&q=80', 'https://images.unsplash.com/photo-1598327105854-7d2e3c822e51?w=800&q=80'],
     specs: {
       Camera: '108MP Ultra Clear',
       Battery: '5000 mAh 18W',
@@ -1060,7 +1060,7 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: '/product images/s25 ultra.png',
-    images: ['/product images/s25 ultra.png', 'https://images.unsplash.com/photo-1598327105854-7d2e3c822e51?w=800&q=80'],
+    images: ['/product images/s25 ultra.png', 'https://images.unsplash.com/photo-1598327105854-7d2e3c822e51?w=800&q=80', 'https://images.unsplash.com/photo-1565849904461-04a58ad377e0?w=800&q=80'],
     specs: {
       Display: 'High Brightness Sunlight',
       Battery: '5000 mAh Long-Life',
@@ -1081,10 +1081,8 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: 'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=600&q=80',
-    images: [
-      'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=600&q=80',
-      'https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=600&q=80',
-    ],
+    images: ['https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=600&q=80',
+      'https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=600&q=80',, 'https://images.unsplash.com/photo-1616348436168-de43ad0db179?w=600&q=80'],
     compatibleModels: ['iPhone', 'Apple', 'iPhone 16', 'iPhone 18', 'iPhone 17', 'iPhone 13', 'iPhone 12', 'iPhone 11', 'iPhone Duo', 'iPhone Air', 'iPhone 17e'],
     specs: {
       Type: '9D Full Glue Curved Glass',
@@ -1105,10 +1103,8 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: 'https://images.unsplash.com/photo-1603313011101-320f26a4f6f6?w=600&q=80',
-    images: [
-      'https://images.unsplash.com/photo-1603313011101-320f26a4f6f6?w=600&q=80',
-      'https://images.unsplash.com/photo-1586105251261-72a756497a11?w=600&q=80',
-    ],
+    images: ['https://images.unsplash.com/photo-1603313011101-320f26a4f6f6?w=600&q=80',
+      'https://images.unsplash.com/photo-1586105251261-72a756497a11?w=600&q=80',, 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=600&q=80'],
     compatibleModels: ['iPhone', 'Apple', 'iPhone 16', 'iPhone 17', 'iPhone 18', 'iPhone Air', 'iPhone 13', 'iPhone Duo'],
     specs: {
       Material: 'Soft Liquid Silicone + Microfiber',
@@ -1129,10 +1125,8 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: 'https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=600&q=80',
-    images: [
-      'https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=600&q=80',
-      'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=600&q=80',
-    ],
+    images: ['https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=600&q=80',
+      'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=600&q=80',, 'https://images.unsplash.com/photo-1616348436168-de43ad0db179?w=600&q=80'],
     compatibleModels: ['Infinix', 'Tecno', 'OnePlus', 'Redmi', 'Xiaomi', 'Spark', 'Hot 40', 'GT 20', 'Camon', 'Android'],
     specs: {
       Type: 'Super D+ Edge-to-Edge Tough Glass',
@@ -1153,10 +1147,8 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: 'https://images.unsplash.com/photo-1616348436168-de43ad0db179?w=600&q=80',
-    images: [
-      'https://images.unsplash.com/photo-1616348436168-de43ad0db179?w=600&q=80',
-      'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=600&q=80',
-    ],
+    images: ['https://images.unsplash.com/photo-1616348436168-de43ad0db179?w=600&q=80',
+      'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=600&q=80',, 'https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=600&q=80'],
     compatibleModels: ['Xiaomi', 'Redmi', 'Realme', 'Vivo', 'Itel', 'Android', 'Redmi Note 13', 'Realme 12', 'Realme C67'],
     specs: {
       Type: 'Flexible Nanometer Ceramic PMMA',
@@ -1177,10 +1169,8 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: 'https://images.unsplash.com/photo-1586105251261-72a756497a11?w=600&q=80',
-    images: [
-      'https://images.unsplash.com/photo-1586105251261-72a756497a11?w=600&q=80',
-      'https://images.unsplash.com/photo-1603313011101-320f26a4f6f6?w=600&q=80',
-    ],
+    images: ['https://images.unsplash.com/photo-1586105251261-72a756497a11?w=600&q=80',
+      'https://images.unsplash.com/photo-1603313011101-320f26a4f6f6?w=600&q=80',, 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=600&q=80'],
     compatibleModels: ['Xiaomi', 'Redmi', 'Realme', 'Vivo', 'Android', 'Redmi Note 13', 'Vivo Y17s', 'Realme C67'],
     specs: {
       Material: 'Flexible Shock-Absorbing TPU',
@@ -1201,10 +1191,8 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: 'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=600&q=80',
-    images: [
-      'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=600&q=80',
-      'https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=600&q=80',
-    ],
+    images: ['https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=600&q=80',
+      'https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=600&q=80',, 'https://images.unsplash.com/photo-1616348436168-de43ad0db179?w=600&q=80'],
     compatibleModels: ['Samsung', 'Galaxy', 'S25 Ultra', 'S21 Ultra', 'Tecno', 'Camon 30', 'Redmi 13', 'Itel S24', 'Android'],
     specs: {
       Type: 'UV Light Cured Liquid Adhesive Glass',
@@ -1225,10 +1213,8 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: 'https://images.unsplash.com/photo-1603313011101-320f26a4f6f6?w=600&q=80',
-    images: [
-      'https://images.unsplash.com/photo-1603313011101-320f26a4f6f6?w=600&q=80',
-      'https://images.unsplash.com/photo-1586105251261-72a756497a11?w=600&q=80',
-    ],
+    images: ['https://images.unsplash.com/photo-1603313011101-320f26a4f6f6?w=600&q=80',
+      'https://images.unsplash.com/photo-1586105251261-72a756497a11?w=600&q=80',, 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=600&q=80'],
     compatibleModels: ['Samsung', 'Tecno', 'Camon 30', 'Itel S24', 'Redmi 13', 'Android', 'Spark 20'],
     specs: {
       Material: 'Smoky Matte Acrylic + Soft TPU Border',
@@ -1249,10 +1235,8 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: 'https://images.unsplash.com/photo-1616348436168-de43ad0db179?w=600&q=80',
-    images: [
-      'https://images.unsplash.com/photo-1616348436168-de43ad0db179?w=600&q=80',
-      'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=600&q=80',
-    ],
+    images: ['https://images.unsplash.com/photo-1616348436168-de43ad0db179?w=600&q=80',
+      'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=600&q=80',, 'https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=600&q=80'],
     compatibleModels: ['iPhone', 'Apple', 'Samsung', 'Tecno', 'Android', 'Camon 30', 'Redmi 13', 'Itel S24'],
     specs: {
       Privacy: '28-Degree Two-Way Narrow Angle Privacy Filter',
@@ -1273,10 +1257,8 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: 'https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=600&q=80',
-    images: [
-      'https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=600&q=80',
-      'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=600&q=80',
-    ],
+    images: ['https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=600&q=80',
+      'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=600&q=80',, 'https://images.unsplash.com/photo-1616348436168-de43ad0db179?w=600&q=80'],
     compatibleModels: ['iPhone', 'Apple', 'iPhone Duo', 'iPhone 18', 'iPhone 17', 'S25 Ultra', 'Pixel 9', 'Pixel 7', 'Samsung', 'Galaxy A35'],
     specs: {
       Grade: '11D Reinforced High-Alumina Silicate',
@@ -1297,10 +1279,8 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: 'https://images.unsplash.com/photo-1603313011101-320f26a4f6f6?w=600&q=80',
-    images: [
-      'https://images.unsplash.com/photo-1603313011101-320f26a4f6f6?w=600&q=80',
-      'https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=600&q=80',
-    ],
+    images: ['https://images.unsplash.com/photo-1603313011101-320f26a4f6f6?w=600&q=80',
+      'https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=600&q=80',, 'https://images.unsplash.com/photo-1586105251261-72a756497a11?w=600&q=80'],
     compatibleModels: ['iPhone', 'Apple', 'iPhone 18', 'iPhone 17', 'iPhone Duo', 'S25 Ultra', 'Pixel 9', 'Galaxy A35'],
     specs: {
       Frame: 'Titanium-Tone Electroplated Metallic Bezel',
@@ -1321,10 +1301,8 @@ export const INITIAL_PRODUCTS = [
     discount: 0,
     badge: 'Box Pack',
     image: 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=600&q=80',
-    images: [
-      'https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=600&q=80',
-      'https://images.unsplash.com/photo-1586105251261-72a756497a11?w=600&q=80',
-    ],
+    images: ['https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=600&q=80',
+      'https://images.unsplash.com/photo-1586105251261-72a756497a11?w=600&q=80',, 'https://images.unsplash.com/photo-1603313011101-320f26a4f6f6?w=600&q=80'],
     compatibleModels: ['Samsung', 'Galaxy', 'S25 Ultra', 'S21 Ultra', 'Pixel 9', 'Pixel 7', 'Infinix Hot 40', 'Galaxy A35', 'Android'],
     specs: {
       Kickstand: '360° Rotatable Ring Stand + Car Mount Magnet',
