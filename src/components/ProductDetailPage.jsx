@@ -255,7 +255,7 @@ export default function ProductDetailPage({ productId, onBack, onShop, onProduct
               className="w-10 h-10 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center active:scale-95 transition-transform flex-shrink-0 mt-1 shadow-xs"
               aria-label={isFav ? 'Remove from Saved' : 'Add to Favorite'}
             >
-              <Heart size={20} className={isFav ? 'fill-red-500 text-red-500' : 'text-gray-500'} />
+              <Heart size={20} className={isFav ? 'fill-[#4b47d9] text-[#4b47d9]' : 'text-gray-700'} strokeWidth={1.8} />
             </button>
           </div>
 

@@ -56,7 +56,7 @@ export default function ShopDetailPage({ shopId, onBack, onProduct, favorites, o
               onClick={() => onToggleFav(shopId)}
               className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center active:scale-95 transition-transform"
             >
-              <Heart size={18} className={isFav ? 'fill-red-500 text-red-500' : 'text-white'} />
+              <Heart size={18} className={isFav ? 'fill-[#4b47d9] text-[#4b47d9]' : 'text-white'} strokeWidth={1.8} />
             </button>
           </div>
         </div>

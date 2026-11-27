@@ -14,8 +14,6 @@ const NavbarContent = ({ navTab, favorites = [], handleNavClick }) => (
   <div className="w-full flex items-center justify-around px-2">
     {NAV_ITEMS.map(({ id, label, Icon }) => {
       const active = navTab === id;
-      const isFavTab = id === 'favorites';
-      const hasFavs = isFavTab && favorites.length > 0;
       return (
         <button
           key={id}
@@ -25,14 +23,12 @@ const NavbarContent = ({ navTab, favorites = [], handleNavClick }) => (
           }`}
         >
           <Icon
-            className={`w-5 h-5 transition-all duration-200 ${active ? 'scale-110' : ''} ${hasFavs && !active ? 'fill-rose-400 text-rose-400' : ''}`}
+            className={`w-5 h-5 transition-all duration-200 ${active ? 'scale-110 text-[#4b47d9]' : 'text-gray-500'}`}
+            strokeWidth={active ? 2.2 : 1.8}
           />
-          <span className={`text-[10px] transition-all duration-200 ${active ? 'text-[#4b47d9] font-bold' : ''}`}>
+          <span className={`text-[10px] transition-all duration-200 ${active ? 'text-[#4b47d9] font-bold' : 'text-gray-500 font-medium'}`}>
             {label}
           </span>
-          {hasFavs && (
-            <span className="absolute top-1 right-2 w-2 h-2 rounded-full bg-rose-500" />
-          )}
           {active && (
             <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#4b47d9]" />
           )}
