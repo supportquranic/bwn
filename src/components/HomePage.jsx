@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { MapPin, Bot, Search, Heart, Star, ChevronRight, ChevronDown, ChevronUp, SlidersHorizontal, ArrowUpRight, ShoppingBag, ShoppingCart, ArrowLeft, Plus, X } from 'lucide-react';
 import { BANNERS, CATEGORIES, USAGE_SECTIONS, BRANDS, LATEST_POSTERS, INITIAL_SHOPS, INITIAL_PRODUCTS } from '../data/mockData';
 import { useCustomImages } from '../utils/imageStore';
+import Footer from './Footer';
 
 const fmt = n => 'Rs. ' + n.toLocaleString('en-PK');
 
@@ -1347,6 +1348,9 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
             ))}
           </div>
         </div>
+
+          {/* ── Footer ── */}
+          <Footer onNavigateTab={onNavigateTab} />
 
           <div className="h-4" />
         </div>
