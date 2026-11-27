@@ -28,46 +28,46 @@ export default function ProductDetailPage({ productId, onBack, onShop, favorites
 
   return (
     <div className="h-full flex flex-col overflow-hidden bg-gray-50">
-      {/* ── Image Carousel ── */}
-      <div className="relative bg-white flex-shrink-0">
-        {/* Back + Fav */}
-        <div className="absolute top-4 left-4 right-4 flex justify-between z-10">
-          <button onClick={onBack} className="w-9 h-9 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center">
-            <ArrowLeft size={18} className="text-white" />
-          </button>
-          <button
-            onClick={() => onToggleFav(productId)}
-            className="w-9 h-9 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center"
-          >
-            <Heart size={18} className={isFav ? 'fill-red-500 text-red-500' : 'text-white'} />
-          </button>
-        </div>
-
-        {/* Image */}
-        <div className="h-72 overflow-hidden">
-          <img
-            src={images[imgIdx]}
-            alt={product.name}
-            className="w-full h-full object-cover transition-all duration-300"
-          />
-        </div>
-
-        {/* Dots */}
-        {images.length > 1 && (
-          <div className="flex justify-center gap-1.5 py-2.5">
-            {images.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setImgIdx(i)}
-                className={`h-1.5 rounded-full transition-all duration-300 ${i === imgIdx ? 'w-5 bg-[#4b47d9]' : 'w-1.5 bg-gray-200'}`}
-              />
-            ))}
+      {/* ── Scrollable Content (Carousel + Details) ── */}
+      <div className="flex-1 overflow-y-auto hide-scrollbar pb-6 smooth-scroll">
+        {/* ── Image Carousel ── */}
+        <div className="relative bg-white">
+          {/* Back + Fav */}
+          <div className="absolute top-4 left-4 right-4 flex justify-between z-10">
+            <button onClick={onBack} className="w-9 h-9 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center active:scale-95 transition-transform">
+              <ArrowLeft size={18} className="text-white" />
+            </button>
+            <button
+              onClick={() => onToggleFav(productId)}
+              className="w-9 h-9 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center active:scale-95 transition-transform"
+            >
+              <Heart size={18} className={isFav ? 'fill-red-500 text-red-500' : 'text-white'} />
+            </button>
           </div>
-        )}
-      </div>
 
-      {/* ── Scrollable Details ── */}
-      <div className="flex-1 overflow-y-auto hide-scrollbar pb-28 smooth-scroll">
+          {/* Image */}
+          <div className="h-72 overflow-hidden">
+            <img
+              src={images[imgIdx]}
+              alt={product.name}
+              className="w-full h-full object-cover transition-all duration-300"
+            />
+          </div>
+
+          {/* Dots */}
+          {images.length > 1 && (
+            <div className="flex justify-center gap-1.5 py-2.5">
+              {images.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setImgIdx(i)}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${i === imgIdx ? 'w-5 bg-[#4b47d9]' : 'w-1.5 bg-gray-200'}`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Product Info */}
         <div className="bg-white px-4 py-4 mt-2 shadow-sm">
           <div className="flex items-start gap-2">

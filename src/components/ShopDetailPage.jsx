@@ -37,24 +37,24 @@ export default function ShopDetailPage({ shopId, onBack, onProduct, favorites, o
   const regular = filteredProducts.filter(p => !p.badge);
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
+    <div className="h-full overflow-y-auto hide-scrollbar bg-[#f8f9fc] pb-28 smooth-scroll">
       {/* ── Cover Image ── */}
-      <div className="relative h-52 flex-shrink-0">
+      <div className="relative h-52">
         <img src={shop.coverImage} alt={shop.name} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
 
         {/* Back & Fav */}
-        <div className="absolute top-4 left-4 right-4 flex justify-between">
-          <button onClick={onBack} className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
+        <div className="absolute top-4 left-4 right-4 flex justify-between z-10">
+          <button onClick={onBack} className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center active:scale-95 transition-transform">
             <ArrowLeft size={18} className="text-white" />
           </button>
           <div className="flex gap-2">
-            <button className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
+            <button className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center active:scale-95 transition-transform">
               <Share2 size={16} className="text-white" />
             </button>
             <button
               onClick={() => onToggleFav(shopId)}
-              className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center"
+              className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center active:scale-95 transition-transform"
             >
               <Heart size={18} className={isFav ? 'fill-red-500 text-red-500' : 'text-white'} />
             </button>
@@ -63,7 +63,7 @@ export default function ShopDetailPage({ shopId, onBack, onProduct, favorites, o
       </div>
 
       {/* ── Shop Info Card ── */}
-      <div className="bg-white px-4 pb-4 flex-shrink-0 shadow-sm">
+      <div className="bg-white px-4 pb-4 shadow-sm">
         <div className="flex items-start gap-3 -mt-8 relative z-10">
           <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-white shadow-lg flex-shrink-0 bg-white">
             <img src={shop.logo} alt={shop.name} className="w-full h-full object-cover" />
@@ -116,33 +116,31 @@ export default function ShopDetailPage({ shopId, onBack, onProduct, favorites, o
         </div>
       </div>
 
-      {/* ── Tabs + Products ── */}
-      {/* ── Tabs + Products ── */}
-      <div className="flex-1 overflow-y-auto hide-scrollbar bg-[#f8f9fc] pb-28 smooth-scroll">
-        {/* Tab pills */}
-        <div className="sticky top-0 bg-white z-10 border-b border-gray-100">
-          <div className="flex gap-2 overflow-x-auto hide-scrollbar px-4 py-3">
-            {TABS.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-200 ${
-                  activeTab === tab.id
-                    ? 'bg-[#4b47d9] text-white shadow-xs'
-                    : 'bg-gray-100 text-black/70'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-          {/* Items count */}
-          <div className="flex items-center justify-between px-4 pb-2">
-            <span className="text-xs font-medium text-black/40">{filteredProducts.length} items</span>
-          </div>
+      {/* ── Tabs (Sticky at top when scrolled) ── */}
+      <div className="sticky top-0 bg-white z-20 border-b border-gray-100 shadow-xs">
+        <div className="flex gap-2 overflow-x-auto hide-scrollbar px-4 py-3">
+          {TABS.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-200 ${
+                activeTab === tab.id
+                  ? 'bg-[#4b47d9] text-white shadow-xs'
+                  : 'bg-gray-100 text-black/70'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
+        {/* Items count */}
+        <div className="flex items-center justify-between px-4 pb-2">
+          <span className="text-xs font-medium text-black/40">{filteredProducts.length} items</span>
+        </div>
+      </div>
 
-        <div className="px-4 mt-3">
+      {/* ── Products Grid ── */}
+      <div className="px-4 mt-3">
           {/* Products Grid — Using exact Explore page square product card layout & styling */}
           {filteredProducts.length > 0 ? (
             <div className="grid grid-cols-2 gap-2.5">
@@ -192,6 +190,5 @@ export default function ShopDetailPage({ shopId, onBack, onProduct, favorites, o
           )}
         </div>
       </div>
-    </div>
   );
 }
