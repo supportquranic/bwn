@@ -118,64 +118,112 @@ function ProductSquareCard({ product, onProduct }) {
   );
 }
 
-/* ── Favorites Page (Clean two-section distribution: Saved Shops & Saved Devices) ── */
+/* ── Favorites Page (Full-width toggle switch: Saved Shops or Saved Products) ── */
 function FavoritesPage({ favorites, onProduct, onShop, onToggleFav }) {
+  const [savedTab, setSavedTab] = useState('shops'); // 'shops' | 'products'
   const favProducts = INITIAL_PRODUCTS.filter(p => favorites.includes(p.id));
   const favShops = INITIAL_SHOPS.filter(s => favorites.includes(s.id));
 
   return (
     <div className="h-full flex flex-col overflow-hidden bg-white">
+      {/* ── Top Header ── */}
       <div className="px-4 pt-4 pb-3.5 text-white flex-shrink-0 z-30" style={{ background: '#8586f2' }}>
         <h2 className="text-white text-lg font-black tracking-tight">Saved</h2>
-        <p className="text-white/80 text-[11px] font-medium">{favorites.length} saved items</p>
+        <p className="text-white/80 text-[11px] font-medium">{favorites.length} total saved items</p>
       </div>
 
+      {/* ── Full-Width Segmented Toggle Switch ── */}
+      <div className="px-4 py-2.5 bg-white border-b border-gray-100 flex-shrink-0">
+        <div className="w-full bg-gray-100 p-1 rounded-2xl flex items-center">
+          <button
+            onClick={() => setSavedTab('shops')}
+            className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+              savedTab === 'shops'
+                ? 'bg-white text-black shadow-xs font-black'
+                : 'text-black/60 hover:text-black'
+            }`}
+          >
+            <span>Saved Shops</span>
+            <span
+              className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold transition-colors ${
+                savedTab === 'shops' ? 'bg-[#4b47d9] text-white' : 'bg-gray-200 text-black/60'
+              }`}
+            >
+              {favShops.length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setSavedTab('products')}
+            className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+              savedTab === 'products'
+                ? 'bg-white text-black shadow-xs font-black'
+                : 'text-black/60 hover:text-black'
+            }`}
+          >
+            <span>Saved Products</span>
+            <span
+              className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold transition-colors ${
+                savedTab === 'products' ? 'bg-[#4b47d9] text-white' : 'bg-gray-200 text-black/60'
+              }`}
+            >
+              {favProducts.length}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {/* ── Content View ── */}
       <div className="flex-1 overflow-y-auto hide-scrollbar pb-28 bg-[#f8f9fc] smooth-scroll">
-        {/* Distinct Section 1: Saved Shops */}
-        {favShops.length > 0 && (
-          <div className="mt-4">
-            <div className="px-4 mb-3 flex items-center justify-between">
-              <div>
-                <h3 className="text-base font-bold text-black">Saved Shops</h3>
-                <p className="text-xs text-black/40">Verified retailers you bookmarked</p>
-              </div>
-              <span className="text-xs font-semibold text-[#4b47d9]">{favShops.length} shops</span>
+        {savedTab === 'shops' ? (
+          <div className="px-4 mt-3">
+            <div className="mb-2.5 flex items-center justify-between">
+              <span className="text-xs font-bold text-black">Bookmarked Retailers</span>
+              <span className="text-xs text-black/40 font-medium">{favShops.length} shops</span>
             </div>
-            <div className="px-4 flex flex-col gap-2.5">
-              {favShops.map(shop => (
-                <HorizontalShopCard key={shop.id} shop={shop} onShop={onShop} />
-              ))}
-            </div>
-          </div>
-        )}
 
-        {/* Distinct Section 2: Saved Devices */}
-        {favProducts.length > 0 && (
-          <div className="mt-6">
-            <div className="px-4 mb-3 flex items-center justify-between">
-              <div>
-                <h3 className="text-base font-bold text-black">Saved Devices</h3>
-                <p className="text-xs text-black/40">Phones and accessories in your wishlist</p>
+            {favShops.length > 0 ? (
+              <div className="flex flex-col gap-2.5">
+                {favShops.map(shop => (
+                  <HorizontalShopCard key={shop.id} shop={shop} onShop={onShop} />
+                ))}
               </div>
-              <span className="text-xs font-semibold text-[#4b47d9]">{favProducts.length} items</span>
-            </div>
-            <div className="grid grid-cols-2 gap-2.5 px-4">
-              {favProducts.map(p => (
-                <ProductSquareCard key={p.id} product={p} onProduct={onProduct} />
-              ))}
-            </div>
+            ) : (
+              <div className="mt-24 flex flex-col items-center text-center px-8">
+                <div className="w-14 h-14 rounded-3xl bg-gray-100 flex items-center justify-center mb-3 text-[#4b47d9]">
+                  <Store size={24} />
+                </div>
+                <p className="text-black font-bold text-base">No saved shops yet</p>
+                <p className="text-black/40 text-xs mt-1 max-w-xs">
+                  Tap the save icon on any shop to easily revisit its catalog here.
+                </p>
+              </div>
+            )}
           </div>
-        )}
-
-        {favorites.length === 0 && (
-          <div className="mt-28 flex flex-col items-center text-center px-8">
-            <div className="w-16 h-16 rounded-3xl bg-gray-100 flex items-center justify-center mb-4 text-[#4b47d9]">
-              <Heart size={28} />
+        ) : (
+          <div className="px-4 mt-3">
+            <div className="mb-2.5 flex items-center justify-between">
+              <span className="text-xs font-bold text-black">Wishlist Items</span>
+              <span className="text-xs text-black/40 font-medium">{favProducts.length} items</span>
             </div>
-            <p className="text-black font-bold text-lg">Nothing saved yet</p>
-            <p className="text-black/40 text-sm mt-1 max-w-xs">
-              Save your favourite shops and devices to easily access them anytime.
-            </p>
+
+            {favProducts.length > 0 ? (
+              <div className="grid grid-cols-2 gap-2.5">
+                {favProducts.map(p => (
+                  <ProductSquareCard key={p.id} product={p} onProduct={onProduct} />
+                ))}
+              </div>
+            ) : (
+              <div className="mt-24 flex flex-col items-center text-center px-8">
+                <div className="w-14 h-14 rounded-3xl bg-gray-100 flex items-center justify-center mb-3 text-[#4b47d9]">
+                  <Heart size={24} />
+                </div>
+                <p className="text-black font-bold text-base">No saved products yet</p>
+                <p className="text-black/40 text-xs mt-1 max-w-xs">
+                  Save your favorite phones and accessories to compare and review anytime.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>
