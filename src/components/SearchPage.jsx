@@ -120,7 +120,7 @@ export default function SearchPage({ onShop, onProduct, favorites, onToggleFav, 
                       <div className="flex-1 min-w-0 flex flex-col justify-between min-h-[68px]">
                         <div>
                           <h4 className="text-sm font-bold text-black truncate">{shop.name}</h4>
-                          <span className="text-[10px] font-semibold text-emerald-600">
+                          <span className="text-[10px] font-semibold text-gray-500">
                             {shop.verified ? 'Verified Shop' : 'Local Retailer'} · {shop.distance}
                           </span>
                         </div>

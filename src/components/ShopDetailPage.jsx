@@ -72,7 +72,7 @@ export default function ShopDetailPage({ shopId, onBack, onProduct, favorites, o
             <div className="flex items-center gap-1.5 flex-wrap">
               <h1 className="text-lg font-black text-gray-900">{shop.name}</h1>
               {shop.verified && (
-                <CheckCircle size={16} className="text-blue-600 flex-shrink-0" />
+                <CheckCircle size={16} className="text-gray-700 flex-shrink-0" />
               )}
             </div>
             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
@@ -82,7 +82,7 @@ export default function ShopDetailPage({ shopId, onBack, onProduct, favorites, o
                 <span className="text-xs text-gray-400">({shop.ratingCount} reviews)</span>
               </div>
               <span className="text-gray-200">·</span>
-              <span className={`text-xs font-bold ${shop.status === 'open' ? 'text-green-600' : 'text-red-500'}`}>
+              <span className={`text-xs font-bold ${shop.status === 'open' ? 'text-gray-700' : 'text-gray-400'}`}>
                 {shop.status === 'open' ? '● Open Now' : '● Closed'}
               </span>
             </div>

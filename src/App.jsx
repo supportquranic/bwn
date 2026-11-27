@@ -46,7 +46,7 @@ function HorizontalShopCard({ shop, onShop }) {
             <h3 className="text-sm font-bold text-black leading-snug truncate">
               {shop.name}
             </h3>
-            <span className="text-[10px] font-semibold text-emerald-600">
+            <span className="text-[10px] font-semibold text-gray-500">
               {shop.verified ? 'Verified Shop' : 'Local Retailer'} · {shop.distance}
             </span>
           </div>

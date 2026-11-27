@@ -5,9 +5,7 @@ import { INITIAL_PRODUCTS, INITIAL_SHOPS } from '../data/mockData';
 const fmt = n => 'Rs. ' + n.toLocaleString('en-PK');
 
 const batteryColor = (h) => {
-  if (h >= 90) return 'text-green-600 bg-green-50';
-  if (h >= 80) return 'text-amber-600 bg-amber-50';
-  return 'text-red-600 bg-red-50';
+  return 'text-gray-700 bg-gray-100';
 };
 
 /* ── Fallback generator to guarantee exactly 3 images ── */
@@ -186,7 +184,7 @@ export default function ProductDetailPage({ productId, onBack, onShop, onProduct
       {/* Toast Notification */}
       {addedToast && (
         <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-black/90 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-lg flex items-center gap-2 pointer-events-none">
-          <CheckCircle size={15} className="text-emerald-400" />
+          <CheckCircle size={15} className="text-white" />
           <span>Item added to cart!</span>
         </div>
       )}
@@ -362,7 +360,7 @@ export default function ProductDetailPage({ productId, onBack, onShop, onProduct
                 <h3 className="text-sm font-black text-black">Available Covers & Protectors</h3>
                 <p className="text-[10.5px] font-semibold text-black/45 mt-0.5">Compatible with {product.name}</p>
               </div>
-              <span className="text-[10px] font-bold text-[#4b47d9] bg-[#4b47d9]/10 px-2.5 py-0.5 rounded-full">
+              <span className="text-[10px] font-medium text-gray-500 bg-gray-100 px-2.5 py-0.5 rounded-full">
                 {relatedItems.length} Options
               </span>
             </div>
@@ -379,18 +377,18 @@ export default function ProductDetailPage({ productId, onBack, onShop, onProduct
                     onClick={() => onProduct && onProduct(item.id)}
                     className="bg-white rounded-2xl border border-gray-200 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform flex flex-col shadow-[0_2px_8px_rgba(0,0,0,0.03)]"
                   >
-                    {/* Badge: Shop Availability */}
+                    {/* Badge: Shop Availability — Neutral Gray Only */}
                     <div className="px-2.5 pt-2.5 flex items-center justify-between gap-1">
                       {isCurrentShop ? (
-                        <span className="text-[9.5px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 flex items-center gap-1">
-                          ✓ This Shop
+                        <span className="text-[9.5px] font-medium text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                          This Shop
                         </span>
                       ) : (
-                        <span className="text-[9.5px] font-semibold text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full truncate max-w-[95px]" title={itemShop?.name}>
+                        <span className="text-[9.5px] font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full truncate max-w-[95px]" title={itemShop?.name}>
                           {itemShop ? itemShop.name.split(' ')[0] : 'Other Shop'}
                         </span>
                       )}
-                      <span className="text-[9.5px] font-bold text-black/40 flex-shrink-0">
+                      <span className="text-[9.5px] font-medium text-gray-400 flex-shrink-0">
                         {isGlass ? 'Glass' : 'Cover'}
                       </span>
                     </div>
