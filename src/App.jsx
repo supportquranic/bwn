@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Compass, Store, Search, Heart, User } from 'lucide-react';
+import { Compass, Store, Headphones, Heart, User } from 'lucide-react';
 import { AppProvider, useApp } from './context/AppContext';
 import { INITIAL_PRODUCTS, INITIAL_SHOPS } from './data/mockData';
 import { Navbar2 } from './components/NavbarOptions';
 import HomePage from './components/HomePage';
 import SearchPage from './components/SearchPage';
+import AccessoriesPage from './components/AccessoriesPage';
 import ShopDetailPage from './components/ShopDetailPage';
 import ProductDetailPage from './components/ProductDetailPage';
 import AccountPage from './components/AccountPage';
@@ -13,7 +14,7 @@ import AdminVisualEditor from './components/AdminVisualEditor';
 const NAV_TABS = [
   { id: 'home', label: 'Explore', Icon: Compass },
   { id: 'shops', label: 'Shops', Icon: Store },
-  { id: 'search', label: 'Search', Icon: Search },
+  { id: 'accessories', label: 'Accessories', Icon: Headphones },
   { id: 'favorites', label: 'Saved', Icon: Heart },
   { id: 'account', label: 'Account', Icon: User },
 ];
@@ -289,6 +290,12 @@ function AppShell() {
             onShop={goShop}
             favorites={favorites}
             onToggleFav={toggleFav}
+          />
+        );
+      case 'accessories':
+        return (
+          <AccessoriesPage
+            onProduct={goProduct}
           />
         );
       case 'search':

@@ -1,13 +1,13 @@
 import React from 'react';
 import GlassSurface from './GlassSurface';
-import { Compass, Store, Search, Heart, User } from 'lucide-react';
+import { Compass, Store, Headphones, Heart, User } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { id: 'home',      label: 'Explore',  Icon: Compass },
-  { id: 'shops',     label: 'Shops',    Icon: Store   },
-  { id: 'search',    label: 'Search',   Icon: Search  },
-  { id: 'favorites', label: 'Saved',    Icon: Heart   },
-  { id: 'account',   label: 'Account',  Icon: User    },
+  { id: 'home',        label: 'Explore',      Icon: Compass },
+  { id: 'shops',       label: 'Shops',        Icon: Store   },
+  { id: 'accessories', label: 'Accessories',  Icon: Headphones },
+  { id: 'favorites',   label: 'Saved',        Icon: Heart   },
+  { id: 'account',     label: 'Account',      Icon: User    },
 ];
 
 const NavbarContent = ({ navTab, favorites = [], handleNavClick }) => (
