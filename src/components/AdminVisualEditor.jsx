@@ -550,8 +550,8 @@ export default function AdminVisualEditor({ onExit }) {
         <div className="pt-3.5 pb-2.5 px-4 text-white bg-gradient-to-b from-[#8586f2] to-[#7c7deb]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md border border-white/25 flex items-center justify-center">
-                <MapPin size={16} className="text-white" />
+              <div className="w-8 h-8 rounded-full bg-white shadow-xs flex items-center justify-center text-[#4b47d9]">
+                <MapPin size={16} />
               </div>
               <div>
                 <span className="text-white font-black text-sm tracking-tight block">Bahawalnagar, Pakistan</span>
@@ -559,10 +559,10 @@ export default function AdminVisualEditor({ onExit }) {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-8.5 h-8.5 p-2 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center">
-                <Heart size={15} className="text-white fill-white" />
+              <div className="w-8.5 h-8.5 p-2 rounded-full bg-white shadow-xs flex items-center justify-center text-[#4b47d9]">
+                <ShoppingCart size={16} />
               </div>
-              <div className="w-8.5 h-8.5 p-2 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
+              <div className="w-8.5 h-8.5 p-2 rounded-full bg-white shadow-xs flex items-center justify-center text-[#4b47d9]">
                 <Bot size={17} />
               </div>
             </div>

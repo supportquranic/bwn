@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Compass, Store, Headphones, Heart, User, Star, ArrowUpRight } from 'lucide-react';
+import { Compass, Store, Headphones, Heart, User, Star, ArrowUpRight, Search, SlidersHorizontal, X, Plus } from 'lucide-react';
 import { AppProvider, useApp } from './context/AppContext';
 import { INITIAL_PRODUCTS, INITIAL_SHOPS } from './data/mockData';
 import { useCustomImages } from './utils/imageStore';
@@ -9,8 +9,14 @@ import SearchPage from './components/SearchPage';
 import AccessoriesPage from './components/AccessoriesPage';
 import ShopDetailPage from './components/ShopDetailPage';
 import ProductDetailPage from './components/ProductDetailPage';
+import CartPage from './components/CartPage';
 import AccountPage from './components/AccountPage';
 import AdminVisualEditor from './components/AdminVisualEditor';
+import AuthModal from './components/AuthModal';
+import ShopRegistrationModal from './components/ShopRegistrationModal';
+import MyOrdersModal from './components/MyOrdersModal';
+import AddressesModal from './components/AddressesModal';
+import ShopkeeperDashboardModal from './components/ShopkeeperDashboardModal';
 
 const NAV_TABS = [
   { id: 'home', label: 'Explore', Icon: Compass },
@@ -63,7 +69,7 @@ function HorizontalShopCard({ shop, onShop }) {
             <span className="text-[10.5px] text-black/40">({shop.ratingCount})</span>
           </div>
           <button
-            className="flex-shrink-0 bg-[#4b47d9] hover:bg-[#3d39c6] text-white text-[10.5px] font-bold px-3 py-1.5 rounded-full active:scale-95 transition-transform shadow-xs"
+            className="flex-shrink-0 bg-[#8586f2] hover:bg-[#7375e8] text-white text-[10.5px] font-bold px-3 py-1.5 rounded-full active:scale-95 transition-transform shadow-xs"
             onClick={e => {
               e.stopPropagation();
               onShop(shop.id);
@@ -78,40 +84,57 @@ function HorizontalShopCard({ shop, onShop }) {
 }
 
 /* ── Square Product Card (Exact match of Explore Page ProductCard) ── */
-function ProductSquareCard({ product, onProduct }) {
-  const storage = product.specs?.Storage || (product.condition === 'new' ? 'Box Pack' : 'In Stock');
+function ProductSquareCard({ product, onProduct, onAddToCart }) {
+  const isAccessory = ['cases', 'covers', 'airpods', 'smartwatch', 'chargers', 'headphones', 'handsfree', 'cables'].includes(product.category) ||
+    ['case', 'cover', 'glass', 'protector', 'charger', 'buds', 'watch', 'handsfree', 'earphone', 'cable'].some(kw => (product.name || '').toLowerCase().includes(kw));
+  const storage = isAccessory ? null : (product.specs?.Storage || (product.condition === 'new' ? 'Box Pack' : 'In Stock'));
 
   return (
     <div
-      className="bg-white rounded-2xl border border-gray-200 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform flex flex-col shadow-[0_2px_8px_rgba(0,0,0,0.03)]"
+      className="w-full h-full bg-white rounded-2xl border border-gray-200 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform flex flex-col justify-between shadow-[0_2px_8px_rgba(0,0,0,0.03)]"
       onClick={() => onProduct(product.id)}
     >
-      {/* Taller upper image area — image centered with extra vertical room */}
-      <div className="px-3 pt-4 pb-2.5 flex-1 flex items-center justify-center min-h-[156px]">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="max-h-36 max-w-full object-contain"
-        />
+      {/* Upper image area — uniform square placeholder with rounded corners and exact side spacing */}
+      <div className="px-3 pt-3 pb-1 flex-shrink-0">
+        <div className="w-full aspect-square bg-transparent rounded-2xl overflow-hidden flex items-center justify-center">
+          <img
+            src={product.image}
+            alt={product.name}
+            className={`w-full h-full ${
+              isAccessory ? 'object-cover' : 'object-contain p-2.5'
+            }`}
+          />
+        </div>
       </div>
 
-      {/* Content area at bottom: title sits near price, storage directly under price */}
-      <div className="px-3 pb-3.5 pt-0 flex flex-col justify-end">
-        <p className="text-xs font-bold text-black leading-snug line-clamp-2 mb-2">
+      {/* Content area at bottom: identical 2-line title height and bottom-aligned price row */}
+      <div className="px-3 pb-3 pt-1 flex flex-col justify-between flex-1">
+        <p className="text-xs font-bold text-black leading-snug line-clamp-2 h-8 mb-2">
           {product.name}
         </p>
-        <div className="flex items-center justify-between gap-1.5">
-          <div className="flex flex-col">
-            <span className="text-xs font-black text-[#4b47d9]">{fmt(product.price)}</span>
-            <span className="text-[10px] font-semibold text-black/45 leading-none mt-1">
-              {storage}
-            </span>
+        <div className="flex items-center justify-between gap-1.5 mt-auto">
+          <div className="flex flex-col min-w-0">
+            <span className="text-xs font-black text-[#8586f2] truncate">{fmt(product.price)}</span>
+            {storage ? (
+              <span className="text-[10px] font-semibold text-black/45 leading-none mt-1 truncate">
+                {storage}
+              </span>
+            ) : (
+              <span className="text-[10px] text-transparent select-none leading-none mt-1">
+                -
+              </span>
+            )}
           </div>
           <button
-            className="flex-shrink-0 bg-[#4b47d9] hover:bg-[#3d39c6] text-white text-[10.5px] font-bold px-3 py-1.5 rounded-full active:scale-95 transition-transform shadow-xs"
-            onClick={e => { e.stopPropagation(); onProduct(product.id); }}
+            className="w-7 h-7 flex-shrink-0 bg-[#8586f2] hover:bg-[#7375e8] text-white rounded-full flex items-center justify-center active:scale-90 transition-transform shadow-xs"
+            onClick={e => {
+              e.stopPropagation();
+              onProduct(product.id);
+            }}
+            title="View details"
+            aria-label="View details"
           >
-            Buy now
+            <Plus size={15} strokeWidth={2.5} />
           </button>
         </div>
       </div>
@@ -120,7 +143,7 @@ function ProductSquareCard({ product, onProduct }) {
 }
 
 /* ── Favorites Page (Full-width toggle switch: Saved Products or Saved Shops) ── */
-function FavoritesPage({ favorites, onProduct, onShop, onToggleFav }) {
+function FavoritesPage({ favorites, onProduct, onShop, onToggleFav, onAddToCart }) {
   const [savedTab, setSavedTab] = useState('products'); // 'products' | 'shops'
   const favProducts = INITIAL_PRODUCTS.filter(p => favorites.includes(p.id));
   const favShops = INITIAL_SHOPS.filter(s => favorites.includes(s.id));
@@ -147,7 +170,7 @@ function FavoritesPage({ favorites, onProduct, onShop, onToggleFav }) {
             <span>Saved Products</span>
             <span
               className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold transition-colors ${
-                savedTab === 'products' ? 'bg-[#4b47d9] text-white' : 'bg-gray-200 text-black/60'
+                savedTab === 'products' ? 'bg-[#8586f2] text-white' : 'bg-gray-200 text-black/60'
               }`}
             >
               {favProducts.length}
@@ -165,7 +188,7 @@ function FavoritesPage({ favorites, onProduct, onShop, onToggleFav }) {
             <span>Saved Shops</span>
             <span
               className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold transition-colors ${
-                savedTab === 'shops' ? 'bg-[#4b47d9] text-white' : 'bg-gray-200 text-black/60'
+                savedTab === 'shops' ? 'bg-[#8586f2] text-white' : 'bg-gray-200 text-black/60'
               }`}
             >
               {favShops.length}
@@ -191,7 +214,7 @@ function FavoritesPage({ favorites, onProduct, onShop, onToggleFav }) {
               </div>
             ) : (
               <div className="mt-24 flex flex-col items-center text-center px-8">
-                <div className="w-14 h-14 rounded-3xl bg-gray-100 flex items-center justify-center mb-3 text-[#4b47d9]">
+                <div className="w-14 h-14 rounded-3xl bg-gray-100 flex items-center justify-center mb-3 text-[#8586f2]">
                   <Store size={24} />
                 </div>
                 <p className="text-black font-bold text-base">No saved shops yet</p>
@@ -211,12 +234,12 @@ function FavoritesPage({ favorites, onProduct, onShop, onToggleFav }) {
             {favProducts.length > 0 ? (
               <div className="grid grid-cols-2 gap-2.5">
                 {favProducts.map(p => (
-                  <ProductSquareCard key={p.id} product={p} onProduct={onProduct} />
+                  <ProductSquareCard key={p.id} product={p} onProduct={onProduct} onAddToCart={onAddToCart} />
                 ))}
               </div>
             ) : (
               <div className="mt-24 flex flex-col items-center text-center px-8">
-                <div className="w-14 h-14 rounded-3xl bg-gray-100 flex items-center justify-center mb-3 text-[#4b47d9]">
+                <div className="w-14 h-14 rounded-3xl bg-gray-100 flex items-center justify-center mb-3 text-[#8586f2]">
                   <Heart size={24} />
                 </div>
                 <p className="text-black font-bold text-base">No saved products yet</p>
@@ -291,7 +314,7 @@ function ShopShowcaseCard({ shop, onShop }) {
             <span className="text-black/35 font-normal">({shop.ratingCount})</span>
           </div>
           <button
-            className="bg-black hover:bg-black/85 text-white text-xs font-bold px-4 py-2 rounded-full flex items-center gap-1.5 active:scale-95 transition-transform"
+            className="bg-[#8586f2] hover:bg-[#7375e8] text-white text-xs font-bold px-4 py-2 rounded-full flex items-center gap-1.5 active:scale-95 transition-transform shadow-xs"
             onClick={e => {
               e.stopPropagation();
               onShop(shop.id);
@@ -308,17 +331,72 @@ function ShopShowcaseCard({ shop, onShop }) {
 
 /* ── Shops Page (All shops rendered in Explore page's showcase card style) ── */
 function ShopsPage({ onShop, favorites, onToggleFav }) {
+  const { shops } = useApp();
+  const shopList = shops && shops.length > 0 ? shops : INITIAL_SHOPS;
+  const [query, setQuery] = useState('');
+
+  const filteredShops = shopList.filter(shop => {
+    if (!query.trim()) return true;
+    const q = query.toLowerCase();
+    return (
+      shop.name.toLowerCase().includes(q) ||
+      shop.address.toLowerCase().includes(q) ||
+      (shop.featuredQuote && shop.featuredQuote.toLowerCase().includes(q)) ||
+      (shop.categories && shop.categories.some(c => c.toLowerCase().includes(q)))
+    );
+  });
+
   return (
     <div className="h-full flex flex-col overflow-hidden bg-white">
+      {/* Brand Header */}
       <div className="px-4 pt-4 pb-3.5 text-white flex-shrink-0 z-30" style={{ background: '#8586f2' }}>
         <h2 className="text-white text-lg font-black tracking-tight">All Shops</h2>
-        <p className="text-white/80 text-[11px] font-medium">Bahawalnagar, Pakistan · {INITIAL_SHOPS.length} verified retailers</p>
+        <p className="text-white/80 text-[11px] font-medium">Bahawalnagar, Pakistan · {shopList.length} verified retailers</p>
       </div>
+
+      {/* Same Style Search Bar from Explore Page */}
+      <div className="px-4 pt-3 pb-2 bg-white border-b border-gray-100 flex-shrink-0">
+        <div className="w-full bg-gray-50/90 border border-gray-200/90 rounded-full px-4 py-2.5 flex items-center gap-2.5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)]">
+          <Search size={18} className="text-[#8586f2] flex-shrink-0" />
+          <input
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Search for mobile shops in Bahawalnagar..."
+            className="w-full bg-transparent text-sm font-medium text-black placeholder:text-black/40 focus:outline-none"
+          />
+          {query && (
+            <button onClick={() => setQuery('')} className="p-0.5 text-black/40 hover:text-black">
+              <X size={15} />
+            </button>
+          )}
+        </div>
+      </div>
+
       <div className="flex-1 overflow-y-auto hide-scrollbar pb-28 bg-[#f8f9fc] smooth-scroll">
-        <div className="px-4 mt-4 flex flex-col gap-3.5">
-          {INITIAL_SHOPS.map(shop => (
-            <ShopShowcaseCard key={shop.id} shop={shop} onShop={onShop} />
-          ))}
+        <div className="px-4 mt-4">
+          <div className="flex items-center justify-between mb-3.5">
+            <div>
+              <h2 className="text-base font-bold text-black">Mobile Shops & Retailers</h2>
+              <p className="text-xs text-black/40">Verified mobile retailers and official stores in Bahawalnagar</p>
+            </div>
+            <span className="text-xs text-black/40 font-semibold self-start mt-0.5">
+              {filteredShops.length} shops
+            </span>
+          </div>
+
+          <div className="flex flex-col gap-3.5">
+            {filteredShops.length > 0 ? (
+              filteredShops.map(shop => (
+                <ShopShowcaseCard key={shop.id} shop={shop} onShop={onShop} />
+              ))
+            ) : (
+              <div className="mt-16 flex flex-col items-center text-center">
+                <p className="text-black font-semibold text-sm">No shops found</p>
+                <p className="text-black/40 text-xs mt-1">Try searching for a different shop or market name</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -327,13 +405,78 @@ function ShopsPage({ onShop, favorites, onToggleFav }) {
 
 /* ── Main App Shell ── */
 function AppShell() {
-  const { role, setRole } = useApp();
+  const { role, setRole, currentUser, loginUser, logoutUser, registerShop } = useApp();
   const [activeTab, setActiveTab] = useState('home');
   const [activeShopId, setActiveShopId] = useState(null);
   const [activeProductId, setActiveProductId] = useState(null);
   const [favorites, setFavorites] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isAdminMode, setIsAdminMode] = useState(false);
+
+  // Auth & Shop Registration modal states
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState('signin');
+  const [isShopRegModalOpen, setIsShopRegModalOpen] = useState(false);
+  const [isOrdersModalOpen, setIsOrdersModalOpen] = useState(false);
+  const [isAddressesModalOpen, setIsAddressesModalOpen] = useState(false);
+  const [isShopDashboardOpen, setIsShopDashboardOpen] = useState(false);
+
+  const openAuth = (mode = 'signin') => {
+    setAuthModalMode(mode);
+    setIsAuthModalOpen(true);
+  };
+
+  const openShopRegistration = () => {
+    setIsShopRegModalOpen(true);
+  };
+
+  // Cart state with localStorage persistence
+  const [cart, setCart] = useState(() => {
+    try {
+      const saved = localStorage.getItem('bm_cart');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('bm_cart', JSON.stringify(cart));
+    } catch (e) {
+      console.error('Failed to save cart:', e);
+    }
+  }, [cart]);
+
+  const addToCart = (productId) => {
+    const prod = INITIAL_PRODUCTS.find(p => p.id === productId);
+    if (!prod) return;
+    setCart(prev => {
+      const idx = prev.findIndex(item => item.id === productId);
+      if (idx > -1) {
+        return prev.map((item, i) => i === idx ? { ...item, quantity: (item.quantity || 1) + 1 } : item);
+      }
+      return [...prev, { ...prod, quantity: 1 }];
+    });
+  };
+
+  const updateCartQty = (productId, delta) => {
+    setCart(prev => prev.map(item => {
+      if (item.id === productId) {
+        const nextQty = (item.quantity || 1) + delta;
+        return nextQty > 0 ? { ...item, quantity: nextQty } : null;
+      }
+      return item;
+    }).filter(Boolean));
+  };
+
+  const removeFromCart = (productId) => {
+    setCart(prev => prev.filter(item => item.id !== productId));
+  };
+
+  const clearCart = () => setCart([]);
+  const cartCount = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
 
   useEffect(() => {
     const checkAdmin = () => {
@@ -359,18 +502,37 @@ function AppShell() {
     setActiveTab(tab);
     setActiveShopId(null);
     setActiveProductId(null);
+    setIsCartOpen(false);
   };
 
-  const goShop = (id) => { setActiveShopId(id); setActiveProductId(null); };
-  const goProduct = (id) => setActiveProductId(id);
+  const goShop = (id) => { setActiveShopId(id); setActiveProductId(null); setIsCartOpen(false); };
+  const goProduct = (id) => { setActiveProductId(id); setIsCartOpen(false); };
   const goBackFromProduct = () => setActiveProductId(null);
   const goBackFromShop = () => setActiveShopId(null);
-  const goShopFromProduct = (id) => { setActiveProductId(null); setActiveShopId(id); };
+  const goShopFromProduct = (id) => { setActiveProductId(null); setActiveShopId(id); setIsCartOpen(false); };
 
-  const handleSearchFocus = () => { setActiveTab('search'); setActiveShopId(null); setActiveProductId(null); };
+  const handleSearchFocus = () => { setActiveTab('search'); setActiveShopId(null); setActiveProductId(null); setIsCartOpen(false); };
 
   /* Render page content */
   const renderPage = () => {
+    // Dedicated Cart Page
+    if (isCartOpen) {
+      return (
+        <CartPage
+          cart={cart}
+          onBack={() => setIsCartOpen(false)}
+          onProduct={(id) => {
+            setIsCartOpen(false);
+            goProduct(id);
+          }}
+          onUpdateQty={updateCartQty}
+          onRemove={removeFromCart}
+          onClear={clearCart}
+          onOpenOrders={() => setIsOrdersModalOpen(true)}
+        />
+      );
+    }
+
     // Product detail — takes priority
     if (activeProductId) {
       return (
@@ -381,6 +543,9 @@ function AppShell() {
           onProduct={goProduct}
           favorites={favorites}
           onToggleFav={toggleFav}
+          onAddToCart={addToCart}
+          onOpenCart={() => setIsCartOpen(true)}
+          onOpenOrders={() => setIsOrdersModalOpen(true)}
         />
       );
     }
@@ -393,6 +558,7 @@ function AppShell() {
           onProduct={goProduct}
           favorites={favorites}
           onToggleFav={toggleFav}
+          onAddToCart={addToCart}
         />
       );
     }
@@ -406,6 +572,10 @@ function AppShell() {
             favorites={favorites}
             onToggleFav={toggleFav}
             onSearchFocus={handleSearchFocus}
+            onOpenCart={() => setIsCartOpen(true)}
+            cartCount={cartCount}
+            onAddToCart={addToCart}
+            onNavigateTab={handleNavClick}
           />
         );
       case 'shops':
@@ -420,6 +590,7 @@ function AppShell() {
         return (
           <AccessoriesPage
             onProduct={goProduct}
+            onAddToCart={addToCart}
           />
         );
       case 'search':
@@ -429,6 +600,7 @@ function AppShell() {
             onProduct={goProduct}
             favorites={favorites}
             onToggleFav={toggleFav}
+            onAddToCart={addToCart}
             initialQuery={searchQuery}
           />
         );
@@ -439,14 +611,23 @@ function AppShell() {
             onProduct={goProduct}
             onShop={goShop}
             onToggleFav={toggleFav}
+            onAddToCart={addToCart}
           />
         );
       case 'account':
         return (
           <AccountPage
             role={role}
-            onLogout={() => setRole('customer')}
+            currentUser={currentUser}
+            onLogout={() => logoutUser()}
             onOpenAdmin={() => setIsAdminMode(true)}
+            onOpenAuth={openAuth}
+            onOpenShopRegistration={openShopRegistration}
+            onOpenShop={goShop}
+            onOpenOrders={() => setIsOrdersModalOpen(true)}
+            onOpenAddresses={() => setIsAddressesModalOpen(true)}
+            onOpenShopDashboard={() => setIsShopDashboardOpen(true)}
+            onNavigateTab={handleNavClick}
           />
         );
       default:
@@ -473,7 +654,7 @@ function AppShell() {
     );
   }
 
-  const showNav = !activeProductId; // hide bottom nav when viewing product? keep visible.
+  const showNav = !activeProductId && !isCartOpen; // hide bottom nav when viewing product or full cart
 
   return (
     <div className="fixed inset-0 flex flex-col bg-[#4440cf] overflow-hidden max-w-md mx-auto">
@@ -493,6 +674,46 @@ function AppShell() {
           />
         </div>
       )}
+
+      {/* Auth Modal (Phone & OTP Verification) */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onLoginSuccess={(userData) => loginUser(userData)}
+        initialMode={authModalMode}
+      />
+
+      {/* Shop Registration Modal (Sell on Bahawal Market) */}
+      <ShopRegistrationModal
+        isOpen={isShopRegModalOpen}
+        onClose={() => setIsShopRegModalOpen(false)}
+        currentUser={currentUser}
+        onRegisterShopSuccess={(shopData, cnic) => registerShop(shopData, cnic)}
+        onOpenShop={goShop}
+      />
+
+      {/* My Orders Modal (Tracking & History) */}
+      <MyOrdersModal
+        isOpen={isOrdersModalOpen}
+        onClose={() => setIsOrdersModalOpen(false)}
+        onExplore={() => {
+          setIsOrdersModalOpen(false);
+          handleNavClick('home');
+        }}
+      />
+
+      {/* Saved Delivery Addresses Modal */}
+      <AddressesModal
+        isOpen={isAddressesModalOpen}
+        onClose={() => setIsAddressesModalOpen(false)}
+      />
+
+      {/* Shopkeeper Dashboard Modal (Inventory & Incoming Orders) */}
+      <ShopkeeperDashboardModal
+        isOpen={isShopDashboardOpen}
+        onClose={() => setIsShopDashboardOpen(false)}
+        onOpenShop={goShop}
+      />
     </div>
   );
 }

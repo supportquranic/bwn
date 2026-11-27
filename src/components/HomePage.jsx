@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { MapPin, Bot, Search, Heart, Star, ChevronRight, ChevronDown, ChevronUp, SlidersHorizontal, ArrowUpRight, ShoppingBag, X } from 'lucide-react';
+import { MapPin, Bot, Search, Heart, Star, ChevronRight, ChevronDown, ChevronUp, SlidersHorizontal, ArrowUpRight, ShoppingBag, ShoppingCart, ArrowLeft, Plus, X } from 'lucide-react';
 import { BANNERS, CATEGORIES, USAGE_SECTIONS, BRANDS, LATEST_POSTERS, INITIAL_SHOPS, INITIAL_PRODUCTS } from '../data/mockData';
 import { useCustomImages } from '../utils/imageStore';
 
@@ -27,16 +27,16 @@ function BrandLogo({ id }) {
       </svg>
     ),
     samsung: <span className="text-[11px] font-black tracking-wider text-black">SAMSUNG</span>,
-    xiaomi:  <span className="text-sm font-black tracking-tight text-[#4b47d9] border-2 border-[#4b47d9] rounded-lg px-2 py-0.5">mi</span>,
+    xiaomi:  <span className="text-sm font-black tracking-tight text-[#8586f2] border-2 border-[#8586f2] rounded-lg px-2 py-0.5">mi</span>,
     oneplus: <span className="text-xs font-black tracking-tight text-black border-2 border-black px-1.5 py-0.5">1+</span>,
     realme:  <span className="text-xs font-black tracking-tight text-black">realme</span>,
-    jbl:     <span className="text-sm font-black tracking-tight text-[#4b47d9]">JBL</span>,
+    jbl:     <span className="text-sm font-black tracking-tight text-[#8586f2]">JBL</span>,
   };
   return logos[id] || <span className="text-xs font-black text-black">{id}</span>;
 }
 
-/* ── Unified Mobile Product Card (Sleek proportions, taller card, storage under price, Buy now button) ── */
-function ProductCard({ product, onProduct, customData }) {
+/* ── Unified Mobile Product Card (Sleek proportions, fixed uniform height, identical dimensions, storage under price, Plus icon button) ── */
+function ProductCard({ product, onProduct, customData, onAddToCart }) {
   const finalProduct = {
     ...product,
     ...customData,
@@ -45,39 +45,56 @@ function ProductCard({ product, onProduct, customData }) {
     price: customData?.price !== undefined ? customData.price : product.price,
   };
 
-  const storage = product.specs?.Storage || (product.condition === 'new' ? 'Box Pack' : 'In Stock');
+  const isAccessory = ['cases', 'covers', 'airpods', 'smartwatch', 'chargers', 'headphones', 'handsfree', 'cables'].includes(product.category) ||
+    ['case', 'cover', 'glass', 'protector', 'charger', 'buds', 'watch', 'handsfree', 'earphone', 'cable'].some(kw => (product.name || '').toLowerCase().includes(kw));
+  const storage = isAccessory ? null : (product.specs?.Storage || (product.condition === 'new' ? 'Box Pack' : 'In Stock'));
 
   return (
     <div
-      className="bg-white rounded-2xl border border-gray-200 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform flex flex-col shadow-[0_2px_8px_rgba(0,0,0,0.03)]"
+      className="w-full h-full bg-white rounded-2xl border border-gray-200 overflow-hidden cursor-pointer active:scale-[0.98] transition-transform flex flex-col justify-between shadow-[0_2px_8px_rgba(0,0,0,0.03)]"
       onClick={() => onProduct(product.id)}
     >
-      {/* Taller upper image area — phone image centered with extra vertical room */}
-      <div className="px-3 pt-4 pb-2.5 flex-1 flex items-center justify-center min-h-[156px]">
-        <img
-          src={finalProduct.image}
-          alt={finalProduct.name}
-          className="max-h-36 max-w-full object-contain"
-        />
+      {/* Upper image area — uniform square placeholder with rounded corners and exact side spacing */}
+      <div className="px-3 pt-3 pb-1 flex-shrink-0">
+        <div className="w-full aspect-square bg-transparent rounded-2xl overflow-hidden flex items-center justify-center">
+          <img
+            src={finalProduct.image}
+            alt={finalProduct.name}
+            className={`w-full h-full ${
+              isAccessory ? 'object-cover' : 'object-contain p-2.5'
+            }`}
+          />
+        </div>
       </div>
 
-      {/* Content area at bottom: title sits near price, storage directly under price */}
-      <div className="px-3 pb-3.5 pt-0 flex flex-col justify-end">
-        <p className="text-xs font-bold text-black leading-snug line-clamp-2 mb-2">
+      {/* Content area at bottom: identical 2-line title height and bottom-aligned price row */}
+      <div className="px-3 pb-3 pt-1 flex flex-col justify-between flex-1">
+        <p className="text-xs font-bold text-black leading-snug line-clamp-2 h-8 mb-2">
           {finalProduct.name}
         </p>
-        <div className="flex items-center justify-between gap-1.5">
-          <div className="flex flex-col">
-            <span className="text-xs font-black text-[#4b47d9]">{fmt(finalProduct.price)}</span>
-            <span className="text-[10px] font-semibold text-black/45 leading-none mt-1">
-              {storage}
-            </span>
+        <div className="flex items-center justify-between gap-1.5 mt-auto">
+          <div className="flex flex-col min-w-0">
+            <span className="text-xs font-black text-[#8586f2] truncate">{fmt(finalProduct.price)}</span>
+            {storage ? (
+              <span className="text-[10px] font-semibold text-black/45 leading-none mt-1 truncate">
+                {storage}
+              </span>
+            ) : (
+              <span className="text-[10px] text-transparent select-none leading-none mt-1">
+                -
+              </span>
+            )}
           </div>
           <button
-            className="flex-shrink-0 bg-[#4b47d9] hover:bg-[#3d39c6] text-white text-[10.5px] font-bold px-3 py-1.5 rounded-full active:scale-95 transition-transform shadow-xs"
-            onClick={e => { e.stopPropagation(); onProduct(product.id); }}
+            className="w-7 h-7 flex-shrink-0 bg-[#8586f2] hover:bg-[#7375e8] text-white rounded-full flex items-center justify-center active:scale-90 transition-transform shadow-xs"
+            onClick={e => {
+              e.stopPropagation();
+              onProduct(product.id);
+            }}
+            title="View details"
+            aria-label="View details"
           >
-            Buy now
+            <Plus size={15} strokeWidth={2.5} />
           </button>
         </div>
       </div>
@@ -85,8 +102,8 @@ function ProductCard({ product, onProduct, customData }) {
   );
 }
 
-/* ── Horizontal Product Card (Image 3 layout for Best Under 1 Lakh: clean image, no border, no shape, title, single clean spec, price, text Buy now button) ── */
-function HorizontalProductCard({ product, onProduct, customData }) {
+/* ── Horizontal Product Card (Image 3 layout for Best Under 1 Lakh: clean image, no border, no shape, title, single clean spec, price, Plus button) ── */
+function HorizontalProductCard({ product, onProduct, customData, onAddToCart }) {
   const finalProduct = {
     ...product,
     ...customData,
@@ -102,7 +119,7 @@ function HorizontalProductCard({ product, onProduct, customData }) {
 
   return (
     <div
-      className="bg-white rounded-3xl p-3.5 flex items-center gap-3.5 shadow-[0_2px_14px_rgba(0,0,0,0.04)] active:scale-[0.99] transition-transform cursor-pointer"
+      className="bg-white rounded-3xl border border-gray-200 p-3.5 flex items-center gap-3.5 shadow-[0_2px_8px_rgba(0,0,0,0.03)] active:scale-[0.99] transition-transform cursor-pointer"
       onClick={() => onProduct(product.id)}
     >
       {/* Clean image on left — no border, no background shape */}
@@ -132,17 +149,19 @@ function HorizontalProductCard({ product, onProduct, customData }) {
           {singleSpec}
         </p>
 
-        {/* Price & Text Buy now button */}
+        {/* Price & Plus button */}
         <div className="flex items-center justify-between mt-auto pt-1">
-          <span className="text-sm font-black text-[#4b47d9]">{fmt(finalProduct.price)}</span>
+          <span className="text-sm font-black text-[#8586f2]">{fmt(finalProduct.price)}</span>
           <button
-            className="flex-shrink-0 bg-[#4b47d9] hover:bg-[#3d39c6] text-white text-[10.5px] font-bold px-3 py-1.5 rounded-full active:scale-95 transition-transform shadow-xs"
+            className="w-7 h-7 flex-shrink-0 bg-[#8586f2] hover:bg-[#7375e8] text-white rounded-full flex items-center justify-center active:scale-90 transition-transform shadow-xs"
             onClick={e => {
               e.stopPropagation();
               onProduct(product.id);
             }}
+            title="View details"
+            aria-label="View details"
           >
-            Buy now
+            <Plus size={15} strokeWidth={2.5} />
           </button>
         </div>
       </div>
@@ -172,7 +191,7 @@ function BudgetItem({ product, shop, onProduct, onToggleFav, isFav, customData }
       <div className="flex-1 min-w-0">
         <p className="text-sm font-bold text-black leading-tight line-clamp-2">{finalProduct.name}</p>
         <p className="text-[11px] text-black/40 mt-0.5 truncate">{shop?.name}</p>
-        <p className="text-sm font-bold text-[#4b47d9] mt-1">{fmt(finalProduct.price)}</p>
+        <p className="text-sm font-bold text-[#8586f2] mt-1">{fmt(finalProduct.price)}</p>
       </div>
 
       <button
@@ -298,7 +317,7 @@ function InteractiveBrandCarousel({ brands, onSelectBrand }) {
   );
 }
 
-export default function HomePage({ onShop, onProduct, favorites, onToggleFav, onSearchFocus }) {
+export default function HomePage({ onShop, onProduct, favorites, onToggleFav, onSearchFocus, onOpenCart, cartCount = 0, onAddToCart, onNavigateTab }) {
   const { getImg, getItem } = useCustomImages();
   const [bannerIdx, setBannerIdx] = useState(0);
   const [activeCategory, setActiveCategory] = useState(null);
@@ -306,6 +325,8 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
   const [isDocked, setIsDocked] = useState(false);
   const [showAllUnder1Lakh, setShowAllUnder1Lakh] = useState(false);
   const [showAllUnder60k, setShowAllUnder60k] = useState(false);
+  const [activeSectionView, setActiveSectionView] = useState(null);
+  const [sectionSearchQuery, setSectionSearchQuery] = useState('');
   const scrollRef = useRef(null);
   const sheetRef = useRef(null);
 
@@ -403,15 +424,18 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
     lastScrollTop.current = st;
   };
 
-  /* 1. Box Pack Phones (Top 6 sealed phones) */
+  /* 1. Box Pack Phones */
+  const allBoxPackPhones = INITIAL_PRODUCTS.filter(p => p.condition === 'new' && (p.category === 'iphone' || p.category === 'android'));
   const boxPackPhones = activeCategory
     ? INITIAL_PRODUCTS.filter(p => p.category === activeCategory && p.condition === 'new').slice(0, 6)
-    : INITIAL_PRODUCTS.filter(p => p.condition === 'new' && (p.category === 'iphone' || p.category === 'android')).slice(0, 6);
+    : allBoxPackPhones.slice(0, 6);
 
-  /* 2. Used Phones (Pre-owned verified devices) */
-  const usedPhones = INITIAL_PRODUCTS.filter(p => p.condition === 'used').slice(0, 6);
+  /* 2. Used Phones */
+  const allUsedPhones = INITIAL_PRODUCTS.filter(p => p.condition === 'used');
+  const usedPhones = allUsedPhones.slice(0, 6);
 
-  /* 3. Best Under 1 Lakh (8 phones, mix of Box Pack & Used) */
+  /* 3. Best Under 1 Lakh */
+  const allUnder1LakhPhones = INITIAL_PRODUCTS.filter(p => p.price <= 100000 && (p.category === 'iphone' || p.category === 'android'));
   const under1LakhPhones = [
     INITIAL_PRODUCTS.find(p => p.id === 'p-l1'),
     INITIAL_PRODUCTS.find(p => p.id === 'p-l2'),
@@ -423,8 +447,21 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
     INITIAL_PRODUCTS.find(p => p.id === 'p-l5'),
   ].filter(Boolean);
 
-  /* 4. Best Under 60k (6 budget smartphones) */
-  const under60kPhones = INITIAL_PRODUCTS.filter(p => p.id.startsWith('p-b')).slice(0, 6);
+  /* 4. Best Under 60k */
+  const allUnder60kPhones = INITIAL_PRODUCTS.filter(p => p.price <= 60000 && (p.category === 'iphone' || p.category === 'android'));
+  const under60kPhones = allUnder60kPhones.slice(0, 6);
+
+  /* 5. Trending Cases & Accessories */
+  const ACCESSORY_CAT_IDS = ['cases', 'covers', 'airpods', 'smartwatch', 'chargers', 'headphones', 'handsfree'];
+  const allTrendingAccessories = INITIAL_PRODUCTS.filter(p => ACCESSORY_CAT_IDS.includes(p.category))
+    .sort((a, b) => {
+      const aIsCase = a.category === 'cases' || a.category === 'covers';
+      const bIsCase = b.category === 'cases' || b.category === 'covers';
+      if (aIsCase && !bIsCase) return -1;
+      if (!aIsCase && bIsCase) return 1;
+      return 0;
+    });
+  const trendingAccessories = allTrendingAccessories.slice(0, 10);
 
   const rawBanner = BANNERS[bannerIdx];
   const banner = getItem(`banner_${rawBanner.id}`, rawBanner);
@@ -435,6 +472,202 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
         selectedBrand.keywords.some(kw => p.name.toLowerCase().includes(kw))
       )
     : [];
+
+  /* ── Dedicated Full Page View for any Section when "See all" is clicked ── */
+  if (activeSectionView) {
+    const rawItems = activeSectionView.items || [];
+    const q = sectionSearchQuery.toLowerCase().trim();
+    const filteredItems = q
+      ? rawItems.filter(item => {
+          if (item.name && item.name.toLowerCase().includes(q)) return true;
+          if (item.title && item.title.toLowerCase().includes(q)) return true;
+          if (item.subtitle && item.subtitle.toLowerCase().includes(q)) return true;
+          if (item.desc && item.desc.toLowerCase().includes(q)) return true;
+          if (item.specs && Object.values(item.specs).some(v => String(v).toLowerCase().includes(q))) return true;
+          return false;
+        })
+      : rawItems;
+
+    return (
+      <div className="h-full flex flex-col overflow-hidden bg-white">
+        {/* Fixed Top Purple Header */}
+        <div className="px-4 pt-4 pb-3.5 text-white flex-shrink-0 z-30 flex items-center justify-between" style={{ background: '#8586f2' }}>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => { setActiveSectionView(null); setSectionSearchQuery(''); }}
+              className="w-8.5 h-8.5 rounded-full bg-white shadow-xs flex items-center justify-center text-[#8586f2] active:scale-95 transition-transform"
+              aria-label="Back to Home"
+            >
+              <ArrowLeft size={18} />
+            </button>
+            <div>
+              <h1 className="text-white font-black text-base tracking-tight leading-snug">{activeSectionView.title}</h1>
+              <p className="text-white/80 text-[11px] font-medium">{filteredItems.length} available · Bahawalnagar</p>
+            </div>
+          </div>
+          <button
+            onClick={onOpenCart || onSearchFocus}
+            className="w-8.5 h-8.5 rounded-full bg-white shadow-xs flex items-center justify-center text-[#8586f2] active:scale-95 transition-transform relative"
+            aria-label="Cart"
+          >
+            <ShoppingCart size={15} />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-[#8586f2] text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white leading-none">
+                {cartCount}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* Section Inset Search Bar */}
+        <div className="px-4 pt-3 pb-2.5 flex items-center gap-2.5 bg-white border-b border-gray-100 flex-shrink-0">
+          <div className="flex-1 bg-gray-50/90 border border-gray-200/90 rounded-full px-4 py-2 flex items-center gap-2.5 shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)]">
+            <Search size={16} className="text-[#8586f2] flex-shrink-0" />
+            <input
+              type="text"
+              value={sectionSearchQuery}
+              onChange={e => setSectionSearchQuery(e.target.value)}
+              placeholder={`Search in ${activeSectionView.title}...`}
+              className="w-full bg-transparent text-xs font-medium text-black placeholder:text-black/40 focus:outline-none"
+            />
+            {sectionSearchQuery && (
+              <button onClick={() => setSectionSearchQuery('')} className="p-0.5 text-black/40 hover:text-black">
+                <X size={14} />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Scrollable Items Container */}
+        <div className="flex-1 overflow-y-auto hide-scrollbar pb-28 bg-[#f8f9fc] smooth-scroll">
+          {/* Section Header: Title & Caption on top of section */}
+          <div className="px-4 pt-4 pb-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-base font-bold text-black">{activeSectionView.title}</h2>
+                <p className="text-xs text-black/40">Verified inventory available in Bahawalnagar</p>
+              </div>
+              <span className="text-xs text-black/40 font-semibold self-start mt-0.5">
+                {filteredItems.length} items
+              </span>
+            </div>
+          </div>
+
+          {filteredItems.length === 0 ? (
+            <div className="py-20 flex flex-col items-center justify-center text-center px-4">
+              <Search size={32} className="text-black/25 mb-2" />
+              <p className="text-sm font-bold text-black">No matching items found</p>
+              <p className="text-xs text-black/40 mt-1">Try another search keyword</p>
+            </div>
+          ) : activeSectionView.type === 'products' ? (
+            <div className="grid grid-cols-2 gap-2.5 px-4 pt-1">
+              {filteredItems.map(p => (
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  onProduct={onProduct}
+                  customData={getItem(`product_${p.id}`)}
+                  onAddToCart={onAddToCart}
+                />
+              ))}
+            </div>
+          ) : activeSectionView.type === 'horizontal-products' ? (
+            <div className="flex flex-col gap-2.5 px-4 pt-3.5">
+              {filteredItems.map(p => (
+                <HorizontalProductCard
+                  key={p.id}
+                  product={p}
+                  onProduct={onProduct}
+                  customData={getItem(`product_${p.id}`)}
+                  onAddToCart={onAddToCart}
+                />
+              ))}
+            </div>
+          ) : activeSectionView.type === 'posters' ? (
+            <div className="px-4 pt-3.5 flex flex-col gap-3.5">
+              {filteredItems.map(poster => (
+                <div key={poster.id} className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-xs">
+                  <img
+                    src={getImg(`poster_${poster.id}`, poster.image)}
+                    alt=""
+                    className="w-full object-cover block"
+                    style={{ aspectRatio: '16/8' }}
+                  />
+                  <div className="p-3.5">
+                    <h3 className="text-base font-bold text-black">{poster.title || 'Official Launch'}</h3>
+                    <p className="text-xs text-black/50 mt-1">{poster.desc || 'Available at authorized retailers in Bahawal Mobile Market'}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : activeSectionView.type === 'usage' ? (
+            <div className="px-4 pt-3.5 flex flex-col gap-3.5">
+              {filteredItems.map(sec => (
+                <div
+                  key={sec.id}
+                  className="bg-white rounded-3xl border border-gray-200 p-3 overflow-hidden cursor-pointer active:scale-[0.99] transition-all flex flex-col shadow-xs"
+                  onClick={onSearchFocus}
+                >
+                  <div className="relative h-44 w-full rounded-2xl overflow-hidden bg-gray-100">
+                    <img src={sec.image} alt={sec.title} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
+                    <span className="absolute top-2.5 left-2.5 bg-black/50 backdrop-blur-md text-white text-[10.5px] font-semibold px-2.5 py-1 rounded-full">
+                      Curated Collection
+                    </span>
+                  </div>
+                  <div className="pt-2.5 pb-1 flex flex-col flex-1">
+                    <h3 className="text-base font-bold text-black leading-snug">{sec.title}</h3>
+                    <p className="text-xs font-semibold text-black/50 mt-0.5">{sec.subtitle}</p>
+                    <p className="text-xs text-black/40 mt-1 line-clamp-2 leading-relaxed">{sec.tagline}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : activeSectionView.type === 'shops' ? (
+            <div className="px-4 pt-3.5 flex flex-col gap-3.5">
+              {filteredItems.map(shop => (
+                <div
+                  key={shop.id}
+                  className="bg-white rounded-3xl border border-gray-200 p-3 overflow-hidden cursor-pointer active:scale-[0.99] transition-all flex flex-col shadow-xs"
+                  onClick={() => onShop(shop.id)}
+                >
+                  <div className="relative h-44 w-full rounded-2xl overflow-hidden bg-gray-100">
+                    <img src={getImg(`shop_${shop.id}_cover`, shop.coverImage)} alt={shop.name} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
+                    <span className="absolute top-2.5 left-2.5 bg-black/50 backdrop-blur-md text-white text-[10.5px] font-semibold px-2.5 py-1 rounded-full">
+                      {shop.verified ? 'Verified Shop' : 'Best Seller'}
+                    </span>
+                    <div className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white p-1 shadow-md flex items-center justify-center overflow-hidden">
+                      <img src={getImg(`shop_${shop.id}_logo`, shop.logo)} alt="" className="w-full h-full object-cover rounded-full" />
+                    </div>
+                  </div>
+                  <div className="pt-2.5 pb-1 flex flex-col flex-1">
+                    <h3 className="text-base font-bold text-black leading-snug">{shop.name}</h3>
+                    <p className="text-xs font-semibold text-black/50 mt-0.5">{shop.featuredQuote || 'Official Retailer in Bahawalnagar'}</p>
+                    <p className="text-xs text-black/40 mt-1 line-clamp-2 leading-relaxed">{shop.address}</p>
+                    <div className="flex items-center justify-between mt-3 pt-1">
+                      <div className="bg-gray-100 rounded-full px-3 py-1.5 flex items-center gap-1 text-xs font-bold text-black">
+                        <Star size={11} className="fill-amber-400 text-amber-400" />
+                        <span>{shop.rating}</span>
+                        <span className="text-black/35 font-normal">({shop.ratingCount})</span>
+                      </div>
+                      <button
+                        className="bg-[#8586f2] hover:bg-[#7375e8] text-white text-xs font-bold px-4 py-2 rounded-full flex items-center gap-1.5 active:scale-95 transition-transform shadow-xs"
+                        onClick={e => { e.stopPropagation(); onShop(shop.id); }}
+                      >
+                        <span>Visit Shop</span>
+                        <ArrowUpRight size={13} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -449,8 +682,8 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
       <div className="pt-3.5 pb-2 px-4 text-white flex-shrink-0 z-30" style={{ background: '#8586f2' }}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md border border-white/25 flex items-center justify-center">
-              <MapPin size={16} className="text-white" />
+            <div className="w-8 h-8 rounded-full bg-white shadow-xs flex items-center justify-center text-[#8586f2]">
+              <MapPin size={16} />
             </div>
             <div>
               <span className="text-white font-black text-sm tracking-tight block truncate max-w-[210px]">
@@ -463,12 +696,18 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={onSearchFocus}
-              className="w-8.5 h-8.5 p-2 rounded-full bg-white/20 backdrop-blur-md border border-white/25 flex items-center justify-center active:scale-95 transition-transform"
+              onClick={onOpenCart || onSearchFocus}
+              className="w-8.5 h-8.5 p-2 rounded-full bg-white shadow-xs flex items-center justify-center text-[#8586f2] active:scale-95 transition-transform relative"
+              aria-label="Cart"
             >
-              <Heart size={15} className="text-white fill-white" />
+              <ShoppingCart size={16} />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-[#8586f2] text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white leading-none">
+                  {cartCount}
+                </span>
+              )}
             </button>
-            <button className="w-8.5 h-8.5 p-2 rounded-full bg-white/20 backdrop-blur-md border border-white/25 flex items-center justify-center text-white active:scale-95 transition-transform">
+            <button className="w-8.5 h-8.5 p-2 rounded-full bg-white shadow-xs flex items-center justify-center text-[#8586f2] active:scale-95 transition-transform">
               <Bot size={17} />
             </button>
           </div>
@@ -571,13 +810,13 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
               className="flex-1 bg-gray-50/90 border border-gray-200/90 rounded-full px-4 py-2.5 flex items-center gap-2.5 cursor-pointer shadow-[inset_0_2px_4px_rgba(0,0,0,0.06)]"
               onClick={onSearchFocus}
             >
-              <Search size={18} className="text-[#4b47d9] flex-shrink-0" />
+              <Search size={18} className="text-[#8586f2] flex-shrink-0" />
               <span className="text-black/40 text-sm font-medium truncate">
                 Search for mobile shops and devices
               </span>
             </div>
             <button
-              className="w-10 h-10 rounded-full bg-white border border-gray-200/90 flex items-center justify-center text-[#4b47d9] shadow-xs active:scale-95 transition-transform flex-shrink-0"
+              className="w-10 h-10 rounded-full bg-white border border-gray-200/90 flex items-center justify-center text-[#8586f2] shadow-xs active:scale-95 transition-transform flex-shrink-0"
               onClick={onSearchFocus}
               title="Filter"
             >
@@ -590,7 +829,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
           <div className="flex items-center justify-between mb-2.5">
             <h2 className="text-sm font-black text-black tracking-tight">Browse Categories</h2>
             {activeCategory && (
-              <button onClick={() => setActiveCategory(null)} className="text-[#4b47d9] text-xs font-bold">
+              <button onClick={() => setActiveCategory(null)} className="text-[#8586f2] text-xs font-bold">
                 Clear
               </button>
             )}
@@ -611,7 +850,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
                 />
                 <span
                   className={`text-[11px] font-semibold ${
-                    activeCategory === cat.id ? 'text-[#4b47d9] font-bold' : 'text-black/70'
+                    activeCategory === cat.id ? 'text-[#8586f2] font-bold' : 'text-black/70'
                   }`}
                 >
                   {cat.label}
@@ -628,7 +867,15 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
               <h2 className="text-base font-black text-black tracking-tight">New Launches</h2>
               <p className="text-xs text-black/40">Official posters in Bahawalnagar</p>
             </div>
-            <button onClick={onSearchFocus} className="text-[#4b47d9] text-xs font-bold flex items-center gap-0.5">
+            <button
+              onClick={() => setActiveSectionView({
+                id: 'new-launches',
+                title: 'New Launches',
+                type: 'posters',
+                items: LATEST_POSTERS
+              })}
+              className="text-[#8586f2] text-xs font-bold flex items-center gap-0.5 active:scale-95 transition-transform"
+            >
               See all <ChevronRight size={13} />
             </button>
           </div>
@@ -639,6 +886,12 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
                 key={poster.id}
                 className="flex-shrink-0 snap-start rounded-2xl overflow-hidden cursor-pointer active:scale-[0.99] transition-all border border-gray-200"
                 style={{ width: '82%', maxWidth: '340px' }}
+                onClick={() => setActiveSectionView({
+                  id: 'new-launches',
+                  title: 'New Launches',
+                  type: 'posters',
+                  items: LATEST_POSTERS
+                })}
               >
                 <img
                   src={getImg(`poster_${poster.id}`, poster.image)}
@@ -651,47 +904,65 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
           </div>
         </div>
 
-        {/* ── Box Pack Phones (Renamed from Latest Models / Featured & Unique — 2x3 Grid, 6 phones, exact unified card) ── */}
-        <div className="mt-6">
-          <div className="px-4 flex items-center justify-between mb-3">
+        {/* ── Box Pack Phones (Enclosed in separate shape background) ── */}
+        <div className="mx-4 mt-6 bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-xs p-3.5">
+          <div className="flex items-center justify-between mb-3">
             <div>
               <h2 className="text-base font-bold text-black">Box Pack Phones</h2>
               <p className="text-xs text-black/40">Genuine sealed phones in Bahawalnagar</p>
             </div>
-            <button onClick={onSearchFocus} className="text-[#4b47d9] text-xs font-semibold flex items-center gap-0.5">
+            <button
+              onClick={() => setActiveSectionView({
+                id: 'box-pack',
+                title: 'Box Pack Phones',
+                type: 'products',
+                items: allBoxPackPhones
+              })}
+              className="text-[#8586f2] text-xs font-semibold flex items-center gap-0.5 active:scale-95 transition-transform"
+            >
               See all <ChevronRight size={13} />
             </button>
           </div>
-          <div className="grid grid-cols-2 gap-2.5 px-4">
+          <div className="grid grid-cols-2 gap-2.5">
             {boxPackPhones.map(p => (
               <ProductCard
                 key={p.id}
                 product={p}
                 onProduct={onProduct}
                 customData={getItem(`product_${p.id}`)}
+                onAddToCart={onAddToCart}
               />
             ))}
           </div>
         </div>
 
-        {/* ── Used Phones (Renamed from Mobiles / Used Devices — exact same mobile card size & layout) ── */}
-        <div className="mt-6">
-          <div className="px-4 flex items-center justify-between mb-3">
+        {/* ── Used Phones (Enclosed in separate shape background) ── */}
+        <div className="mx-4 mt-6 bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-xs p-3.5">
+          <div className="flex items-center justify-between mb-3">
             <div>
               <h2 className="text-base font-bold text-black">Used Phones</h2>
               <p className="text-xs text-black/40">Hand-checked & verified devices</p>
             </div>
-            <button onClick={onSearchFocus} className="text-[#4b47d9] text-xs font-semibold flex items-center gap-0.5">
+            <button
+              onClick={() => setActiveSectionView({
+                id: 'used-phones',
+                title: 'Used Phones',
+                type: 'products',
+                items: allUsedPhones
+              })}
+              className="text-[#8586f2] text-xs font-semibold flex items-center gap-0.5 active:scale-95 transition-transform"
+            >
               See all <ChevronRight size={13} />
             </button>
           </div>
-          <div className="grid grid-cols-2 gap-2.5 px-4">
+          <div className="grid grid-cols-2 gap-2.5">
             {usedPhones.map(p => (
               <ProductCard
                 key={p.id}
                 product={p}
                 onProduct={onProduct}
                 customData={getItem(`product_${p.id}`)}
+                onAddToCart={onAddToCart}
               />
             ))}
           </div>
@@ -709,55 +980,66 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
           <InteractiveBrandCarousel brands={BRANDS} onSelectBrand={setSelectedBrand} />
         </div>
 
-        {/* ── Best Under 1 Lakh (Image 3 layout: horizontal cards, no border, no shape, clean phone image, title, specs, price, cart button) ── */}
-        <div className="mt-6">
-          <div className="px-4 flex items-center justify-between mb-3">
+        {/* ── Best Under 100k (Enclosed in separate shape background matching Available Covers & Protectors layout) ── */}
+        <div className="mx-4 mt-6 bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-xs p-3.5">
+          <div className="flex items-center justify-between mb-3">
             <div>
-              <h2 className="text-base font-bold text-black">Best Under 1 Lakh</h2>
+              <h2 className="text-base font-bold text-black">Best Under 100k</h2>
               <p className="text-xs text-black/40">Top value phones under Rs. 100,000</p>
             </div>
             <button
-              onClick={() => setShowAllUnder1Lakh(prev => !prev)}
-              className="text-[#4b47d9] text-xs font-semibold flex items-center gap-0.5 active:scale-95 transition-transform"
+              onClick={() => setActiveSectionView({
+                id: 'under-100k',
+                title: 'Best Under 100k',
+                type: 'products',
+                items: allUnder1LakhPhones
+              })}
+              className="text-[#8586f2] text-xs font-semibold flex items-center gap-0.5 active:scale-95 transition-transform"
             >
-              {showAllUnder1Lakh ? 'Show less' : 'See all'}
-              {showAllUnder1Lakh ? <ChevronUp size={13} /> : <ChevronRight size={13} />}
+              See all <ChevronRight size={13} />
             </button>
           </div>
-          <div className="flex flex-col gap-2.5 px-4">
-            {(showAllUnder1Lakh ? under1LakhPhones : under1LakhPhones.slice(0, 4)).map(p => (
-              <HorizontalProductCard
-                key={p.id}
-                product={p}
-                onProduct={onProduct}
-                customData={getItem(`product_${p.id}`)}
-              />
-            ))}
-          </div>
-        </div>
 
-        {/* ── Best Under 60k (4 cards initially, expandable to all) ── */}
-        <div className="mt-6">
-          <div className="px-4 flex items-center justify-between mb-3">
-            <div>
-              <h2 className="text-base font-bold text-black">Best Under 60k</h2>
-              <p className="text-xs text-black/40">Budget-friendly picks under Rs. 60,000</p>
-            </div>
-            <button
-              onClick={() => setShowAllUnder60k(prev => !prev)}
-              className="text-[#4b47d9] text-xs font-semibold flex items-center gap-0.5 active:scale-95 transition-transform"
-            >
-              {showAllUnder60k ? 'Show less' : 'See all'}
-              {showAllUnder60k ? <ChevronUp size={13} /> : <ChevronRight size={13} />}
-            </button>
-          </div>
-          <div className="grid grid-cols-2 gap-2.5 px-4">
-            {(showAllUnder60k ? under60kPhones : under60kPhones.slice(0, 4)).map(p => (
+          <div className="grid grid-cols-2 gap-2.5">
+            {under1LakhPhones.slice(0, 4).map(p => (
               <ProductCard
                 key={p.id}
                 product={p}
                 onProduct={onProduct}
                 customData={getItem(`product_${p.id}`)}
+                onAddToCart={onAddToCart}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* ── Best Under 60k (Enclosed in separate shape background matching Best Under 1 Lakh) ── */}
+        <div className="mx-4 mt-6 bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-xs p-3.5">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h2 className="text-base font-bold text-black">Best Under 60k</h2>
+              <p className="text-xs text-black/40">Budget-friendly picks under Rs. 60,000</p>
+            </div>
+            <button
+              onClick={() => setActiveSectionView({
+                id: 'under-60k',
+                title: 'Best Under 60k',
+                type: 'products',
+                items: allUnder60kPhones
+              })}
+              className="text-[#8586f2] text-xs font-semibold flex items-center gap-0.5 active:scale-95 transition-transform"
+            >
+              See all <ChevronRight size={13} />
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-2.5">
+            {under60kPhones.slice(0, 4).map(p => (
+              <ProductCard
+                key={p.id}
+                product={p}
+                onProduct={onProduct}
+                customData={getItem(`product_${p.id}`)}
+                onAddToCart={onAddToCart}
               />
             ))}
           </div>
@@ -770,7 +1052,15 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
               <h2 className="text-base font-bold text-black">Based on Usage</h2>
               <p className="text-xs text-black/40">Handpicked phones curated by your needs</p>
             </div>
-            <button onClick={onSearchFocus} className="text-[#4b47d9] text-xs font-semibold flex items-center gap-0.5">
+            <button
+              onClick={() => setActiveSectionView({
+                id: 'usage',
+                title: 'Based on Usage',
+                type: 'usage',
+                items: USAGE_SECTIONS
+              })}
+              className="text-[#8586f2] text-xs font-semibold flex items-center gap-0.5 active:scale-95 transition-transform"
+            >
               See all <ChevronRight size={13} />
             </button>
           </div>
@@ -781,7 +1071,12 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
                 key={sec.id}
                 className="flex-shrink-0 snap-start bg-white rounded-3xl border border-gray-200 p-3 overflow-hidden cursor-pointer active:scale-[0.99] transition-all flex flex-col"
                 style={{ width: 'calc(100vw - 60px)', maxWidth: '360px' }}
-                onClick={onSearchFocus}
+                onClick={() => setActiveSectionView({
+                  id: 'usage',
+                  title: 'Based on Usage',
+                  type: 'usage',
+                  items: USAGE_SECTIONS
+                })}
               >
                 {/* Top photo banner with rounded corners, pill, and indicator dots matching Explore All Shops */}
                 <div className="relative h-40 w-full rounded-2xl overflow-hidden bg-gray-100">
@@ -818,14 +1113,19 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
                   {/* Bottom row: Info pill on left, Explore button on right */}
                   <div className="flex items-center justify-between mt-3 pt-1">
                     <div className="bg-gray-100 rounded-full px-3 py-1.5 flex items-center gap-1 text-xs font-bold text-black">
-                      <span className="text-[#4b47d9]">Verified</span>
+                      <span className="text-[#8586f2]">Verified</span>
                       <span className="text-black/35 font-normal">Devices</span>
                     </div>
                     <button
-                      className="bg-black hover:bg-black/85 text-white text-xs font-bold px-4 py-2 rounded-full flex items-center gap-1.5 active:scale-95 transition-transform"
+                      className="bg-[#8586f2] hover:bg-[#7375e8] text-white text-xs font-bold px-4 py-2 rounded-full flex items-center gap-1.5 active:scale-95 transition-transform shadow-xs"
                       onClick={e => {
                         e.stopPropagation();
-                        onSearchFocus();
+                        setActiveSectionView({
+                          id: 'usage',
+                          title: 'Based on Usage',
+                          type: 'usage',
+                          items: USAGE_SECTIONS
+                        });
                       }}
                     >
                       <span>Explore</span>
@@ -838,14 +1138,64 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
           </div>
         </div>
 
-        {/* ── Explore All Shops (Image 2 Design: clean top banner, verified badge, white logo circle, shop details, rating pill, Visit Shop button) ── */}
+        {/* ── Trending Cases & Accessories (Second Last Section) ── */}
+        <div className="mt-6">
+          <div className="px-4 flex items-center justify-between mb-3">
+            <div>
+              <h2 className="text-base font-bold text-black">Trending Cases & Accessories</h2>
+              <p className="text-xs text-black/40">Hot covers, glass protectors & accessories</p>
+            </div>
+            <button
+              onClick={() => {
+                if (onNavigateTab) {
+                  onNavigateTab('accessories');
+                } else {
+                  setActiveSectionView({
+                    id: 'trending-accessories',
+                    title: 'Trending Cases & Accessories',
+                    type: 'products',
+                    items: allTrendingAccessories
+                  });
+                }
+              }}
+              className="text-[#8586f2] text-xs font-semibold flex items-center gap-0.5 active:scale-95 transition-transform"
+            >
+              See all <ChevronRight size={13} />
+            </button>
+          </div>
+
+          <div className="flex items-stretch gap-3 overflow-x-auto hide-scrollbar pl-4 pr-4 pb-2 snap-x snap-mandatory scroll-pl-4 smooth-x-scroll">
+            {trendingAccessories.map(p => (
+              <div key={p.id} className="w-[160px] flex-shrink-0 snap-start flex flex-col">
+                <ProductCard
+                  product={p}
+                  onProduct={onProduct}
+                  customData={getItem(`product_${p.id}`)}
+                  onAddToCart={onAddToCart}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Explore All Shops (Last Section) ── */}
         <div className="mt-6 mb-4">
           <div className="px-4 flex items-center justify-between mb-3">
             <div>
               <h2 className="text-base font-bold text-black">Explore All Shops</h2>
               <p className="text-xs text-black/40">Verified mobile retailers in Bahawalnagar</p>
             </div>
-            <span className="text-xs text-black/40">{INITIAL_SHOPS.length} shops</span>
+            <button
+              onClick={() => setActiveSectionView({
+                id: 'all-shops',
+                title: 'Explore All Shops',
+                type: 'shops',
+                items: INITIAL_SHOPS
+              })}
+              className="text-[#8586f2] text-xs font-semibold flex items-center gap-0.5 active:scale-95 transition-transform"
+            >
+              See all <ChevronRight size={13} />
+            </button>
           </div>
 
           <div className="flex gap-3 overflow-x-auto hide-scrollbar pl-4 pr-4 pb-2 snap-x snap-mandatory scroll-pl-4 smooth-x-scroll">
@@ -907,7 +1257,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
                         <span className="text-black/35 font-normal">({shop.ratingCount})</span>
                       </div>
                       <button
-                        className="bg-black hover:bg-black/85 text-white text-xs font-bold px-4 py-2 rounded-full flex items-center gap-1.5 active:scale-95 transition-transform"
+                        className="bg-[#8586f2] hover:bg-[#7375e8] text-white text-xs font-bold px-4 py-2 rounded-full flex items-center gap-1.5 active:scale-95 transition-transform shadow-xs"
                         onClick={e => {
                           e.stopPropagation();
                           onShop(shop.id);
@@ -931,7 +1281,17 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
               <h2 className="text-base font-bold text-black">All Shops Near You</h2>
               <p className="text-xs text-black/40">Verified local shops with active inventory</p>
             </div>
-            <span className="text-xs text-black/40">{INITIAL_SHOPS.length} shops</span>
+            <button
+              onClick={() => setActiveSectionView({
+                id: 'all-shops',
+                title: 'All Shops Near You',
+                type: 'shops',
+                items: INITIAL_SHOPS
+              })}
+              className="text-[#8586f2] text-xs font-semibold flex items-center gap-0.5 active:scale-95 transition-transform"
+            >
+              See all <ChevronRight size={13} />
+            </button>
           </div>
           <div className="px-4 flex flex-col gap-2.5">
             {INITIAL_SHOPS.map(shop => (
@@ -973,7 +1333,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
                       <span className="text-[10.5px] text-black/40">({shop.ratingCount})</span>
                     </div>
                     <button
-                      className="flex-shrink-0 bg-[#4b47d9] hover:bg-[#3d39c6] text-white text-[10.5px] font-bold px-3 py-1.5 rounded-full active:scale-95 transition-transform shadow-xs"
+                      className="flex-shrink-0 bg-[#8586f2] hover:bg-[#7375e8] text-white text-[10.5px] font-bold px-3 py-1.5 rounded-full active:scale-95 transition-transform shadow-xs"
                       onClick={e => {
                         e.stopPropagation();
                         onShop(shop.id);
@@ -1027,7 +1387,7 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
             <div className="overflow-y-auto p-4 space-y-4 smooth-scroll hide-scrollbar">
               {/* New in Market models list */}
               <div>
-                <p className="text-xs font-bold text-[#4b47d9] uppercase tracking-wider mb-2">New in Market</p>
+                <p className="text-xs font-bold text-[#8586f2] uppercase tracking-wider mb-2">New in Market</p>
                 <div className="flex flex-wrap gap-2">
                   {selectedBrand.newModels.map(model => (
                     <span

@@ -19,18 +19,18 @@ const NavbarContent = ({ navTab, favorites = [], handleNavClick }) => (
           key={id}
           onClick={() => handleNavClick(id)}
           className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-full transition-all duration-200 relative ${
-            active ? 'text-[#4b47d9] font-bold' : 'text-gray-500 hover:text-gray-800'
+            active ? 'text-[#8586f2] font-bold' : 'text-gray-500 hover:text-gray-800'
           }`}
         >
           <Icon
-            className={`w-5 h-5 transition-all duration-200 ${active ? 'scale-110 text-[#4b47d9]' : 'text-gray-500'}`}
+            className={`w-5 h-5 transition-all duration-200 ${active ? 'scale-110 text-[#8586f2]' : 'text-gray-500'}`}
             strokeWidth={active ? 2.2 : 1.8}
           />
-          <span className={`text-[10px] transition-all duration-200 ${active ? 'text-[#4b47d9] font-bold' : 'text-gray-500 font-medium'}`}>
+          <span className={`text-[10px] transition-all duration-200 ${active ? 'text-[#8586f2] font-bold' : 'text-gray-500 font-medium'}`}>
             {label}
           </span>
           {active && (
-            <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#4b47d9]" />
+            <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#8586f2]" />
           )}
         </button>
       );
