@@ -90,13 +90,11 @@ export default function ConditionVerificationPanel({ product }) {
         ))}
       </div>
 
-      {/* Minimal Footer Badges */}
-      <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between text-[10.5px] text-gray-500 font-medium">
+      {/* Minimal Footer Badge */}
+      <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center text-[10.5px]">
         <span className="flex items-center gap-1 text-emerald-600 font-bold">
           <span>●</span> PTA Approved Official
         </span>
-        <span className="text-gray-400">·</span>
-        <span>{used.warrantyRemaining || '7 Days Check Warranty'}</span>
       </div>
     </div>
   );
