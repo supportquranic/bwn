@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, Trash2, Plus, Minus, ShoppingCart, ShoppingBag, ChevronRight, CheckCircle, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Trash2, Plus, Minus, ShoppingCart, ShoppingBag, ChevronRight, CheckCircle, CheckCircle2, Tag, Ticket, X, Sparkles } from 'lucide-react';
 import { INITIAL_PRODUCTS, INITIAL_SHOPS } from '../data/mockData';
 import { useApp } from '../context/AppContext';
 
@@ -40,6 +40,9 @@ export default function CartPage({
   const { addOrder, currentUser } = useApp();
   const [deliveryMethod, setDeliveryMethod] = useState('pickup'); // 'pickup' | 'delivery'
   const [placedOrder, setPlacedOrder] = useState(null);
+  const [promoInput, setPromoInput] = useState('');
+  const [appliedVoucher, setAppliedVoucher] = useState(null);
+  const [promoMsg, setPromoMsg] = useState({ text: '', type: '' });
 
   // Hydrate cart with full product details
   const cartItems = cart.map(item => {
@@ -57,7 +60,62 @@ export default function CartPage({
   const totalItemsCount = cartItems.reduce((acc, i) => acc + (i.quantity || 1), 0);
   const subtotal = cartItems.reduce((acc, i) => acc + i.totalPrice, 0);
   const deliveryFee = deliveryMethod === 'delivery' ? 150 : 0;
-  const grandTotal = subtotal + deliveryFee;
+
+  // Voucher calculation
+  let discountAmount = 0;
+  if (appliedVoucher) {
+    if (appliedVoucher.type === 'delivery') {
+      discountAmount = deliveryMethod === 'delivery' ? 150 : 150; // Waives delivery fee or gives flat 150
+    } else {
+      discountAmount = Math.min(subtotal, appliedVoucher.amount);
+    }
+  }
+  const grandTotal = Math.max(0, subtotal + deliveryFee - discountAmount);
+
+  const handleApplyPromo = (codeToApply) => {
+    const code = (codeToApply || promoInput).trim().toUpperCase();
+    if (!code) return;
+
+    if (code === 'BWN150') {
+      setAppliedVoucher({
+        code: 'BWN150',
+        title: 'Free Delivery Voucher (BWN)',
+        type: 'delivery',
+        amount: 150,
+      });
+      setPromoMsg({ text: 'Voucher applied! Rs. 150 delivery discount activated.', type: 'success' });
+      setPromoInput('');
+    } else if (code === 'BWN500') {
+      if (subtotal < 10000) {
+        setPromoMsg({ text: 'Code BWN500 is only valid on orders above Rs. 10,000', type: 'error' });
+        return;
+      }
+      setAppliedVoucher({
+        code: 'BWN500',
+        title: 'Bahawal Mega Saver (Rs. 500 OFF)',
+        type: 'fixed',
+        amount: 500,
+      });
+      setPromoMsg({ text: 'Voucher applied! Rs. 500 discount added.', type: 'success' });
+      setPromoInput('');
+    } else if (code === 'WELCOME') {
+      setAppliedVoucher({
+        code: 'WELCOME',
+        title: 'Welcome to BWN Market (Rs. 200 OFF)',
+        type: 'fixed',
+        amount: 200,
+      });
+      setPromoMsg({ text: 'Welcome voucher applied! Rs. 200 discount added.', type: 'success' });
+      setPromoInput('');
+    } else {
+      setPromoMsg({ text: 'Invalid voucher code. Try "BWN150" or "WELCOME".', type: 'error' });
+    }
+  };
+
+  const handleRemoveVoucher = () => {
+    setAppliedVoucher(null);
+    setPromoMsg({ text: '', type: '' });
+  };
 
   // Primary shop WhatsApp (first shop in cart or default market contact)
   const primaryShop = cartItems[0]?.shop || INITIAL_SHOPS[0];
@@ -79,6 +137,9 @@ export default function CartPage({
     });
     text += `-----------------------------------\n`;
     text += `*Fulfillment:* ${deliveryMethod === 'delivery' ? 'Home Delivery (Bahawalnagar - Rs. 150)' : 'Free Market Counter Pickup'}\n`;
+    if (appliedVoucher && discountAmount > 0) {
+      text += `*Promo Voucher:* ${appliedVoucher.code} (-${fmt(discountAmount)})\n`;
+    }
     text += `*Payment Method:* Cash on Delivery (COD)\n`;
     text += `*Grand Total Payable:* *${fmt(grandTotal)}*\n`;
     text += `-----------------------------------\n`;
@@ -97,6 +158,8 @@ export default function CartPage({
         shopName: item.shop?.name || 'Bahawal Mobile Market',
       })),
       totalAmount: grandTotal,
+      voucherApplied: appliedVoucher?.code || null,
+      discountAmount,
       fulfillmentMethod: deliveryMethod,
       customerName: currentUser?.name || 'Bahawal Shopper',
       customerPhone: currentUser?.phone || '',
@@ -318,6 +381,83 @@ export default function CartPage({
               </div>
             </div>
 
+            {/* Promo Code / Voucher Card */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-3.5 shadow-xs space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Ticket size={14} className="text-[#8586f2]" />
+                  <h3 className="text-xs font-bold text-black">Promo Code / Voucher</h3>
+                </div>
+                {!appliedVoucher && (
+                  <button
+                    type="button"
+                    onClick={() => handleApplyPromo('BWN150')}
+                    className="text-[10px] font-bold text-[#8586f2] bg-[#8586f2]/10 hover:bg-[#8586f2]/20 px-2 py-0.5 rounded-full transition-colors active:scale-95"
+                  >
+                    Tap to use BWN150
+                  </button>
+                )}
+              </div>
+
+              {appliedVoucher ? (
+                <div className="bg-emerald-50/80 border border-emerald-200 rounded-xl p-2.5 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-500 text-white flex items-center justify-center flex-shrink-0">
+                      <Tag size={13} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-black text-emerald-800 tracking-wide">{appliedVoucher.code}</span>
+                        <span className="text-[10px] font-bold bg-emerald-200/60 text-emerald-800 px-1.5 py-0.2 rounded-md">
+                          APPLIED
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-emerald-700 font-medium">
+                        {appliedVoucher.title} · Saved {fmt(discountAmount)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleRemoveVoucher}
+                    className="p-1 rounded-full text-emerald-700 hover:bg-emerald-200/50 active:scale-90 transition-transform"
+                    title="Remove Voucher"
+                  >
+                    <X size={15} />
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-1.5">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={promoInput}
+                      onChange={e => {
+                        setPromoInput(e.target.value.toUpperCase());
+                        setPromoMsg({ text: '', type: '' });
+                      }}
+                      placeholder="Enter promo code (e.g. BWN150)"
+                      className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-semibold text-black placeholder:text-gray-400 uppercase tracking-wider focus:outline-none focus:border-[#8586f2] focus:bg-white transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleApplyPromo()}
+                      className="px-4 py-2 bg-[#8586f2] hover:bg-[#7375e8] text-white rounded-xl text-xs font-bold active:scale-95 transition-transform shadow-xs"
+                    >
+                      Apply
+                    </button>
+                  </div>
+
+                  {promoMsg.text && (
+                    <p className={`text-[10.5px] font-medium pl-1 ${promoMsg.type === 'error' ? 'text-rose-600' : 'text-emerald-600'}`}>
+                      {promoMsg.text}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
             {/* Order Summary */}
             <div className="bg-white rounded-2xl border border-gray-200 p-3.5 shadow-xs flex flex-col gap-2">
               <h3 className="text-xs font-bold text-black mb-1">Price Summary</h3>
@@ -331,6 +471,17 @@ export default function CartPage({
                   {deliveryFee === 0 ? 'FREE' : fmt(deliveryFee)}
                 </span>
               </div>
+
+              {appliedVoucher && discountAmount > 0 && (
+                <div className="flex justify-between text-xs text-emerald-600 font-semibold bg-emerald-50/50 px-2 py-1 rounded-lg">
+                  <span className="flex items-center gap-1">
+                    <Tag size={11} />
+                    <span>Voucher Discount ({appliedVoucher.code})</span>
+                  </span>
+                  <span>- {fmt(discountAmount)}</span>
+                </div>
+              )}
+
               <div className="border-t border-gray-100 pt-2.5 mt-1 flex justify-between items-center">
                 <span className="text-sm font-black text-black">Total Amount</span>
                 <span className="text-base font-black text-[#8586f2]">{fmt(grandTotal)}</span>

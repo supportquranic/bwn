@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { ArrowLeft, Heart, Star, Phone, ChevronRight, Battery, Shield, AlertTriangle, ShoppingCart, CheckCircle, CheckCircle2, User, MapPin, Sparkles, MessageSquare } from 'lucide-react';
 import { INITIAL_PRODUCTS, INITIAL_SHOPS } from '../data/mockData';
 import { useApp } from '../context/AppContext';
+import ConditionVerificationPanel from './ConditionVerificationPanel';
+import ReviewModal from './ReviewModal';
 
 const fmt = n => 'Rs. ' + n.toLocaleString('en-PK');
 
@@ -542,6 +544,7 @@ function DeliveryCheckoutPage({ product, shop, onBack, onOpenOrders }) {
 }
 
 export default function ProductDetailPage({ productId, onBack, onShop, onProduct, favorites, onToggleFav, onAddToCart, onOpenCart, onOpenOrders }) {
+  const { reviews = [] } = useApp();
   const product = INITIAL_PRODUCTS.find(p => p.id === productId);
   const shop = product ? INITIAL_SHOPS.find(s => s.id === product.shopId) : null;
   const [imgIdx, setImgIdx] = useState(0);
@@ -549,7 +552,11 @@ export default function ProductDetailPage({ productId, onBack, onShop, onProduct
   const [touchEnd, setTouchEnd] = useState(null);
   const [addedToast, setAddedToast] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
   const isFav = favorites.includes(productId);
+
+  // Filter reviews relevant to this product or shop
+  const productReviews = reviews.filter(r => r.productId === productId || (r.shopId === product?.shopId && !r.productId));
 
   if (!product) return (
     <div className="h-full flex items-center justify-center">
@@ -806,44 +813,8 @@ export default function ProductDetailPage({ productId, onBack, onShop, onProduct
           )}
         </div>
 
-        {/* Used Device Condition Box */}
-        {used && (
-          <div className="mx-4 mt-3 rounded-2xl border border-gray-200 bg-white p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <AlertTriangle size={16} className="text-black/50" />
-              <h3 className="text-sm font-black text-black">Used Device Condition</h3>
-              <span className="ml-auto text-[10px] text-black/40 font-medium bg-gray-100 px-2 py-0.5 rounded-full">Shopkeeper Filled</span>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="bg-gray-50 rounded-xl p-2.5 text-center">
-                <p className="text-[10px] text-black/40 font-medium">Usage Days</p>
-                <p className="text-lg font-black text-black">{used.usageDays}</p>
-                <p className="text-[10px] text-black/30">days used</p>
-              </div>
-              <div className="bg-gray-50 rounded-xl p-2.5 text-center">
-                <p className="text-[10px] font-medium text-black/40 flex items-center justify-center gap-1"><Battery size={10} /> Battery Health</p>
-                <p className="text-lg font-black text-black">{used.batteryHealth}%</p>
-                <p className="text-[10px] text-black/30">{used.batteryHealth >= 90 ? 'Excellent' : used.batteryHealth >= 80 ? 'Good' : 'Fair'}</p>
-              </div>
-              <div className="bg-gray-50 rounded-xl p-2.5 text-center">
-                <p className="text-[10px] text-black/40 font-medium">Battery Cycles</p>
-                <p className="text-lg font-black text-black">{used.batteryCycles}</p>
-                <p className="text-[10px] text-black/30">charge cycles</p>
-              </div>
-              <div className="bg-gray-50 rounded-xl p-2.5 text-center">
-                <p className="text-[10px] text-black/40 font-medium">Warranty</p>
-                <p className="text-sm font-black text-black">{used.warrantyRemaining}</p>
-                <p className="text-[10px] text-black/30">remaining</p>
-              </div>
-            </div>
-            {used.description && (
-              <div className="mt-2.5 bg-gray-50 rounded-xl p-2.5">
-                <p className="text-[10px] text-black/40 font-medium mb-1">Shopkeeper's Note</p>
-                <p className="text-xs text-black/70">{used.description}</p>
-              </div>
-            )}
-          </div>
-        )}
+        {/* 10-Point Certified Condition Verification Panel */}
+        <ConditionVerificationPanel product={product} />
 
         {/* Specs Table */}
         {standardSpecs.length > 0 && (
@@ -915,9 +886,106 @@ export default function ProductDetailPage({ productId, onBack, onShop, onProduct
           </div>
         )}
 
+        {/* ── Customer Reviews & Ratings Section ── */}
+        <div className="mx-4 mt-3 bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-xs p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <div className="flex items-center gap-1.5">
+                <h3 className="text-sm font-black text-black">Customer Reviews</h3>
+                <span className="text-[10px] font-bold bg-[#8586f2]/10 text-[#8586f2] px-2 py-0.5 rounded-full">
+                  Verified Local
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <div className="flex items-center text-amber-400">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star key={s} size={11} className="fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+                <span className="text-xs font-black text-gray-800">4.9</span>
+                <span className="text-[11px] text-gray-400 font-medium">
+                  ({productReviews.length} {productReviews.length === 1 ? 'review' : 'reviews'})
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowReviewModal(true)}
+              className="py-1.5 px-3 rounded-full bg-[#8586f2]/10 hover:bg-[#8586f2]/20 text-[#8586f2] text-xs font-bold active:scale-95 transition-transform flex items-center gap-1"
+            >
+              <MessageSquare size={13} />
+              <span>Write Review</span>
+            </button>
+          </div>
+
+          {/* List of Customer Reviews */}
+          {productReviews.length > 0 ? (
+            <div className="space-y-2.5">
+              {productReviews.map(rev => (
+                <div key={rev.id} className="p-3 bg-gray-50/80 rounded-xl border border-gray-100 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-bold text-gray-900 block leading-tight">{rev.userName}</span>
+                      <span className="text-[10px] text-gray-400 font-medium">{rev.city || 'Bahawalnagar'}</span>
+                    </div>
+                    <div className="flex items-center gap-0.5">
+                      {[1, 2, 3, 4, 5].map(s => (
+                        <Star
+                          key={s}
+                          size={11}
+                          className={s <= rev.rating ? 'fill-amber-400 text-amber-400' : 'text-gray-300'}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  {rev.comment && (
+                    <p className="text-xs text-gray-700 leading-relaxed font-normal">
+                      "{rev.comment}"
+                    </p>
+                  )}
+
+                  {rev.tags && rev.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 pt-0.5">
+                      {rev.tags.map(tag => (
+                        <span key={tag} className="text-[9.5px] font-semibold bg-white border border-gray-200/80 text-gray-600 px-2 py-0.5 rounded-full">
+                          ✓ {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="py-4 text-center bg-gray-50 rounded-xl border border-gray-100">
+              <p className="text-xs font-bold text-gray-700">No reviews yet for this product</p>
+              <p className="text-[11px] text-gray-400 mt-0.5">Be the first customer in Bahawalnagar to leave a review!</p>
+              <button
+                type="button"
+                onClick={() => setShowReviewModal(true)}
+                className="mt-2 text-xs font-bold text-[#8586f2] hover:underline"
+              >
+                + Write First Review
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* Spacer */}
         <div className="h-6" />
       </div>
+
+      {/* Review Modal Popup */}
+      <ReviewModal
+        isOpen={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
+        targetType="product"
+        targetTitle={product.name}
+        productId={product.id}
+        shopId={product.shopId}
+      />
 
       {/* ── Fixed Bottom Action Bar with Add to Cart & Buy Now ── */}
       <div className="flex-shrink-0 bg-white border-t border-gray-100 px-4 py-3 pb-safe flex items-center gap-2.5 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] z-30">

@@ -345,21 +345,43 @@ export const AppProvider = ({ children }) => {
     setShops(prev => prev.map(s => s.id === shopId ? { ...s, status: s.status === 'suspended' ? 'approved' : 'suspended' } : s));
   };
 
-  const addReview = (shopId, rating, comment) => {
+  const addReview = (param1, param2, param3) => {
+    let reviewObj = {};
+    if (typeof param1 === 'object' && param1 !== null) {
+      reviewObj = { ...param1 };
+    } else {
+      reviewObj = {
+        shopId: param1,
+        rating: param2,
+        comment: param3,
+      };
+    }
+
+    const targetShopId = reviewObj.shopId;
+    const targetProductId = reviewObj.productId;
+
     const newRev = {
       id: `rev-${Date.now()}`,
-      shopId,
-      userId: currentUser.id,
-      userName: currentUser.name || 'Local Customer',
-      rating,
-      comment,
+      shopId: targetShopId || null,
+      productId: targetProductId || null,
+      userId: currentUser?.id || `guest-${Date.now()}`,
+      userName: reviewObj.userName || currentUser?.name || 'Local Customer',
+      city: reviewObj.city || 'Bahawalnagar',
+      rating: Number(reviewObj.rating) || 5,
+      comment: reviewObj.comment || '',
+      tags: reviewObj.tags || [],
       createdAt: new Date().toISOString()
     };
+
     setReviews(prev => [newRev, ...prev]);
 
-    const shopReviews = [newRev, ...reviews.filter(r => r.shopId === shopId)];
-    const avg = shopReviews.reduce((acc, curr) => acc + curr.rating, 0) / shopReviews.length;
-    setShops(prev => prev.map(s => s.id === shopId ? { ...s, rating: Number(avg.toFixed(1)), ratingCount: shopReviews.length } : s));
+    // Recalculate shop rating if review was for a shop
+    if (targetShopId) {
+      const shopReviews = [newRev, ...reviews.filter(r => r.shopId === targetShopId)];
+      const avg = shopReviews.reduce((acc, curr) => acc + curr.rating, 0) / shopReviews.length;
+      setShops(prev => prev.map(s => s.id === targetShopId ? { ...s, rating: Number(avg.toFixed(1)), ratingCount: shopReviews.length } : s));
+    }
+    return newRev;
   };
 
   const addReport = (targetType, targetId, targetTitle, reason) => {

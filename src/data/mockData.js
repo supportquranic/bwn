@@ -3,7 +3,56 @@
 // Legacy private data stubs (kept for AppContext compatibility)
 export const INITIAL_SHOP_PRIVATE = {};
 export const INITIAL_PRODUCT_PRIVATE = {};
-export const INITIAL_REVIEWS = [];
+export const INITIAL_REVIEWS = [
+  {
+    id: 'rev-1',
+    shopId: 'shop-1',
+    productId: 'p-u1',
+    userId: 'u-101',
+    userName: 'Muhammad Usman',
+    city: 'Model Town, BWN',
+    rating: 5,
+    comment: 'Al-Madina shop se iPhone 16 used buy kiya tha. Condition bilkul genuine 9.5/10 thi aur battery health exactly 88% verified mili. Bahawalnagar ki sab se trusted shop!',
+    tags: ['100% Original', 'Accurate Battery Health', 'Recommended'],
+    createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+  },
+  {
+    id: 'rev-2',
+    shopId: 'shop-1',
+    productId: 'p-1',
+    userId: 'u-102',
+    userName: 'Chaudhry Bilal',
+    city: 'City, Bahawalnagar',
+    rating: 5,
+    comment: 'Direct WhatsApp order kiya, 30 minutes mein free counter pickup ready mila. Staff behavior bohot polite hai.',
+    tags: ['Fast Response', 'Fair Price'],
+    createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
+  },
+  {
+    id: 'rev-3',
+    shopId: 'shop-2',
+    productId: 'p-u5',
+    userId: 'u-103',
+    userName: 'Hassan Raza',
+    city: 'Haroonabad Road, BWN',
+    rating: 5,
+    comment: 'Suleman Mobile Hub se phone liya tha. 7 days check warranty di aur PTA approved official nikla.',
+    tags: ['Check Warranty', 'PTA Approved'],
+    createdAt: new Date(Date.now() - 86400000 * 4).toISOString(),
+  },
+  {
+    id: 'rev-4',
+    shopId: 'shop-4',
+    productId: 'p-u3',
+    userId: 'u-104',
+    userName: 'Dr. Shahzad',
+    city: 'Minchinabad',
+    rating: 5,
+    comment: 'Google Pixel 7 camera testing ki. Flawless portrait shots aur clean back glass. 10/10 condition.',
+    tags: ['Clean Condition', 'Original Camera'],
+    createdAt: new Date(Date.now() - 86400000 * 6).toISOString(),
+  }
+];
 export const INITIAL_REPORTS = [];
 
 export const BANNERS = [

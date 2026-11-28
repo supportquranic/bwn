@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { ArrowLeft, Heart, Star, MapPin, Phone, MessageCircle, Share2, CheckCircle, Grid, List, ChevronRight, Plus } from 'lucide-react';
+import { ArrowLeft, Heart, Star, MapPin, Phone, MessageCircle, Share2, CheckCircle, Grid, List, ChevronRight, Plus, MessageSquare } from 'lucide-react';
 import { INITIAL_SHOPS, INITIAL_PRODUCTS } from '../data/mockData';
+import { useApp } from '../context/AppContext';
+import ReviewModal from './ReviewModal';
 
 const fmt = n => 'Rs. ' + n.toLocaleString('en-PK');
 
@@ -34,13 +36,18 @@ const TABS = [
   { id: 'iphone', label: 'iPhones' },
   { id: 'ipad', label: 'iPads' },
   { id: 'accessories', label: 'Accessories', cats: ['covers', 'headphones', 'handsfree', 'chargers', 'cables'] },
+  { id: 'reviews', label: 'Reviews' },
 ];
 
 export default function ShopDetailPage({ shopId, onBack, onProduct, favorites, onToggleFav, onAddToCart }) {
+  const { reviews = [] } = useApp();
   const shop = INITIAL_SHOPS.find(s => s.id === shopId);
   const [activeTab, setActiveTab] = useState('all');
   const [gridView, setGridView] = useState(true);
+  const [showReviewModal, setShowReviewModal] = useState(false);
   const isFav = favorites.includes(shopId);
+
+  const shopReviews = reviews.filter(r => r.shopId === shopId);
 
   if (!shop) return (
     <div className="h-full flex items-center justify-center">
@@ -99,11 +106,17 @@ export default function ShopDetailPage({ shopId, onBack, onProduct, favorites, o
               )}
             </div>
             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-              <div className="flex items-center gap-1">
+              <button 
+                type="button"
+                onClick={() => setActiveTab('reviews')}
+                className="flex items-center gap-1 hover:opacity-80 transition-opacity"
+              >
                 <Star size={12} className="fill-amber-400 text-amber-400" />
                 <span className="text-sm font-bold text-gray-800">{shop.rating}</span>
-                <span className="text-xs text-gray-400">({shop.ratingCount} reviews)</span>
-              </div>
+                <span className="text-xs text-[#8586f2] font-semibold underline underline-offset-2">
+                  ({shopReviews.length || shop.ratingCount} reviews)
+                </span>
+              </button>
               <span className="text-gray-200">·</span>
               <span className={`text-xs font-bold ${shop.status === 'open' ? 'text-gray-700' : 'text-gray-400'}`}>
                 {shop.status === 'open' ? '● Open Now' : '● Closed'}
@@ -158,12 +171,99 @@ export default function ShopDetailPage({ shopId, onBack, onProduct, favorites, o
         </div>
         {/* Items count */}
         <div className="flex items-center justify-between px-4 pb-2">
-          <span className="text-xs font-medium text-black/40">{filteredProducts.length} items</span>
+          <span className="text-xs font-medium text-black/40">
+            {activeTab === 'reviews' ? `${shopReviews.length} reviews` : `${filteredProducts.length} items`}
+          </span>
         </div>
       </div>
 
-      {/* ── Products Grid ── */}
-      <div className="px-4 mt-3">
+      {/* ── Content: Reviews Tab OR Products Grid ── */}
+      {activeTab === 'reviews' ? (
+        <div className="px-4 mt-3 space-y-3">
+          {/* Rating Summary Card */}
+          <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-xs">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Shop Rating</span>
+                <div className="flex items-baseline gap-2 mt-0.5">
+                  <span className="text-2xl font-black text-black">{shop.rating}</span>
+                  <div className="flex items-center text-amber-400">
+                    {[1, 2, 3, 4, 5].map(s => (
+                      <Star key={s} size={13} className="fill-amber-400 text-amber-400" />
+                    ))}
+                  </div>
+                </div>
+                <p className="text-[11px] text-gray-500 font-medium mt-0.5">
+                  Based on {shopReviews.length || shop.ratingCount} verified local reviews
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowReviewModal(true)}
+                className="py-2 px-3.5 rounded-full bg-[#8586f2] hover:bg-[#7375e8] text-white text-xs font-bold active:scale-95 transition-transform flex items-center gap-1.5 shadow-xs"
+              >
+                <MessageSquare size={14} />
+                <span>Write Review</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Reviews List */}
+          <div className="space-y-2.5">
+            {shopReviews.length > 0 ? (
+              shopReviews.map(rev => (
+                <div key={rev.id} className="bg-white rounded-2xl border border-gray-200 p-4 shadow-xs space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-bold text-gray-900 block">{rev.userName}</span>
+                      <span className="text-[10.5px] text-gray-400 font-medium">{rev.city || 'Bahawalnagar'}</span>
+                    </div>
+                    <div className="flex items-center gap-0.5">
+                      {[1, 2, 3, 4, 5].map(s => (
+                        <Star
+                          key={s}
+                          size={12}
+                          className={s <= rev.rating ? 'fill-amber-400 text-amber-400' : 'text-gray-300'}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  {rev.comment && (
+                    <p className="text-xs text-gray-700 leading-relaxed">
+                      "{rev.comment}"
+                    </p>
+                  )}
+
+                  {rev.tags && rev.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 pt-1">
+                      {rev.tags.map(tag => (
+                        <span key={tag} className="text-[10px] font-semibold bg-gray-50 border border-gray-200 text-gray-600 px-2.5 py-0.5 rounded-full">
+                          ✓ {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="bg-white rounded-2xl border border-gray-200 p-8 text-center">
+                <p className="text-sm font-bold text-gray-800">No reviews yet for this shop</p>
+                <p className="text-xs text-gray-400 mt-1">Have you visited this shop in Bahawalnagar? Share your experience!</p>
+                <button
+                  type="button"
+                  onClick={() => setShowReviewModal(true)}
+                  className="mt-3 py-2 px-4 rounded-full bg-[#8586f2] text-white text-xs font-bold"
+                >
+                  Write the First Review
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="px-4 mt-3 space-y-4">
           {/* Products Grid — Using exact Explore page square product card layout & styling */}
           {filteredProducts.length > 0 ? (
             <div className="grid grid-cols-2 gap-2.5">
@@ -224,7 +324,61 @@ export default function ShopDetailPage({ shopId, onBack, onProduct, favorites, o
               <p className="text-black/40 text-xs mt-1">Try selecting a different tab</p>
             </div>
           )}
+
+          {/* Compact Customer Reviews Preview Card under Products */}
+          <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-xs">
+            <div className="flex items-center justify-between mb-2.5">
+              <div className="flex items-center gap-1.5">
+                <Star size={14} className="fill-amber-400 text-amber-400" />
+                <span className="text-xs font-bold text-gray-900">
+                  Customer Reviews ({shopReviews.length || shop.ratingCount})
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowReviewModal(true)}
+                className="text-xs font-bold text-[#8586f2] hover:underline flex items-center gap-1"
+              >
+                <MessageSquare size={12} />
+                <span>Write Review</span>
+              </button>
+            </div>
+            {shopReviews.length > 0 ? (
+              <div className="bg-gray-50/70 rounded-xl p-3 border border-gray-100">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-gray-800">{shopReviews[0].userName}</span>
+                  <div className="flex items-center gap-0.5">
+                    {[1, 2, 3, 4, 5].map(s => (
+                      <Star key={s} size={10} className={s <= shopReviews[0].rating ? 'fill-amber-400 text-amber-400' : 'text-gray-300'} />
+                    ))}
+                  </div>
+                </div>
+                <p className="text-[11px] text-gray-600 mt-1 line-clamp-2 italic">
+                  "{shopReviews[0].comment}"
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('reviews')}
+                  className="mt-2 text-[10.5px] font-bold text-[#8586f2] hover:underline"
+                >
+                  View All {shopReviews.length} Reviews →
+                </button>
+              </div>
+            ) : (
+              <p className="text-[11px] text-gray-400 italic">No reviews yet. Be the first to review this retailer!</p>
+            )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Review Submission Modal */}
+      <ReviewModal
+        isOpen={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
+        targetType="shop"
+        targetTitle={shop.name}
+        shopId={shop.id}
+      />
+    </div>
   );
 }
