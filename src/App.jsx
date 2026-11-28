@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Compass, Store, Headphones, Heart, User, Star, ArrowUpRight, Search, SlidersHorizontal, X, Plus } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Compass, Store, Headphones, Heart, User, Star, ArrowUpRight, Search, SlidersHorizontal, X, Plus, LogOut } from 'lucide-react';
 import { AppProvider, useApp } from './context/AppContext';
 import { INITIAL_PRODUCTS, INITIAL_SHOPS } from './data/mockData';
 import { useCustomImages } from './utils/imageStore';
@@ -420,6 +420,8 @@ function AppShell() {
   const [isOrdersModalOpen, setIsOrdersModalOpen] = useState(false);
   const [isAddressesModalOpen, setIsAddressesModalOpen] = useState(false);
   const [isShopDashboardOpen, setIsShopDashboardOpen] = useState(false);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const allowExitRef = useRef(false);
 
   const openAuth = (mode = 'signin') => {
     setAuthModalMode(mode);
@@ -478,6 +480,7 @@ function AppShell() {
   const clearCart = () => setCart([]);
   const cartCount = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
 
+  // Android & Mobile Phone Physical/Gesture Back Button Interceptor
   useEffect(() => {
     const checkAdmin = () => {
       const path = window.location.pathname.toLowerCase();
@@ -489,12 +492,107 @@ function AppShell() {
     };
     checkAdmin();
     window.addEventListener('hashchange', checkAdmin);
-    window.addEventListener('popstate', checkAdmin);
+
+    // Push initial history state to capture Android back button
+    window.history.pushState({ app: 'bahawal-market' }, '');
+
+    const handlePopState = () => {
+      if (allowExitRef.current) return;
+
+      // 1. If Exit Confirm dialog is open, cancel and close it
+      if (showExitConfirm) {
+        setShowExitConfirm(false);
+        window.history.pushState({ app: 'bahawal-market' }, '');
+        return;
+      }
+
+      // 2. If any modal is open, close that modal first
+      if (isAuthModalOpen) {
+        setIsAuthModalOpen(false);
+        window.history.pushState({ app: 'bahawal-market' }, '');
+        return;
+      }
+      if (isShopRegModalOpen) {
+        setIsShopRegModalOpen(false);
+        window.history.pushState({ app: 'bahawal-market' }, '');
+        return;
+      }
+      if (isOrdersModalOpen) {
+        setIsOrdersModalOpen(false);
+        window.history.pushState({ app: 'bahawal-market' }, '');
+        return;
+      }
+      if (isAddressesModalOpen) {
+        setIsAddressesModalOpen(false);
+        window.history.pushState({ app: 'bahawal-market' }, '');
+        return;
+      }
+      if (isShopDashboardOpen) {
+        setIsShopDashboardOpen(false);
+        window.history.pushState({ app: 'bahawal-market' }, '');
+        return;
+      }
+
+      // 3. If Cart page is open, close cart
+      if (isCartOpen) {
+        setIsCartOpen(false);
+        window.history.pushState({ app: 'bahawal-market' }, '');
+        return;
+      }
+
+      // 4. If Product detail view is active, navigate back
+      if (activeProductId) {
+        setActiveProductId(null);
+        window.history.pushState({ app: 'bahawal-market' }, '');
+        return;
+      }
+
+      // 5. If Shop detail view is active, navigate back
+      if (activeShopId) {
+        setActiveShopId(null);
+        window.history.pushState({ app: 'bahawal-market' }, '');
+        return;
+      }
+
+      // 6. If on any tab other than Explore (Home), return to Explore
+      if (activeTab !== 'home') {
+        setActiveTab('home');
+        window.history.pushState({ app: 'bahawal-market' }, '');
+        return;
+      }
+
+      // 7. If on root Explore page with nothing open, ask Exit Confirmation!
+      setShowExitConfirm(true);
+      window.history.pushState({ app: 'bahawal-market' }, '');
+    };
+
+    window.addEventListener('popstate', handlePopState);
     return () => {
       window.removeEventListener('hashchange', checkAdmin);
-      window.removeEventListener('popstate', checkAdmin);
+      window.removeEventListener('popstate', handlePopState);
     };
-  }, []);
+  }, [
+    isAuthModalOpen,
+    isShopRegModalOpen,
+    isOrdersModalOpen,
+    isAddressesModalOpen,
+    isShopDashboardOpen,
+    isCartOpen,
+    activeProductId,
+    activeShopId,
+    activeTab,
+    showExitConfirm
+  ]);
+
+  const handleCancelExit = () => {
+    setShowExitConfirm(false);
+  };
+
+  const handleConfirmExit = () => {
+    allowExitRef.current = true;
+    setShowExitConfirm(false);
+    window.history.back();
+  };
 
   const toggleFav = (id) => setFavorites(f => f.includes(id) ? f.filter(x => x !== id) : [...f, id]);
 
@@ -714,6 +812,45 @@ function AppShell() {
         onClose={() => setIsShopDashboardOpen(false)}
         onOpenShop={goShop}
       />
+
+      {/* ── Android/Mobile Phone Physical & Gesture Back Button Exit Confirmation Dialog ── */}
+      {showExitConfirm && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150"
+          onClick={handleCancelExit}
+        >
+          <div 
+            className="w-full max-w-[340px] bg-white rounded-3xl p-5 shadow-2xl border border-gray-100 text-center animate-in zoom-in-95 duration-150"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="w-13 h-13 rounded-2xl bg-[#8586f2]/10 text-[#8586f2] flex items-center justify-center mx-auto mb-3 shadow-xs">
+              <LogOut size={24} />
+            </div>
+
+            <h3 className="text-base font-black text-black">Exit Bahawal Market?</h3>
+            <p className="text-xs text-gray-500 mt-1.5 leading-relaxed">
+              Are you sure you want to close the app? Your cart and saved items will remain saved on your phone.
+            </p>
+
+            <div className="grid grid-cols-2 gap-2 mt-5">
+              <button
+                type="button"
+                onClick={handleCancelExit}
+                className="py-2.5 px-3 bg-gray-100 hover:bg-gray-200 text-black text-xs font-bold rounded-xl active:scale-95 transition-all"
+              >
+                Stay on App
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmExit}
+                className="py-2.5 px-3 bg-[#8586f2] hover:bg-[#7375e8] text-white text-xs font-bold rounded-xl active:scale-95 transition-all shadow-xs"
+              >
+                Yes, Exit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
