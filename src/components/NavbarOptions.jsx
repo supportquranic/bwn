@@ -1,16 +1,16 @@
 import React from 'react';
 import GlassSurface from './GlassSurface';
-import { Compass, Store, Headphones, Heart, User } from 'lucide-react';
+import { Compass, Store, Headphones, MessageCircle, User } from 'lucide-react';
 
 const NAV_ITEMS = [
   { id: 'home',        label: 'Explore',      Icon: Compass },
   { id: 'shops',       label: 'Shops',        Icon: Store   },
   { id: 'accessories', label: 'Accessories',  Icon: Headphones },
-  { id: 'favorites',   label: 'Saved',        Icon: Heart   },
+  { id: 'chats',       label: 'Chats',        Icon: MessageCircle },
   { id: 'account',     label: 'Account',      Icon: User    },
 ];
 
-const NavbarContent = ({ navTab, favorites = [], handleNavClick }) => (
+const NavbarContent = ({ navTab, favorites = [], unreadChatsCount = 0, handleNavClick }) => (
   <div className="w-full flex items-center justify-around px-2">
     {NAV_ITEMS.map(({ id, label, Icon }) => {
       const active = navTab === id;
@@ -22,10 +22,17 @@ const NavbarContent = ({ navTab, favorites = [], handleNavClick }) => (
             active ? 'text-[#8586f2] font-bold' : 'text-gray-500 hover:text-gray-800'
           }`}
         >
-          <Icon
-            className={`w-5 h-5 transition-all duration-200 ${active ? 'scale-110 text-[#8586f2]' : 'text-gray-500'}`}
-            strokeWidth={active ? 2.2 : 1.8}
-          />
+          <div className="relative">
+            <Icon
+              className={`w-5 h-5 transition-all duration-200 ${active ? 'scale-110 text-[#8586f2]' : 'text-gray-500'}`}
+              strokeWidth={active ? 2.2 : 1.8}
+            />
+            {id === 'chats' && unreadChatsCount > 0 && (
+              <span className="absolute -top-1 -right-2 min-w-3.5 h-3.5 px-0.5 bg-[#8586f2] text-white text-[8.5px] font-black rounded-full flex items-center justify-center border-2 border-white leading-none">
+                {unreadChatsCount}
+              </span>
+            )}
+          </div>
           <span className={`text-[10px] transition-all duration-200 ${active ? 'text-[#8586f2] font-bold' : 'text-gray-500 font-medium'}`}>
             {label}
           </span>

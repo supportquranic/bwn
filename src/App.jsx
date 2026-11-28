@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Compass, Store, Headphones, Heart, User, Star, ArrowUpRight, Search, SlidersHorizontal, X, Plus, LogOut } from 'lucide-react';
+import { Compass, Store, Headphones, MessageCircle, Heart, User, Star, ArrowUpRight, Search, SlidersHorizontal, X, Plus, LogOut } from 'lucide-react';
 import { AppProvider, useApp } from './context/AppContext';
 import { INITIAL_PRODUCTS, INITIAL_SHOPS } from './data/mockData';
 import { useCustomImages } from './utils/imageStore';
@@ -11,6 +11,7 @@ import ShopDetailPage from './components/ShopDetailPage';
 import ProductDetailPage from './components/ProductDetailPage';
 import CartPage from './components/CartPage';
 import AccountPage from './components/AccountPage';
+import ChatsPage from './components/ChatsPage';
 import AdminVisualEditor from './components/AdminVisualEditor';
 import AuthModal from './components/AuthModal';
 import ShopRegistrationModal from './components/ShopRegistrationModal';
@@ -23,7 +24,7 @@ const NAV_TABS = [
   { id: 'home', label: 'Explore', Icon: Compass },
   { id: 'shops', label: 'Shops', Icon: Store },
   { id: 'accessories', label: 'Accessories', Icon: Headphones },
-  { id: 'favorites', label: 'Saved', Icon: Heart },
+  { id: 'chats', label: 'Chats', Icon: MessageCircle },
   { id: 'account', label: 'Account', Icon: User },
 ];
 
@@ -406,7 +407,7 @@ function ShopsPage({ onShop, favorites, onToggleFav }) {
 
 /* ── Main App Shell ── */
 function AppShell() {
-  const { role, setRole, currentUser, loginUser, logoutUser, registerShop } = useApp();
+  const { role, setRole, currentUser, loginUser, logoutUser, registerShop, startChatWithShop, unreadChatsCount } = useApp();
   const [activeTab, setActiveTab] = useState('home');
   const [activeShopId, setActiveShopId] = useState(null);
   const [activeProductId, setActiveProductId] = useState(null);
@@ -653,6 +654,12 @@ function AppShell() {
           onAddToCart={addToCart}
           onOpenCart={() => setIsCartOpen(true)}
           onOpenOrders={() => setIsOrdersModalOpen(true)}
+          onStartChat={({ shopId, product }) => {
+            if (startChatWithShop) startChatWithShop(shopId, product);
+            setActiveProductId(null);
+            setActiveShopId(null);
+            setActiveTab('chats');
+          }}
         />
       );
     }
@@ -710,6 +717,13 @@ function AppShell() {
             onToggleFav={toggleFav}
             onAddToCart={addToCart}
             initialQuery={searchQuery}
+          />
+        );
+      case 'chats':
+        return (
+          <ChatsPage
+            onProduct={goProduct}
+            onShop={goShop}
           />
         );
       case 'favorites':
@@ -777,6 +791,7 @@ function AppShell() {
           <Navbar2
             navTab={activeTab}
             favorites={favorites}
+            unreadChatsCount={unreadChatsCount}
             handleNavClick={handleNavClick}
             role={role}
           />

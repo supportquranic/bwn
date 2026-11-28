@@ -506,18 +506,33 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
               <p className="text-white/80 text-[11px] font-medium">{filteredItems.length} available · Bahawalnagar</p>
             </div>
           </div>
-          <button
-            onClick={onOpenCart || onSearchFocus}
-            className="w-8.5 h-8.5 rounded-full bg-white shadow-xs flex items-center justify-center text-[#8586f2] active:scale-95 transition-transform relative"
-            aria-label="Cart"
-          >
-            <ShoppingCart size={15} />
-            {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-[#8586f2] text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white leading-none">
-                {cartCount}
-              </span>
-            )}
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => onNavigateTab && onNavigateTab('favorites')}
+              className="w-8.5 h-8.5 rounded-full bg-white shadow-xs flex items-center justify-center text-[#8586f2] active:scale-95 transition-transform relative"
+              aria-label="Saved Items"
+              title="Saved Items"
+            >
+              <Heart size={15} className={favorites.length > 0 ? "fill-[#8586f2] text-[#8586f2]" : "text-[#8586f2]"} />
+              {favorites.length > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-[#8586f2] text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white leading-none">
+                  {favorites.length}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={onOpenCart || onSearchFocus}
+              className="w-8.5 h-8.5 rounded-full bg-white shadow-xs flex items-center justify-center text-[#8586f2] active:scale-95 transition-transform relative"
+              aria-label="Cart"
+            >
+              <ShoppingCart size={15} />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-[#8586f2] text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white leading-none">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Section Inset Search Bar */}
@@ -695,7 +710,21 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            {/* Saved / Favorites Button right beside the Cart */}
+            <button
+              onClick={() => onNavigateTab && onNavigateTab('favorites')}
+              className="w-8.5 h-8.5 p-2 rounded-full bg-white shadow-xs flex items-center justify-center text-[#8586f2] active:scale-95 transition-transform relative"
+              aria-label="Saved Items"
+              title="Saved Items"
+            >
+              <Heart size={16} className={favorites.length > 0 ? "fill-[#8586f2] text-[#8586f2]" : "text-[#8586f2]"} />
+              {favorites.length > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 bg-[#8586f2] text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white leading-none">
+                  {favorites.length}
+                </span>
+              )}
+            </button>
             <button
               onClick={onOpenCart || onSearchFocus}
               className="w-8.5 h-8.5 p-2 rounded-full bg-white shadow-xs flex items-center justify-center text-[#8586f2] active:scale-95 transition-transform relative"

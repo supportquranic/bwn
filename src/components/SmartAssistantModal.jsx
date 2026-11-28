@@ -1,495 +1,562 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
-  X, Bot, Sparkles, ArrowRight, RotateCcw, Check, ShoppingBag, 
-  Layers, CheckCircle2, Star, ChevronRight, ShieldCheck, Flame, Scale
+  X, 
+  Bot, 
+  Sparkles, 
+  Send, 
+  Mic, 
+  MicOff, 
+  Clock, 
+  RotateCcw, 
+  Check, 
+  Scale, 
+  ChevronRight, 
+  ShieldCheck, 
+  Star, 
+  Gamepad2, 
+  Camera, 
+  BatteryCharging, 
+  Layers,
+  ArrowRight
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 const fmt = n => 'Rs. ' + (Number(n) || 0).toLocaleString('en-PK');
 
-const USAGE_GOALS = [
-  { id: 'gaming', label: '🎮 PUBG & Heavy Gaming', desc: 'Fast chipset, 120Hz display, 8GB+ RAM' },
-  { id: 'camera', label: '📸 High-End Photography', desc: 'Top camera sensors, 4K video, OIS stabilization' },
-  { id: 'battery', label: '🔋 Long Battery & Durability', desc: '5,000mAh+ capacity & fast charging' },
-  { id: 'flagship', label: '👑 Premium & Flagship', desc: 'Apple iPhone, Samsung Ultra, titanium build' },
-  { id: 'daily', label: '📱 Daily Social & WhatsApp', desc: 'Best value for calling, YouTube, social apps' },
+const STARTER_PROMPTS = [
+  {
+    id: 'gaming',
+    icon: Gamepad2,
+    iconColor: 'text-indigo-500',
+    bgColor: 'bg-indigo-50',
+    title: 'Best for Gaming & PUBG',
+    desc: 'High FPS · 120Hz AMOLED · Liquid Cooling',
+  },
+  {
+    id: 'camera',
+    icon: Camera,
+    iconColor: 'text-rose-500',
+    bgColor: 'bg-rose-50',
+    title: 'Best Camera Phones',
+    desc: 'Studio Portraits · 4K 60fps · OIS Stabilization',
+  },
+  {
+    id: 'battery',
+    icon: BatteryCharging,
+    iconColor: 'text-emerald-500',
+    bgColor: 'bg-emerald-50',
+    title: 'All-Day Battery Life',
+    desc: '5000mAh+ · Fast Charging · Long Durability',
+  },
+  {
+    id: 'compare',
+    icon: Scale,
+    iconColor: 'text-amber-500',
+    bgColor: 'bg-amber-50',
+    title: 'Compare Top 2 Devices',
+    desc: 'Automatic side-by-side specs, condition & price',
+  },
 ];
 
-const BUDGET_RANGES = [
-  { id: 'under-40k', label: 'Under Rs. 40,000', min: 0, max: 40000 },
-  { id: '40k-80k', label: 'Rs. 40,000 - 80,000', min: 40000, max: 80000 },
-  { id: '80k-150k', label: 'Rs. 80,000 - 150,000', min: 80000, max: 150000 },
-  { id: 'above-150k', label: 'Above Rs. 150,000', min: 150000, max: 2000000 },
-  { id: 'any', label: 'Any Budget', min: 0, max: 2000000 },
+const BUDGET_OPTIONS = [
+  { label: 'Under Rs. 40,000', min: 0, max: 40000 },
+  { label: 'Rs. 40,000 - 80,000', min: 40000, max: 80000 },
+  { label: 'Rs. 80,000 - 150,000', min: 80000, max: 150000 },
+  { label: 'Above Rs. 150,000', min: 150000, max: 2000000 },
 ];
 
-const CONDITION_PREFS = [
-  { id: 'any', label: 'Any (New or Used)' },
-  { id: 'new', label: 'Brand New / Box Pack only' },
-  { id: 'used', label: 'Used / Pre-Owned (Top condition)' },
+const CONDITION_OPTIONS = [
+  { label: 'Brand New (Box Pack Sealed)', value: 'new' },
+  { label: 'Used / Mint Condition', value: 'used' },
+  { label: 'Either (Best Value Option)', value: 'any' },
 ];
 
 export default function SmartAssistantModal({ isOpen, onClose, onProduct, onShop }) {
-  const { products = [], shops = [] } = useApp();
+  const { products = [], shops = [], currentUser } = useApp();
 
-  // Wizard state: 1 (Usage) -> 2 (Budget) -> 3 (Condition) -> 4 (Results)
-  const [step, setStep] = useState(1);
-  const [selectedUsage, setSelectedUsage] = useState(null);
-  const [selectedBudget, setSelectedBudget] = useState(null);
-  const [selectedCondition, setSelectedCondition] = useState('any');
-  const [showComparison, setShowComparison] = useState(false);
+  const [mode, setMode] = useState('chat'); // 'chat' | 'voice'
+  const [messages, setMessages] = useState([]);
+  const [inputValue, setInputValue] = useState('');
+  const [isVoiceActive, setIsVoiceActive] = useState(false);
+  const [currentGoal, setCurrentGoal] = useState(null);
+  const [currentBudget, setCurrentBudget] = useState(null);
+  const [comparisonItems, setComparisonItems] = useState(null);
+  const messagesEndRef = useRef(null);
+
+  // Auto scroll as conversation progresses
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, comparisonItems]);
 
   if (!isOpen) return null;
 
-  // Filter only smartphones (exclude cases/covers/chargers)
+  // Filter only phones (exclude cases/covers/chargers)
   const phoneList = products.filter(p => {
     const isAccessory = ['cases', 'covers', 'airpods', 'smartwatch', 'chargers', 'headphones', 'handsfree', 'cables'].includes(p.category) ||
       ['case', 'cover', 'glass', 'protector', 'charger', 'buds', 'watch', 'handsfree', 'cable'].some(kw => (p.name || '').toLowerCase().includes(kw));
     return !isAccessory;
   });
 
-  // Smart Matching Algorithm
-  const getRecommendations = () => {
-    if (!selectedUsage || !selectedBudget) return [];
-
+  // Smart Matching Core Engine
+  const calculateMatches = (goalId, budgetBracket, conditionPref = 'any') => {
     const filtered = phoneList.filter(p => {
-      // 1. Budget check
-      if (p.price < selectedBudget.min || p.price > selectedBudget.max) return false;
-
-      // 2. Condition check
-      if (selectedCondition === 'new' && (p.usedDetails || p.condition === 'used')) return false;
-      if (selectedCondition === 'used' && !p.usedDetails && p.condition !== 'used') return false;
-
+      if (budgetBracket && (p.price < budgetBracket.min || p.price > budgetBracket.max)) return false;
+      if (conditionPref === 'new' && (p.usedDetails || p.condition === 'used')) return false;
+      if (conditionPref === 'used' && !p.usedDetails && p.condition !== 'used') return false;
       return true;
     });
 
-    // Score products based on selected usage
     const scored = filtered.map(p => {
-      let score = 50; // base score
+      let score = 50;
       const name = (p.name || '').toLowerCase();
       const specs = p.specs || {};
       const specsStr = JSON.stringify(specs).toLowerCase();
 
-      // Usage specific weighting
-      if (selectedUsage.id === 'gaming') {
+      if (goalId === 'gaming') {
         if (specsStr.includes('snapdragon') || specsStr.includes('dimensity') || specsStr.includes('bionic')) score += 25;
         if (specsStr.includes('120hz') || specsStr.includes('amoled')) score += 20;
         if (specs.RAM && (specs.RAM.includes('8') || specs.RAM.includes('12') || specs.RAM.includes('16'))) score += 15;
-      } else if (selectedUsage.id === 'camera') {
+      } else if (goalId === 'camera') {
         if (name.includes('iphone') || name.includes('pixel') || name.includes('ultra') || name.includes('pro')) score += 30;
-        if (specsStr.includes('ois') || specsStr.includes('200mp') || specsStr.includes('50mp') || specsStr.includes('quad')) score += 25;
-      } else if (selectedUsage.id === 'battery') {
+        if (specsStr.includes('ois') || specsStr.includes('200mp') || specsStr.includes('50mp')) score += 25;
+      } else if (goalId === 'battery') {
         if (specs.Battery && (specs.Battery.includes('5000') || specs.Battery.includes('6000'))) score += 30;
-        if (specsStr.includes('fast') || specsStr.includes('watt') || specsStr.includes('67w')) score += 15;
-      } else if (selectedUsage.id === 'flagship') {
-        if (name.includes('iphone 15') || name.includes('s24') || name.includes('pro max') || name.includes('ultra')) score += 40;
-        if (p.price > 120000) score += 20;
-      } else if (selectedUsage.id === 'daily') {
-        if (p.price <= 60000) score += 30;
-        if (p.condition === 'new') score += 15;
+        if (specsStr.includes('fast') || specsStr.includes('67w')) score += 15;
+      } else {
+        if (name.includes('iphone 15') || name.includes('s24') || name.includes('ultra')) score += 30;
       }
 
-      // Bonus for verified shop
       const shop = shops.find(s => s.id === p.shopId);
       if (shop?.verified) score += 10;
 
       return { product: p, score, shop };
     });
 
-    // Sort by calculated recommendation score
     scored.sort((a, b) => b.score - a.score);
-
-    // Return top 4 best distinct items
     return scored.slice(0, 4);
   };
 
-  const recommendations = getRecommendations();
-  const topTwoToCompare = recommendations.slice(0, 2);
-
-  const handleReset = () => {
-    setStep(1);
-    setSelectedUsage(null);
-    setSelectedBudget(null);
-    setSelectedCondition('any');
-    setShowComparison(false);
+  // Step 1: User selects one of the 4 starter cards
+  const handleSelectStarter = (starter) => {
+    setCurrentGoal(starter);
+    setMessages([
+      {
+        id: 'msg-start-user',
+        sender: 'user',
+        text: starter.title,
+      },
+      {
+        id: 'msg-ask-budget',
+        sender: 'bot',
+        text: `Great choice! To find the best available devices in Bahawalnagar for "${starter.title}", what is your target budget?`,
+        type: 'question-budget',
+      }
+    ]);
   };
 
+  // Step 2: User selects budget option
+  const handleSelectBudget = (budget) => {
+    setCurrentBudget(budget);
+    setMessages(prev => [
+      ...prev,
+      {
+        id: `msg-budget-user-${Date.now()}`,
+        sender: 'user',
+        text: budget.label,
+      },
+      {
+        id: `msg-ask-cond-${Date.now()}`,
+        sender: 'bot',
+        text: `Got it! Do you prefer Brand New (Box Pack Sealed) or Verified Clean Used?`,
+        type: 'question-condition',
+        budget,
+      }
+    ]);
+  };
+
+  // Step 3: User selects condition preference -> renders Top 4 Recommendations
+  const handleSelectCondition = (condOption) => {
+    const results = calculateMatches(currentGoal?.id || 'gaming', currentBudget, condOption.value);
+
+    setMessages(prev => [
+      ...prev,
+      {
+        id: `msg-cond-user-${Date.now()}`,
+        sender: 'user',
+        text: condOption.label,
+      },
+      {
+        id: `msg-results-${Date.now()}`,
+        sender: 'bot',
+        text: `Here are the top 4 best matching devices available in Bahawalnagar shops right now:`,
+        type: 'results',
+        recommendations: results,
+      }
+    ]);
+  };
+
+  // User types free-form query in the bottom input
+  const handleSendQuery = (e) => {
+    e?.preventDefault();
+    if (!inputValue.trim()) return;
+
+    const query = inputValue.trim();
+    const queryLower = query.toLowerCase();
+    setInputValue('');
+
+    // Parse budget if mentioned
+    let matchedBudget = null;
+    if (queryLower.includes('under 40') || queryLower.includes('under 40k')) matchedBudget = BUDGET_OPTIONS[0];
+    else if (queryLower.includes('50k') || queryLower.includes('60k') || queryLower.includes('70k') || queryLower.includes('80k')) matchedBudget = BUDGET_OPTIONS[1];
+    else if (queryLower.includes('1 lakh') || queryLower.includes('100k') || queryLower.includes('150k')) matchedBudget = BUDGET_OPTIONS[2];
+    else if (queryLower.includes('iphone') || queryLower.includes('s25') || queryLower.includes('flagship')) matchedBudget = BUDGET_OPTIONS[3];
+
+    let goal = 'gaming';
+    if (queryLower.includes('camera') || queryLower.includes('photo')) goal = 'camera';
+    else if (queryLower.includes('battery') || queryLower.includes('backup')) goal = 'battery';
+
+    const results = calculateMatches(goal, matchedBudget || BUDGET_OPTIONS[1], 'any');
+
+    setMessages(prev => [
+      ...prev,
+      {
+        id: `msg-user-q-${Date.now()}`,
+        sender: 'user',
+        text: query,
+      },
+      {
+        id: `msg-bot-q-${Date.now()}`,
+        sender: 'bot',
+        text: `I analyzed available stock across Bahawalnagar retailers for "${query}". Here are the top recommended options:`,
+        type: 'results',
+        recommendations: results,
+      }
+    ]);
+  };
+
+  const handleStartComparison = (recs) => {
+    if (recs && recs.length >= 2) {
+      setComparisonItems(recs.slice(0, 2));
+    }
+  };
+
+  const handleResetConversation = () => {
+    setMessages([]);
+    setCurrentGoal(null);
+    setCurrentBudget(null);
+    setComparisonItems(null);
+  };
+
+  const greetingName = currentUser?.name ? currentUser.name.split(' ')[0] : 'Shopper';
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/65 backdrop-blur-xs animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
       <div 
-        className="w-full max-w-[420px] bg-white rounded-3xl overflow-hidden shadow-2xl border border-gray-100 flex flex-col max-h-[90vh] relative"
+        className="w-full sm:max-w-md h-full sm:h-[88vh] bg-gradient-to-b from-white via-[#8586f2]/5 to-[#8586f2]/10 sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden relative"
         onClick={e => e.stopPropagation()}
       >
-        {/* ── Solid Brand Purple Header ── */}
-        <div 
-          className="relative px-5 pt-4 pb-4 text-white flex-shrink-0 flex items-center justify-between"
-          style={{ background: '#8586f2' }}
-        >
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-white shadow-xs">
-              <Bot size={20} />
-            </div>
-            <div>
-              <h2 className="text-base font-black text-white leading-tight flex items-center gap-1.5">
-                <span>Smart Device Matcher</span>
-                <span className="text-[10px] bg-white/25 px-2 py-0.2 rounded-full font-bold">Fast</span>
-              </h2>
-              <p className="text-white/80 text-[11px] font-medium">
-                Bahawal Market · Built-in Recommendation Engine
-              </p>
-            </div>
-          </div>
+        {/* ── Top Header Matching Reference Image ── */}
+        <div className="px-5 pt-5 pb-3 flex items-center justify-between flex-shrink-0 z-30">
+          {/* Close Button on left */}
+          <button
+            onClick={onClose}
+            className="w-9 h-9 rounded-full bg-white/80 hover:bg-white border border-gray-200/80 shadow-2xs flex items-center justify-center text-gray-700 active:scale-95 transition-transform"
+            aria-label="Close"
+          >
+            <X size={17} />
+          </button>
 
-          <div className="flex items-center gap-2">
-            {step > 1 && (
-              <button
-                onClick={handleReset}
-                className="w-8 h-8 rounded-full bg-black/15 hover:bg-black/25 flex items-center justify-center text-white transition-colors"
-                title="Start Over"
-              >
-                <RotateCcw size={14} />
-              </button>
-            )}
+          {/* Centered Pill Toggle: Chat | Voice */}
+          <div className="bg-gray-100/90 border border-gray-200/70 p-1 rounded-full flex items-center shadow-inner">
             <button
-              onClick={onClose}
-              className="w-8 h-8 rounded-full bg-black/15 hover:bg-black/25 flex items-center justify-center text-white transition-colors"
-              title="Close"
+              type="button"
+              onClick={() => setMode('chat')}
+              className={`px-3.5 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
+                mode === 'chat'
+                  ? 'bg-white text-black shadow-xs font-black'
+                  : 'text-gray-500 hover:text-black'
+              }`}
             >
-              <X size={17} />
+              <span>💬 Chat</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode('voice')}
+              className={`px-3.5 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
+                mode === 'voice'
+                  ? 'bg-[#8586f2] text-white shadow-xs font-black'
+                  : 'text-gray-500 hover:text-black'
+              }`}
+            >
+              <span>🎙️ Voice</span>
             </button>
           </div>
+
+          {/* Reset / History icon on right */}
+          <button
+            onClick={handleResetConversation}
+            className="w-9 h-9 rounded-full bg-white/80 hover:bg-white border border-gray-200/80 shadow-2xs flex items-center justify-center text-gray-700 active:scale-95 transition-transform"
+            title="Start New Recommendation"
+          >
+            <RotateCcw size={15} />
+          </button>
         </div>
 
-        {/* ── Body ── */}
-        <div className="p-4 overflow-y-auto flex-1 hide-scrollbar bg-[#f8f9fc] space-y-3.5">
-          {/* STEP 1: Usage Purpose */}
-          {step === 1 && (
-            <div className="space-y-3 animate-in fade-in slide-in-from-right-2 duration-150">
-              <div className="bg-white rounded-2xl border border-gray-200 p-3.5 shadow-xs">
-                <span className="text-[10px] font-bold text-[#8586f2] uppercase tracking-wider block mb-0.5">
-                  Step 1 of 3
-                </span>
-                <h3 className="text-sm font-black text-black">
-                  What will you primarily use the phone for?
-                </h3>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  The matcher will weight processors, camera sensors, and battery accordingly.
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                {USAGE_GOALS.map(goal => (
-                  <button
-                    key={goal.id}
-                    onClick={() => {
-                      setSelectedUsage(goal);
-                      setStep(2);
-                    }}
-                    className="w-full bg-white rounded-2xl border border-gray-200 p-3.5 text-left active:scale-[0.99] hover:border-[#8586f2] transition-all shadow-xs flex items-center justify-between group"
-                  >
-                    <div>
-                      <h4 className="text-xs font-bold text-black group-hover:text-[#8586f2] transition-colors">
-                        {goal.label}
-                      </h4>
-                      <p className="text-[11px] text-gray-500 mt-0.5">{goal.desc}</p>
-                    </div>
-                    <ChevronRight size={16} className="text-gray-300 group-hover:text-[#8586f2] transition-colors flex-shrink-0" />
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* STEP 2: Budget Range */}
-          {step === 2 && (
-            <div className="space-y-3 animate-in fade-in slide-in-from-right-2 duration-150">
-              <div className="bg-white rounded-2xl border border-gray-200 p-3.5 shadow-xs">
-                <span className="text-[10px] font-bold text-[#8586f2] uppercase tracking-wider block mb-0.5">
-                  Step 2 of 3 · {selectedUsage?.label}
-                </span>
-                <h3 className="text-sm font-black text-black">
-                  What is your target budget range?
-                </h3>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  We will only suggest available devices in Bahawalnagar within this bracket.
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                {BUDGET_RANGES.map(budget => (
-                  <button
-                    key={budget.id}
-                    onClick={() => {
-                      setSelectedBudget(budget);
-                      setStep(3);
-                    }}
-                    className="w-full bg-white rounded-2xl border border-gray-200 p-3.5 text-left active:scale-[0.99] hover:border-[#8586f2] transition-all shadow-xs flex items-center justify-between group"
-                  >
-                    <span className="text-xs font-bold text-black group-hover:text-[#8586f2] transition-colors">
-                      {budget.label}
-                    </span>
-                    <ChevronRight size={16} className="text-gray-300 group-hover:text-[#8586f2] transition-colors flex-shrink-0" />
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* STEP 3: Condition Preference */}
-          {step === 3 && (
-            <div className="space-y-3 animate-in fade-in slide-in-from-right-2 duration-150">
-              <div className="bg-white rounded-2xl border border-gray-200 p-3.5 shadow-xs">
-                <span className="text-[10px] font-bold text-[#8586f2] uppercase tracking-wider block mb-0.5">
-                  Step 3 of 3
-                </span>
-                <h3 className="text-sm font-black text-black">
-                  Do you prefer Brand New or Used devices?
-                </h3>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  All used phones in Bahawal Market include shop check warranty.
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                {CONDITION_PREFS.map(cond => (
-                  <button
-                    key={cond.id}
-                    onClick={() => {
-                      setSelectedCondition(cond.id);
-                      setStep(4);
-                    }}
-                    className="w-full bg-white rounded-2xl border border-gray-200 p-3.5 text-left active:scale-[0.99] hover:border-[#8586f2] transition-all shadow-xs flex items-center justify-between group"
-                  >
-                    <span className="text-xs font-bold text-black group-hover:text-[#8586f2] transition-colors">
-                      {cond.label}
-                    </span>
-                    <ChevronRight size={16} className="text-gray-300 group-hover:text-[#8586f2] transition-colors flex-shrink-0" />
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* STEP 4: Results & Recommendations */}
-          {step === 4 && !showComparison && (
-            <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-150">
-              {/* Header summary */}
-              <div className="bg-white rounded-2xl border border-gray-200 p-3.5 shadow-xs flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-1.5 text-[#8586f2]">
-                    <Sparkles size={14} />
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Top Matches Found</span>
-                  </div>
-                  <h3 className="text-sm font-black text-black mt-0.5">
-                    {recommendations.length} Best Phones for You
-                  </h3>
-                  <p className="text-[11px] text-gray-400">
-                    {selectedUsage?.label} · {selectedBudget?.label}
-                  </p>
+        {/* ── Scrollable Body ── */}
+        <div className="flex-1 overflow-y-auto hide-scrollbar px-5 py-3 space-y-4 pb-28 smooth-scroll">
+          {/* Hero Greeting Section (When conversation just started) */}
+          {messages.length === 0 ? (
+            <div className="space-y-5 animate-in fade-in duration-200 pt-1">
+              <div className="text-center pt-2">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#8586f2]/10 text-[#8586f2] text-xs font-bold mb-2">
+                  <Sparkles size={13} />
+                  <span>Salam! Good afternoon, {greetingName}</span>
                 </div>
-
-                {recommendations.length >= 2 && (
-                  <button
-                    onClick={() => setShowComparison(true)}
-                    className="px-3 py-1.5 bg-[#8586f2] hover:bg-[#7375e8] active:scale-95 text-white text-[11px] font-bold rounded-xl flex items-center gap-1 shadow-xs transition-transform flex-shrink-0"
-                  >
-                    <Scale size={13} />
-                    <span>Compare Top 2</span>
-                  </button>
-                )}
+                <h1 className="text-2xl font-black text-gray-900 tracking-tight leading-tight">
+                  How can I help?
+                </h1>
+                <p className="text-xs text-gray-500 mt-1 max-w-xs mx-auto">
+                  Find or compare the best phones available across Bahawalnagar shops.
+                </p>
               </div>
 
-              {/* Product Cards */}
-              {recommendations.length === 0 ? (
-                <div className="py-12 bg-white rounded-2xl border border-gray-200 text-center p-4">
-                  <p className="text-xs font-bold text-black">No devices matched this exact budget</p>
-                  <p className="text-[11px] text-gray-400 mt-1">Try expanding your budget range or choosing "Any Condition".</p>
-                  <button
-                    onClick={handleReset}
-                    className="mt-3 px-4 py-2 bg-[#8586f2] text-white text-xs font-bold rounded-xl shadow-xs"
-                  >
-                    Try Again
-                  </button>
-                </div>
-              ) : (
-                recommendations.map(({ product, shop }, idx) => {
-                  const badgeTitles = [
-                    '👑 #1 Best Overall Match',
-                    '⚡ #2 Top Performance Choice',
-                    '💰 #3 Best Value for Money',
-                    '✨ #4 Recommended Option',
-                  ];
-
+              {/* 2x2 Grid of 4 Starter Cards (Exact Match of Reference Image) */}
+              <div className="grid grid-cols-2 gap-3">
+                {STARTER_PROMPTS.map(starter => {
+                  const Icon = starter.icon;
                   return (
-                    <div
-                      key={product.id}
-                      className="bg-white rounded-2xl border border-gray-200 p-3.5 shadow-xs space-y-2.5 transition-all hover:border-[#8586f2]"
+                    <button
+                      key={starter.id}
+                      type="button"
+                      onClick={() => handleSelectStarter(starter)}
+                      className="bg-white/90 backdrop-blur-xs border border-gray-200/90 rounded-2xl p-4 text-left shadow-xs hover:border-[#8586f2]/50 active:scale-98 transition-all flex flex-col justify-between min-h-[120px] group"
                     >
-                      {/* Ranking Badge */}
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-[#8586f2] bg-[#8586f2]/10 px-2 py-0.5 rounded-full">
-                          {badgeTitles[idx] || 'Recommended'}
-                        </span>
-                        <span className="text-xs font-black text-black">
-                          {fmt(product.price)}
-                        </span>
+                      <div className={`w-9 h-9 rounded-xl ${starter.bgColor} ${starter.iconColor} flex items-center justify-center shadow-2xs mb-2 group-hover:scale-105 transition-transform`}>
+                        <Icon size={18} />
                       </div>
+                      <div>
+                        <h3 className="text-xs font-black text-gray-900 leading-snug group-hover:text-[#8586f2] transition-colors">
+                          {starter.title}
+                        </h3>
+                        <p className="text-[10px] text-gray-400 font-medium mt-0.5 line-clamp-2 leading-relaxed">
+                          {starter.desc}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
 
-                      {/* Product Overview */}
-                      <div className="flex items-center gap-3">
-                        <div className="w-16 h-16 rounded-xl bg-gray-50 border border-gray-100 p-1 flex-shrink-0 flex items-center justify-center overflow-hidden">
-                          <img src={product.image} alt={product.name} className="max-h-full max-w-full object-contain" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-xs font-bold text-black truncate leading-snug">
-                            {product.name}
-                          </h4>
-                          <p className="text-[10.5px] text-gray-500 mt-0.5">
-                            {shop?.name || 'Bahawal Mobile Market'}
-                          </p>
-                          <div className="flex items-center gap-2 mt-1 text-[10.5px] text-gray-400">
-                            <span>{product.specs?.Storage || (product.condition === 'new' ? 'Box Pack' : 'Used')}</span>
-                            <span>·</span>
-                            <span>{product.specs?.Display || '120Hz AMOLED'}</span>
+              {/* Status Note */}
+              <div className="text-center pt-4">
+                <p className="text-[11px] text-gray-400 font-medium max-w-xs mx-auto leading-relaxed">
+                  I'm your Bahawal Market Smart Assistant. Instant answers powered by live inventory.
+                </p>
+              </div>
+            </div>
+          ) : (
+            /* Conversational Flow right on the screen (No disruptive popups) */
+            <div className="space-y-3.5 animate-in fade-in duration-200">
+              {messages.map((msg) => {
+                const isUser = msg.sender === 'user';
+
+                return (
+                  <div key={msg.id} className="space-y-2">
+                    {/* Message Bubble */}
+                    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+                      <div
+                        className={`max-w-[85%] rounded-2xl p-3.5 shadow-2xs text-xs leading-relaxed ${
+                          isUser
+                            ? 'bg-[#8586f2] text-white font-medium rounded-br-xs'
+                            : 'bg-white text-gray-900 border border-gray-200/90 rounded-bl-xs font-normal'
+                        }`}
+                      >
+                        {msg.text}
+                      </div>
+                    </div>
+
+                    {/* Step 2 Inline Question: Budget Options */}
+                    {msg.type === 'question-budget' && (
+                      <div className="grid grid-cols-2 gap-2 pt-1 animate-in fade-in slide-in-from-bottom-2">
+                        {BUDGET_OPTIONS.map((opt) => (
+                          <button
+                            key={opt.label}
+                            type="button"
+                            onClick={() => handleSelectBudget(opt)}
+                            className="bg-white border border-[#8586f2]/30 hover:border-[#8586f2] text-gray-800 hover:text-[#8586f2] p-2.5 rounded-xl text-xs font-bold text-center active:scale-95 transition-all shadow-2xs"
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Step 3 Inline Question: Condition Options */}
+                    {msg.type === 'question-condition' && (
+                      <div className="flex flex-col gap-1.5 pt-1 animate-in fade-in slide-in-from-bottom-2">
+                        {CONDITION_OPTIONS.map((opt) => (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => handleSelectCondition(opt)}
+                            className="bg-white border border-[#8586f2]/30 hover:border-[#8586f2] text-gray-800 hover:text-[#8586f2] p-2.5 rounded-xl text-xs font-bold text-left active:scale-95 transition-all shadow-2xs flex items-center justify-between"
+                          >
+                            <span>{opt.label}</span>
+                            <ChevronRight size={14} className="text-gray-400" />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Step 4: Top 4 Recommended Cards */}
+                    {msg.type === 'results' && msg.recommendations && (
+                      <div className="space-y-3 pt-2">
+                        {/* Compare Button if at least 2 items */}
+                        {msg.recommendations.length >= 2 && (
+                          <div className="flex items-center justify-between bg-white rounded-xl p-2.5 border border-gray-200">
+                            <span className="text-[11px] font-bold text-gray-700">
+                              Top 4 Recommended for You:
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleStartComparison(msg.recommendations)}
+                              className="px-2.5 py-1 bg-[#8586f2] text-white text-[10.5px] font-bold rounded-lg active:scale-95 transition-transform flex items-center gap-1"
+                            >
+                              <Scale size={12} />
+                              <span>Compare Top 2</span>
+                            </button>
                           </div>
+                        )}
+
+                        <div className="grid grid-cols-2 gap-2.5">
+                          {msg.recommendations.map(({ product, shop, score }) => (
+                            <div
+                              key={product.id}
+                              className="bg-white rounded-2xl border border-gray-200 p-3 shadow-xs flex flex-col justify-between cursor-pointer active:scale-98 transition-transform"
+                              onClick={() => {
+                                onClose();
+                                if (onProduct) onProduct(product.id);
+                              }}
+                            >
+                              <div className="w-full aspect-square bg-gray-50 rounded-xl overflow-hidden p-2 flex items-center justify-center mb-2">
+                                <img
+                                  src={product.image}
+                                  alt={product.name}
+                                  className="max-h-full max-w-full object-contain"
+                                />
+                              </div>
+
+                              <div>
+                                <span className="text-[9.5px] font-bold bg-[#8586f2]/10 text-[#8586f2] px-1.5 py-0.2 rounded-md">
+                                  {score}% Match
+                                </span>
+                                <h4 className="text-xs font-bold text-gray-900 leading-snug line-clamp-2 mt-1">
+                                  {product.name}
+                                </h4>
+                                <p className="text-[10.5px] text-gray-400 font-medium truncate mt-0.5">
+                                  {shop?.name || 'Bahawal Market'}
+                                </p>
+                              </div>
+
+                              <div className="mt-2 pt-2 border-t border-gray-100 flex items-center justify-between">
+                                <span className="text-xs font-black text-[#8586f2]">
+                                  {fmt(product.price)}
+                                </span>
+                                <span className="text-[10px] font-bold text-gray-700 hover:text-[#8586f2]">
+                                  View →
+                                </span>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
+                    )}
+                  </div>
+                );
+              })}
 
-                      {/* Action Bar */}
-                      <div className="flex items-center justify-between pt-2 border-t border-gray-100 gap-2">
-                        <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
-                          <CheckCircle2 size={12} />
-                          In Stock in Bahawalnagar
-                        </span>
+              {/* Side-by-Side Comparison Matrix (if Compare Top 2 is clicked) */}
+              {comparisonItems && (
+                <div className="bg-white rounded-2xl border border-gray-200 p-3.5 shadow-sm space-y-3 mt-3 animate-in fade-in slide-in-from-bottom-2">
+                  <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+                    <span className="text-xs font-black text-gray-900 flex items-center gap-1">
+                      <Scale size={14} className="text-[#8586f2]" />
+                      <span>Side-by-Side Device Comparison</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setComparisonItems(null)}
+                      className="text-gray-400 hover:text-black"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-center">
+                    {comparisonItems.map(({ product, shop }, i) => (
+                      <div key={product.id} className="p-2 bg-gray-50 rounded-xl space-y-1">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase">Option {i + 1}</span>
+                        <p className="text-xs font-black text-gray-900 truncate">{product.name}</p>
+                        <p className="text-xs font-black text-[#8586f2]">{fmt(product.price)}</p>
+                        <p className="text-[10px] text-emerald-600 font-bold">
+                          {product.condition === 'new' ? 'Box Pack Sealed' : `Used (${product.usedDetails?.conditionRating || '9/10'})`}
+                        </p>
+                        <p className="text-[10px] text-gray-500 truncate">{shop?.name}</p>
                         <button
+                          type="button"
                           onClick={() => {
                             onClose();
                             if (onProduct) onProduct(product.id);
                           }}
-                          className="bg-[#8586f2] hover:bg-[#7375e8] text-white text-[11px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-xs active:scale-95 transition-transform"
+                          className="w-full mt-2 py-1 bg-[#8586f2] text-white text-[10.5px] font-bold rounded-lg"
                         >
-                          <span>View Device</span>
-                          <ArrowRight size={12} />
+                          Select This
                         </button>
                       </div>
-                    </div>
-                  );
-                })
+                    ))}
+                  </div>
+                </div>
               )}
+
+              <div ref={messagesEndRef} />
             </div>
           )}
+        </div>
 
-          {/* STEP 4 (SUBVIEW): Side-by-Side Comparison */}
-          {step === 4 && showComparison && topTwoToCompare.length >= 2 && (
-            <div className="space-y-3 animate-in fade-in slide-in-from-right-2 duration-150">
-              <div className="flex items-center justify-between px-1">
-                <button
-                  onClick={() => setShowComparison(false)}
-                  className="text-xs font-bold text-[#8586f2] hover:underline flex items-center gap-1"
-                >
-                  <span>← Back to Recommendations</span>
-                </button>
-                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                  Side-by-Side Comparison
-                </span>
-              </div>
-
-              {/* Comparison Table Card */}
-              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-xs">
-                {/* Header with 2 phones */}
-                <div className="grid grid-cols-2 p-3 bg-gray-50/80 border-b border-gray-200 gap-2 text-center">
-                  {topTwoToCompare.map(({ product }, i) => (
-                    <div key={i} className="flex flex-col items-center">
-                      <div className="w-14 h-14 bg-white rounded-xl border border-gray-200 p-1 flex items-center justify-center mb-1 shadow-xs">
-                        <img src={product.image} alt={product.name} className="max-h-full max-w-full object-contain" />
-                      </div>
-                      <p className="text-[11px] font-bold text-black truncate w-full">{product.name}</p>
-                      <p className="text-xs font-black text-[#8586f2] mt-0.5">{fmt(product.price)}</p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Spec Rows */}
-                <div className="divide-y divide-gray-100 text-[11px]">
-                  <div className="grid grid-cols-2 p-2.5 text-center">
-                    <div>
-                      <span className="text-gray-400 block text-[10px]">Retailer</span>
-                      <strong className="text-black">{topTwoToCompare[0].shop?.name || 'Al-Madina'}</strong>
-                    </div>
-                    <div>
-                      <span className="text-gray-400 block text-[10px]">Retailer</span>
-                      <strong className="text-black">{topTwoToCompare[1].shop?.name || 'Chishti Mobile'}</strong>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 p-2.5 text-center bg-gray-50/40">
-                    <div>
-                      <span className="text-gray-400 block text-[10px]">Storage / RAM</span>
-                      <strong className="text-black">{topTwoToCompare[0].product.specs?.Storage || '256GB'}</strong>
-                    </div>
-                    <div>
-                      <span className="text-gray-400 block text-[10px]">Storage / RAM</span>
-                      <strong className="text-black">{topTwoToCompare[1].product.specs?.Storage || '256GB'}</strong>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 p-2.5 text-center">
-                    <div>
-                      <span className="text-gray-400 block text-[10px]">Display</span>
-                      <strong className="text-black">{topTwoToCompare[0].product.specs?.Display || '120Hz AMOLED'}</strong>
-                    </div>
-                    <div>
-                      <span className="text-gray-400 block text-[10px]">Display</span>
-                      <strong className="text-black">{topTwoToCompare[1].product.specs?.Display || '120Hz AMOLED'}</strong>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 p-2.5 text-center bg-gray-50/40">
-                    <div>
-                      <span className="text-gray-400 block text-[10px]">Camera</span>
-                      <strong className="text-black truncate block">{topTwoToCompare[0].product.specs?.Camera || '50MP OIS'}</strong>
-                    </div>
-                    <div>
-                      <span className="text-gray-400 block text-[10px]">Camera</span>
-                      <strong className="text-black truncate block">{topTwoToCompare[1].product.specs?.Camera || '50MP OIS'}</strong>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 p-2.5 text-center">
-                    <div>
-                      <span className="text-gray-400 block text-[10px]">Condition & PTA</span>
-                      <span className="text-emerald-600 font-bold">Official PTA Approved</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-400 block text-[10px]">Condition & PTA</span>
-                      <span className="text-emerald-600 font-bold">Official PTA Approved</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Bottom 1-Tap Select Buttons */}
-                <div className="grid grid-cols-2 p-3 gap-2 bg-gray-50 border-t border-gray-100">
-                  <button
-                    onClick={() => {
-                      onClose();
-                      if (onProduct) onProduct(topTwoToCompare[0].product.id);
-                    }}
-                    className="py-2 px-2 bg-[#8586f2] hover:bg-[#7375e8] text-white text-[11px] font-bold rounded-xl active:scale-95 transition-transform text-center shadow-xs"
-                  >
-                    Select Option 1
-                  </button>
-                  <button
-                    onClick={() => {
-                      onClose();
-                      if (onProduct) onProduct(topTwoToCompare[1].product.id);
-                    }}
-                    className="py-2 px-2 bg-[#8586f2] hover:bg-[#7375e8] text-white text-[11px] font-bold rounded-xl active:scale-95 transition-transform text-center shadow-xs"
-                  >
-                    Select Option 2
-                  </button>
-                </div>
-              </div>
+        {/* ── Bottom Input Pill (Matching Exact Reference Image) ── */}
+        <div className="absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-white via-white/95 to-transparent z-30 pb-safe">
+          <form onSubmit={handleSendQuery} className="flex items-center gap-2">
+            <div className="flex-1 bg-white border border-gray-300/80 rounded-full px-4 py-3 flex items-center gap-2 shadow-xs focus-within:border-[#8586f2] transition-colors">
+              <input
+                type="text"
+                value={inputValue}
+                onChange={e => setInputValue(e.target.value)}
+                placeholder="Ask anything... (e.g. best phone under 80k)"
+                className="w-full bg-transparent text-xs text-black placeholder:text-gray-400 focus:outline-none font-medium"
+              />
             </div>
+
+            {/* Mic / Send Action Button styled in our brand purple */}
+            <button
+              type={inputValue.trim() ? 'submit' : 'button'}
+              onClick={inputValue.trim() ? handleSendQuery : () => setIsVoiceActive(prev => !prev)}
+              className="w-11 h-11 rounded-full bg-[#8586f2] hover:bg-[#7375e8] text-white flex items-center justify-center active:scale-95 transition-transform shadow-md shadow-[#8586f2]/25 flex-shrink-0"
+              aria-label={inputValue.trim() ? 'Send' : 'Voice Input'}
+            >
+              {inputValue.trim() ? (
+                <Send size={17} />
+              ) : isVoiceActive ? (
+                <MicOff size={18} className="animate-pulse text-amber-200" />
+              ) : (
+                <Mic size={18} />
+              )}
+            </button>
+          </form>
+
+          {isVoiceActive && (
+            <p className="text-[10.5px] text-center text-[#8586f2] font-semibold mt-1 animate-pulse">
+              Listening... Speak your budget or preferred model
+            </p>
           )}
         </div>
       </div>

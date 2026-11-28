@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { ArrowLeft, Heart, Star, Phone, ChevronRight, Battery, Shield, AlertTriangle, ShoppingCart, CheckCircle, CheckCircle2, User, MapPin, Sparkles, MessageSquare } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ArrowLeft, Heart, Star, Phone, ChevronRight, Battery, Shield, AlertTriangle, ShoppingCart, CheckCircle, CheckCircle2, User, MapPin, Sparkles, MessageSquare, Share2, Copy, Check, X, Link } from 'lucide-react';
 import { INITIAL_PRODUCTS, INITIAL_SHOPS } from '../data/mockData';
 import { useApp } from '../context/AppContext';
 import ConditionVerificationPanel from './ConditionVerificationPanel';
@@ -543,7 +543,7 @@ function DeliveryCheckoutPage({ product, shop, onBack, onOpenOrders }) {
   );
 }
 
-export default function ProductDetailPage({ productId, onBack, onShop, onProduct, favorites, onToggleFav, onAddToCart, onOpenCart, onOpenOrders }) {
+export default function ProductDetailPage({ productId, onBack, onShop, onProduct, favorites, onToggleFav, onAddToCart, onOpenCart, onOpenOrders, onStartChat }) {
   const { reviews = [] } = useApp();
   const product = INITIAL_PRODUCTS.find(p => p.id === productId);
   const shop = product ? INITIAL_SHOPS.find(s => s.id === product.shopId) : null;
@@ -553,7 +553,58 @@ export default function ProductDetailPage({ productId, onBack, onShop, onProduct
   const [addedToast, setAddedToast] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [copiedLinkToast, setCopiedLinkToast] = useState(false);
+  const [shakeBuyNow, setShakeBuyNow] = useState(false);
   const isFav = favorites.includes(productId);
+
+  // Smooth elastic shake on landing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShakeBuyNow(true);
+    }, 450);
+
+    const resetTimer = setTimeout(() => {
+      setShakeBuyNow(false);
+    }, 2200);
+
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(resetTimer);
+    };
+  }, [productId]);
+
+  const handleCopyLink = () => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(window.location.href);
+      }
+    } catch {
+      // ignore
+    }
+    setCopiedLinkToast(true);
+    setShowShareModal(false);
+    setTimeout(() => setCopiedLinkToast(false), 2400);
+  };
+
+  const handleWhatsAppShare = () => {
+    const text = `Check out *${product.name}* (${fmt(product.price)}) on Bahawal Market, Bahawalnagar!\n${window.location.href}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    setShowShareModal(false);
+  };
+
+  const handleNativeShare = () => {
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      navigator.share({
+        title: product.name,
+        text: `Check out ${product.name} (${fmt(product.price)}) on Bahawal Market!`,
+        url: window.location.href,
+      }).catch(() => {});
+      setShowShareModal(false);
+    } else {
+      handleCopyLink();
+    }
+  };
 
   // Filter reviews relevant to this product or shop
   const productReviews = reviews.filter(r => r.productId === productId || (r.shopId === product?.shopId && !r.productId));
@@ -704,6 +755,14 @@ export default function ProductDetailPage({ productId, onBack, onShop, onProduct
         </div>
       )}
 
+      {/* Copied Link Toast */}
+      {copiedLinkToast && (
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-[#8586f2] text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-lg flex items-center gap-2 pointer-events-none animate-in fade-in slide-in-from-top-2">
+          <CheckCircle size={15} className="text-white" />
+          <span>Product link copied to clipboard!</span>
+        </div>
+      )}
+
       {/* ── Scrollable Content (Carousel + Details) ── */}
       <div className="flex-1 overflow-y-auto hide-scrollbar pb-6 smooth-scroll">
         {/* ── Image Carousel (3 Images, Left/Right Icons Removed) ── */}
@@ -762,14 +821,28 @@ export default function ProductDetailPage({ productId, onBack, onShop, onProduct
               <h1 className="text-lg font-black text-gray-900 mt-2 leading-snug">{product.name}</h1>
             </div>
 
-            {/* ── Moved Add to Favorite Icon Directly Under Image ── */}
-            <button
-              onClick={() => onToggleFav(productId)}
-              className="w-10 h-10 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center active:scale-95 transition-transform flex-shrink-0 mt-1 shadow-xs"
-              aria-label={isFav ? 'Remove from Saved' : 'Add to Favorite'}
-            >
-              <Heart size={20} className={isFav ? 'fill-[#8586f2] text-[#8586f2]' : 'text-gray-700'} strokeWidth={1.8} />
-            </button>
+            {/* ── Share & Add to Favorite Buttons Directly Under Image ── */}
+            <div className="flex items-center gap-2 flex-shrink-0 mt-1">
+              {/* Share / Copy Link Button */}
+              <button
+                type="button"
+                onClick={() => setShowShareModal(true)}
+                className="w-10 h-10 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center text-gray-700 hover:text-[#8586f2] hover:border-[#8586f2]/40 active:scale-95 transition-all shadow-xs"
+                aria-label="Share Product"
+                title="Share or Copy Link"
+              >
+                <Share2 size={18} strokeWidth={1.9} />
+              </button>
+
+              {/* Add to Favorite Button */}
+              <button
+                onClick={() => onToggleFav(productId)}
+                className="w-10 h-10 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center active:scale-95 transition-transform shadow-xs"
+                aria-label={isFav ? 'Remove from Saved' : 'Add to Favorite'}
+              >
+                <Heart size={20} className={isFav ? 'fill-[#8586f2] text-[#8586f2]' : 'text-gray-700'} strokeWidth={1.8} />
+              </button>
+            </div>
           </div>
 
           {/* Price row */}
@@ -987,6 +1060,81 @@ export default function ProductDetailPage({ productId, onBack, onShop, onProduct
         shopId={product.shopId}
       />
 
+      {/* ── Share Modal Action Sheet ── */}
+      {showShareModal && (
+        <div 
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-xs animate-in fade-in duration-200 p-0 sm:p-4"
+          onClick={() => setShowShareModal(false)}
+        >
+          <div 
+            className="w-full sm:max-w-sm bg-white rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl animate-in slide-in-from-bottom-5 duration-200"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+              <div>
+                <h3 className="text-sm font-black text-black">Share Product</h3>
+                <p className="text-[11px] text-gray-500 font-medium truncate max-w-[220px]">{product.name}</p>
+              </div>
+              <button 
+                onClick={() => setShowShareModal(false)}
+                className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 active:scale-95 transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="space-y-2.5 pt-4">
+              {/* WhatsApp Share */}
+              <button
+                type="button"
+                onClick={handleWhatsAppShare}
+                className="w-full p-3 rounded-2xl bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/30 flex items-center gap-3 text-left active:scale-98 transition-all"
+              >
+                <div className="w-9 h-9 rounded-full bg-[#25D366] text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+                  <WhatsAppIcon size={20} />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-gray-900">Share to WhatsApp</p>
+                  <p className="text-[10.5px] text-gray-500">Send device details to friends or family</p>
+                </div>
+              </button>
+
+              {/* Copy Link */}
+              <button
+                type="button"
+                onClick={handleCopyLink}
+                className="w-full p-3 rounded-2xl bg-gray-50 hover:bg-gray-100 border border-gray-200 flex items-center gap-3 text-left active:scale-98 transition-all"
+              >
+                <div className="w-9 h-9 rounded-full bg-[#8586f2]/10 text-[#8586f2] flex items-center justify-center flex-shrink-0">
+                  <Copy size={18} />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-gray-900">Copy Link</p>
+                  <p className="text-[10.5px] text-gray-500">Copy URL to clipboard to paste anywhere</p>
+                </div>
+              </button>
+
+              {/* Native System Share if supported */}
+              {typeof navigator !== 'undefined' && Boolean(navigator.share) && (
+                <button
+                  type="button"
+                  onClick={handleNativeShare}
+                  className="w-full p-3 rounded-2xl bg-gray-50 hover:bg-gray-100 border border-gray-200 flex items-center gap-3 text-left active:scale-98 transition-all"
+                >
+                  <div className="w-9 h-9 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center flex-shrink-0">
+                    <Share2 size={18} />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-gray-900">More Apps...</p>
+                    <p className="text-[10.5px] text-gray-500">Share via system share menu</p>
+                  </div>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Fixed Bottom Action Bar with Add to Cart & Buy Now ── */}
       <div className="flex-shrink-0 bg-white border-t border-gray-100 px-4 py-3 pb-safe flex items-center gap-2.5 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] z-30">
         {/* Contact Icons (WhatsApp & Call) */}
@@ -1001,13 +1149,15 @@ export default function ProductDetailPage({ productId, onBack, onShop, onProduct
             >
               <WhatsAppIcon size={24} />
             </a>
-            <a
-              href={`tel:${shop.phone}`}
-              className="w-10 h-10 rounded-full border border-gray-200 bg-gray-50 text-gray-700 flex items-center justify-center active:scale-95 transition-transform"
-              title="Call Shop"
+            {/* In-App Direct Chat with Shopkeeper */}
+            <button
+              type="button"
+              onClick={() => onStartChat && onStartChat({ shopId: shop.id, product })}
+              className="w-10 h-10 rounded-full border border-[#8586f2]/30 bg-[#8586f2]/10 text-[#8586f2] flex items-center justify-center active:scale-95 transition-transform shadow-xs"
+              title="Chat with Shopkeeper"
             >
-              <Phone size={17} />
-            </a>
+              <MessageCircle size={19} />
+            </button>
           </div>
         )}
 
@@ -1020,10 +1170,12 @@ export default function ProductDetailPage({ productId, onBack, onShop, onProduct
           <span>Add to Cart</span>
         </button>
 
-        {/* Buy Now Button */}
+        {/* Buy Now Button with Smooth Elastic Shake on Landing */}
         <button
           onClick={handleBuyNow}
-          className="flex-1 py-3 rounded-full bg-[#8586f2] hover:bg-[#7375e8] text-white text-xs font-bold active:scale-95 transition-transform shadow-md shadow-[#8586f2]/25 flex items-center justify-center gap-1.5"
+          className={`flex-1 py-3 rounded-full bg-[#8586f2] hover:bg-[#7375e8] text-white text-xs font-bold active:scale-95 transition-transform shadow-md shadow-[#8586f2]/25 flex items-center justify-center gap-1.5 ${
+            shakeBuyNow ? 'animate-elastic-shake' : ''
+          }`}
         >
           <span>Buy Now</span>
         </button>

@@ -134,6 +134,240 @@ export const AppProvider = ({ children }) => {
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
   };
 
+  // WhatsApp-style In-App Chat & Admin Broadcast Channel
+  const [chats, setChats] = useState(() => {
+    try {
+      const saved = localStorage.getItem('bm_chats');
+      if (saved) return JSON.parse(saved);
+      return [
+        {
+          id: 'broadcast-admin',
+          type: 'broadcast',
+          isChannel: true,
+          name: '📢 Bahawal Market Official Broadcast',
+          shopName: 'Official Admin Broadcast',
+          avatar: '/brands logos/apple.png',
+          verified: true,
+          pinned: true,
+          unreadCount: 1,
+          messages: [
+            {
+              id: 'bmsg-1',
+              sender: 'admin',
+              senderName: 'Muzammil (Market Admin)',
+              text: 'Assalam-o-Alaikum shopkeepers and buyers! Welcome to Bahawal Market. Please verify PTA status and authentic condition scores for all listed phones.',
+              timestamp: new Date(Date.now() - 3600000 * 18).toISOString(),
+            },
+            {
+              id: 'bmsg-2',
+              sender: 'admin',
+              senderName: 'Muzammil (Market Admin)',
+              text: '📢 Live Update: Free home delivery promo code "BWN150" is active across all shops in Bahawalnagar city.',
+              timestamp: new Date(Date.now() - 3600000 * 2).toISOString(),
+            }
+          ],
+        },
+        {
+          id: 'chat-shop-1',
+          type: 'direct',
+          shopId: 'shop-1',
+          name: 'Al-Madina Mobile Zone',
+          avatar: 'https://images.unsplash.com/photo-1556742049-0a67c5574f73?auto=format&fit=crop&w=150&q=80',
+          phone: '0300 1234567',
+          whatsapp: '923001234567',
+          verified: true,
+          unreadCount: 1,
+          messages: [
+            {
+              id: 'm-1',
+              sender: 'user',
+              senderName: 'You',
+              text: 'Salam bhai, iPhone 15 Pro Max available hai?',
+              timestamp: new Date(Date.now() - 3600000 * 3).toISOString(),
+            },
+            {
+              id: 'm-2',
+              sender: 'shop',
+              senderName: 'Al-Madina Mobile Zone',
+              text: 'Walaikum Assalam! Ji bhai 100% genuine box pack sealed available hai. Counter pickup par special market discount bhi milega.',
+              timestamp: new Date(Date.now() - 3600000 * 2.5).toISOString(),
+            }
+          ],
+        },
+        {
+          id: 'chat-shop-2',
+          type: 'direct',
+          shopId: 'shop-2',
+          name: 'Suleman Mobile Hub',
+          avatar: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=150&q=80',
+          phone: '0301 2345678',
+          whatsapp: '923012345678',
+          verified: true,
+          unreadCount: 0,
+          messages: [
+            {
+              id: 'm-3',
+              sender: 'shop',
+              senderName: 'Suleman Mobile Hub',
+              text: 'Salam! S25 Ultra stock available ho gaya hai. Whenever you are free visit us at Minchinabad Road.',
+              timestamp: new Date(Date.now() - 3600000 * 24).toISOString(),
+            }
+          ],
+        }
+      ];
+    } catch {
+      return [];
+    }
+  });
+
+  const [activeChatId, setActiveChatId] = useState(null);
+
+  useEffect(() => {
+    localStorage.setItem('bm_chats', JSON.stringify(chats));
+  }, [chats]);
+
+  const markChatAsRead = (chatId) => {
+    setChats(prev => prev.map(c => c.id === chatId ? { ...c, unreadCount: 0 } : c));
+  };
+
+  const sendMessage = (chatId, text, attachedProduct = null) => {
+    if (!text.trim() && !attachedProduct) return;
+
+    const userMsg = {
+      id: `msg-${Date.now()}`,
+      sender: 'user',
+      senderName: currentUser?.name || 'You',
+      text: text.trim(),
+      attachedProduct,
+      timestamp: new Date().toISOString(),
+    };
+
+    setChats(prev => prev.map(c => {
+      if (c.id !== chatId) return c;
+      return {
+        ...c,
+        messages: [...c.messages, userMsg],
+        lastActivity: new Date().toISOString(),
+      };
+    }));
+
+    // If direct chat with shopkeeper, simulate realistic shopkeeper instant reply
+    const targetChat = chats.find(c => c.id === chatId);
+    if (targetChat && targetChat.type === 'direct') {
+      setTimeout(() => {
+        const shopReply = {
+          id: `msg-${Date.now() + 1}`,
+          sender: 'shop',
+          senderName: targetChat.name,
+          text: attachedProduct
+            ? `Walaikum Assalam! Ji bhai, *${attachedProduct.name}* stock mein available hai. Aap cash on delivery mangwana chahte hain ya counter pickup?`
+            : 'Salam brother! Message received. Yes, we are open right now in Bahawalnagar. How can I assist you further?',
+          timestamp: new Date().toISOString(),
+        };
+
+        setChats(currentChats => currentChats.map(c => {
+          if (c.id !== chatId) return c;
+          return {
+            ...c,
+            unreadCount: activeChatId === chatId ? 0 : (c.unreadCount || 0) + 1,
+            messages: [...c.messages, shopReply],
+            lastActivity: new Date().toISOString(),
+          };
+        }));
+      }, 1400);
+    }
+  };
+
+  const broadcastAdminMessage = (text) => {
+    if (!text.trim()) return;
+
+    const adminMsg = {
+      id: `bcast-${Date.now()}`,
+      sender: 'admin',
+      senderName: currentUser?.name || 'Muzammil (Market Admin)',
+      text: text.trim(),
+      timestamp: new Date().toISOString(),
+    };
+
+    setChats(prev => prev.map(c => {
+      if (c.id !== 'broadcast-admin') return c;
+      return {
+        ...c,
+        unreadCount: (c.unreadCount || 0) + 1,
+        messages: [...c.messages, adminMsg],
+        lastActivity: new Date().toISOString(),
+      };
+    }));
+  };
+
+  const startChatWithShop = (shopId, product = null) => {
+    const existing = chats.find(c => c.shopId === shopId);
+    if (existing) {
+      if (product) {
+        sendMessage(existing.id, `Salam! I am inquiring about *${product.name}* (Rs. ${product.price?.toLocaleString('en-PK')}). Is it currently available?`, product);
+      }
+      markChatAsRead(existing.id);
+      setActiveChatId(existing.id);
+      return existing.id;
+    }
+
+    const shopInfo = INITIAL_SHOPS.find(s => s.id === shopId) || {
+      id: shopId,
+      name: 'Bahawal Retailer',
+      logo: 'https://images.unsplash.com/photo-1556742049-0a67c5574f73?auto=format&fit=crop&w=150&q=80',
+      whatsapp: '923001234567',
+      phone: '0300 1234567',
+    };
+
+    const newChatId = `chat-${shopId}-${Date.now()}`;
+    const initialMessages = [];
+    if (product) {
+      initialMessages.push({
+        id: `msg-${Date.now()}`,
+        sender: 'user',
+        senderName: currentUser?.name || 'You',
+        text: `Salam! I am inquiring about *${product.name}* (Rs. ${product.price?.toLocaleString('en-PK')}). Is it currently in stock?`,
+        attachedProduct: product,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    const newChat = {
+      id: newChatId,
+      type: 'direct',
+      shopId,
+      name: shopInfo.name,
+      avatar: shopInfo.logo,
+      phone: shopInfo.phone,
+      whatsapp: shopInfo.whatsapp,
+      verified: true,
+      unreadCount: 0,
+      messages: initialMessages,
+      lastActivity: new Date().toISOString(),
+    };
+
+    setChats(prev => [newChat, ...prev]);
+    setActiveChatId(newChatId);
+
+    // Auto shop reply
+    if (product) {
+      setTimeout(() => {
+        const reply = {
+          id: `msg-${Date.now() + 2}`,
+          sender: 'shop',
+          senderName: shopInfo.name,
+          text: `Walaikum Assalam! Yes brother, *${product.name}* is available in our shop. You can order here or visit our counter.`,
+          timestamp: new Date().toISOString(),
+        };
+        setChats(cList => cList.map(c => c.id === newChatId ? { ...c, messages: [...c.messages, reply] } : c));
+      }, 1500);
+    }
+
+    return newChatId;
+  };
+
+  const unreadChatsCount = chats.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+
   // Current Logged in User simulation
   const [currentUser, setCurrentUser] = useState(() => {
     try {
@@ -464,7 +698,16 @@ export const AppProvider = ({ children }) => {
         suspendShop,
         addReview,
         addReport,
-        resolveReport
+        resolveReport,
+        chats,
+        setChats,
+        activeChatId,
+        setActiveChatId,
+        sendMessage,
+        broadcastAdminMessage,
+        startChatWithShop,
+        markChatAsRead,
+        unreadChatsCount
       }}
     >
       {children}
