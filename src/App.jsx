@@ -17,6 +17,7 @@ import ShopRegistrationModal from './components/ShopRegistrationModal';
 import MyOrdersModal from './components/MyOrdersModal';
 import AddressesModal from './components/AddressesModal';
 import ShopkeeperDashboardModal from './components/ShopkeeperDashboardModal';
+import SmartAssistantModal from './components/SmartAssistantModal';
 
 const NAV_TABS = [
   { id: 'home', label: 'Explore', Icon: Compass },
@@ -420,6 +421,7 @@ function AppShell() {
   const [isOrdersModalOpen, setIsOrdersModalOpen] = useState(false);
   const [isAddressesModalOpen, setIsAddressesModalOpen] = useState(false);
   const [isShopDashboardOpen, setIsShopDashboardOpen] = useState(false);
+  const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const allowExitRef = useRef(false);
 
@@ -506,7 +508,14 @@ function AppShell() {
         return;
       }
 
-      // 2. If any modal is open, close that modal first
+      // 2. If Smart Assistant is open, close it
+      if (isAssistantOpen) {
+        setIsAssistantOpen(false);
+        window.history.pushState({ app: 'bahawal-market' }, '');
+        return;
+      }
+
+      // 3. If any modal is open, close that modal first
       if (isAuthModalOpen) {
         setIsAuthModalOpen(false);
         window.history.pushState({ app: 'bahawal-market' }, '');
@@ -674,6 +683,7 @@ function AppShell() {
             cartCount={cartCount}
             onAddToCart={addToCart}
             onNavigateTab={handleNavClick}
+            onOpenAssistant={() => setIsAssistantOpen(true)}
           />
         );
       case 'shops':
@@ -811,6 +821,14 @@ function AppShell() {
         isOpen={isShopDashboardOpen}
         onClose={() => setIsShopDashboardOpen(false)}
         onOpenShop={goShop}
+      />
+
+      {/* Smart Device Assistant & Side-by-Side Comparison Modal */}
+      <SmartAssistantModal
+        isOpen={isAssistantOpen}
+        onClose={() => setIsAssistantOpen(false)}
+        onProduct={goProduct}
+        onShop={goShop}
       />
 
       {/* ── Android/Mobile Phone Physical & Gesture Back Button Exit Confirmation Dialog ── */}

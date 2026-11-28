@@ -318,7 +318,7 @@ function InteractiveBrandCarousel({ brands, onSelectBrand }) {
   );
 }
 
-export default function HomePage({ onShop, onProduct, favorites, onToggleFav, onSearchFocus, onOpenCart, cartCount = 0, onAddToCart, onNavigateTab }) {
+export default function HomePage({ onShop, onProduct, favorites, onToggleFav, onSearchFocus, onOpenCart, cartCount = 0, onAddToCart, onNavigateTab, onOpenAssistant }) {
   const { getImg, getItem } = useCustomImages();
   const [bannerIdx, setBannerIdx] = useState(0);
   const [activeCategory, setActiveCategory] = useState(null);
@@ -708,7 +708,12 @@ export default function HomePage({ onShop, onProduct, favorites, onToggleFav, on
                 </span>
               )}
             </button>
-            <button className="w-8.5 h-8.5 p-2 rounded-full bg-white shadow-xs flex items-center justify-center text-[#8586f2] active:scale-95 transition-transform">
+            <button
+              onClick={onOpenAssistant}
+              className="w-8.5 h-8.5 p-2 rounded-full bg-white shadow-xs flex items-center justify-center text-[#8586f2] active:scale-95 transition-transform"
+              title="Smart Device Matcher & AI Comparison"
+              aria-label="Smart Device Matcher"
+            >
               <Bot size={17} />
             </button>
           </div>
